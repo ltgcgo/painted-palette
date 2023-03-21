@@ -9,11 +9,13 @@ let main = async function (args) {
 	console.info(`${BuildInfo.name}@${WingBlade.variant} v${BuildInfo.ver}\n`);
 	switch (args[0]) {
 		case "paint": {
+			console.info(`Placing pixels on Reddit.`);
 			// Begin the Reddit auth flow
 			// Start the painter
 			break;
 		};
 		case "test": {
+			console.info(`Placing pixels on test server.`);
 			// Begin the test server auth flow
 			// Start the painter
 			break;
@@ -24,7 +26,7 @@ let main = async function (args) {
 			break;
 		};
 		default: {
-			console.info(`Unknown subcommand ${args[0]}`);
+			console.info(`Unknown subcommand ${args[0]}. Execute "help" for help.`);
 		};
 	};
 };

@@ -1,3 +1,3 @@
 "use strict";
-import {WebSocket} from "../libs/ws/ws.js";
-console.info(WebSocket);
+import kdTree from "../libs/kd-tree/kd-tree.js";
+console.info(kdTree);

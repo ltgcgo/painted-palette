@@ -18,6 +18,7 @@ Powered by ESBuild. No TypeScript required. Developed by Lightingale Community M
 #### Dependencies
 * Deno
 * ESBuild
+* kd-tree-javascript
 * pako.js
 * UPNG.js
 * ws
