@@ -1,3 +1,3 @@
 "use strict";
-import {pako} from "../libs/pako/bridge.min.js";
-console.info(pako);
+import {WebSocket} from "../libs/ws/ws.js";
+console.info(WebSocket);

@@ -20,6 +20,7 @@ Powered by ESBuild. No TypeScript required.
 * ESBuild
 * pako.js
 * UPNG.js
+* ws
 * xmldom
 
 #### Sources
@@ -43,6 +44,7 @@ Recommended for Android (Termux).
 * Bash
 * cURL
 * Node.js 18 or later
+* `ws` (installed automatically)
 
 ### Steps
 Some steps may not be required, if the installation helper script directly supports your distro/platform.
