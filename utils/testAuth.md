@@ -19,7 +19,7 @@ Needs `Authorization` with `Cookie` (`fallback-session-token`, `session-token`, 
 ### `GET /svc/mona-lisa/get-user-data`
 Needs `Authorization` with `Cookie` (`fallback-session-token`, `session-token`, `refresh-token`). A `Referer` would be nice.
 
-`Content-Type: application/json`
+Send: `Content-Type: application/json`
 
 ```js
 {
@@ -31,6 +31,8 @@ Needs `Authorization` with `Cookie` (`fallback-session-token`, `session-token`, 
 ```
 
 ### `POST /query`
+Send: `Content-Type: application/json`
+
 #### `getUserCooldown`
 ```json
 {
@@ -97,6 +99,51 @@ Needs `Authorization` with `Cookie` (`fallback-session-token`, `session-token`, 
 						"__typename": "UserInfo"
 					},
 					"__typename": "GetTileHistoryResponseMessageData"
+				},
+				"__typename": "BasicMessage"
+			}],
+			"__typename":"ActResponse"
+		}
+	}
+}
+```
+#### `setPixel`
+```json
+{
+	"operationName": "setPixel",
+	"variables": {
+		"input": {
+			"actionName": "r/replace:set_pixel",
+			"PixelMessageData": {
+				"coordinate": {
+					"x": 747,
+					"y": 342
+				},
+				"colorIndex": 7,
+				"canvasIndex": 2
+			}
+		}
+	},
+	"query": "mutation setPixel($input: ActInput!) {\n  act(input: $input) {\n    data {\n      ... on BasicMessage {\n        id\n        data {\n          ... on GetUserCooldownResponseMessageData {\n            nextAvailablePixelTimestamp\n            __typename\n          }\n          ... on SetPixelResponseMessageData {\n            timestamp\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"
+}
+```
+
+```json
+{
+	"data": {
+		"act": {
+			"data": [{
+				"id": "iFs45nXgWaSORWDlczxpIYwmE1v8uTw7",
+				"data": {
+					"nextAvailablePixelTimestamp": 1679399593549,
+					"__typename": "GetUserCooldownResponseMessageData"
+				},
+				"__typename": "BasicMessage"
+			}, {
+				"id": "D3Q-3USXCHg6r26qKuidycufleA2e_Sn",
+				"data": {
+					"timestamp": 1679399588549,
+					"__typename":"SetPixelResponseMessageData"
 				},
 				"__typename": "BasicMessage"
 			}],
