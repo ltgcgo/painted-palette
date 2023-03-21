@@ -1,4 +1,4 @@
 #!/bin/bash
-#shx build
+shx build
 shx commit
 exit

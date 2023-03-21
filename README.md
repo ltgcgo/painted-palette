@@ -5,9 +5,30 @@ No additional compilation required, since everything is bundled nicely into a si
 
 If you run it on Termux, install it from [F-Droid](https://f-droid.org/en/packages/com.termux/#versions), **not Google Play**!!!
 
-Powered by ESBuild.
+Powered by ESBuild. No TypeScript required.
+
+## Goals
+- [ ] Web-compliant.
+- [ ] Fast to build (within 2 seconds).
+- [ ] Fast to deploy.
+- [ ] Relatively low on memory and CPU.
 
 ## Running
+### Development
+#### Dependencies
+* Deno
+* ESBuild
+* pako.js
+* UPNG.js
+* xmldom
+
+#### Sources
+* `cnc.js`: The source code for the command and control server.
+* `core.js`: The core code for the bot.
+* `deno.js`: Core code wrapped with Deno interfaces.
+* `node.js`: Core code wrapped with Node interfaces.
+* `helper.sh`: Spin things up with ease!
+
 ### Requirements
 #### Deno (recommended)
 Recommended for Linux and Mac.
@@ -33,9 +54,3 @@ Some steps may not be required, if the installation helper script directly suppo
 * Start your auto-guided painting adventure!
 
 If upgrades are required, the script should able to download a new version automatically, and restart by itself to load the newer version.
-
-## Goals
-- [ ] Web-compliant.
-- [ ] Fast to build (within 2 seconds).
-- [ ] Fast to deploy.
-- [ ] Relatively low on memory and CPU.
