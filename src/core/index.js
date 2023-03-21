@@ -25,7 +25,7 @@ let main = async function (args) {
 			if (redditAuth.loggedIn) {
 				// Start the painter
 				//console.info(browserContext.cookies);
-				console.info(redditAuth.authInfo);
+				//console.info(redditAuth.authInfo);
 				console.info(`You're now logged in. Starting the painter...`);
 			} else {
 				// Error out

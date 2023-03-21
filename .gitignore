@@ -3,6 +3,7 @@
 deno.lock
 package-lock.json
 yarn.lock
+/build/
 /dist/*.map
 /dist/*.js
 /dist/*.mjs
