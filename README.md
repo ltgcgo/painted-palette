@@ -5,7 +5,7 @@ No additional compilation required, since everything is bundled nicely into a si
 
 If you run it on Termux, install it from [F-Droid](https://f-droid.org/en/packages/com.termux/#versions), **not Google Play**!!!
 
-Powered by ESBuild. No TypeScript required.
+Powered by ESBuild. No TypeScript required. Developed by Lightingale Community MLP Fandom Service and all contributors.
 
 ## Goals
 - [ ] Web-compliant.
