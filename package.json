@@ -36,6 +36,7 @@
 		"sh/bunTest.sh"
 	],
 	"dependencies": {
+		"undici": "^5.21.0",
 		"ws": "^8.12.0"
 	}
 }
