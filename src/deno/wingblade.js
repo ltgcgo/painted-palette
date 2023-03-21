@@ -4,11 +4,19 @@
 "use strict";
 
 let WingBlade = {
+	args: Deno.args,
 	variant: "Deno",
 	getEnv: (key, fallbackValue) => {
 		return Deno.env.get(key) || fallbackValue;
 	},
-	args: Deno.args
+	sleep: function (ms) {
+		return new Promise((y, n) => {
+			let as = AbortSignal.timeout(ms);
+			as.addEventListener("abort", () => {
+				y();
+			});
+		});
+	}
 };
 
 export {

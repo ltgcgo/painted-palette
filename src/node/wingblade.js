@@ -4,11 +4,20 @@
 "use strict";
 
 let WingBlade = {
+	args: process.argv.slice(2),
 	variant: "Node",
 	getEnv: (key, fallbackValue) => {
 		return process.env[key] || fallbackValue;
 	},
-	args: process.argv.slice(2)
+	sleep: function (ms) {
+		return new Promise((y, n) => {
+			/*let as = AbortSignal.timeout(ms);
+			as.addEventListener("abort", () => {
+				y();
+			});*/
+			setTimeout(y, ms);
+		});
+	}
 };
 
 export {
