@@ -1,0 +1,41 @@
+{
+	"name": "painted-palette",
+	"type": "module",
+	"description": "🎨 Painting palettes, one at a time.",
+	"keywords": [],
+	"homepage": "https://github.com/ltgcgo/painted-palette",
+	"bugs": {
+		"url": "https://github.com/ltgcgo/painted-palette/issues"
+	},
+	"license": "GPL-3.0-only",
+	"author": "Lumière Élevé (https://github.com/PoneyClairDeLune)",
+	"funding": [
+		{
+			"type": "individual",
+			"url": "https://github.com/PoneyClairDelune"
+		}
+	],
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"os": [
+		"linux",
+		"darwin",
+		"android",
+		"windows"
+	],
+	"cpu": [
+		"x64",
+		"arm64"
+	],
+	"files": [
+		"dist/*",
+		"shx",
+		"sh/nodeTest.sh",
+		"sh/denoTest.sh",
+		"sh/bunTest.sh"
+	],
+	"dependencies": {
+		"ws": "^8.12.0"
+	}
+}

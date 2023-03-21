@@ -1,4 +1,4 @@
 #!/bin/bash
-export LISTEN_PORT=8005
+export TEMPLATE_URL=
 bun run src/bun/index.js
 exit
