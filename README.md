@@ -8,9 +8,9 @@ If you run it on Termux, install it from [F-Droid](https://f-droid.org/en/packag
 Powered by ESBuild. No TypeScript required. Developed by Lightingale Community MLP Fandom Service and all contributors.
 
 ## Goals
-- [ ] Web-compliant.
-- [ ] Fast to build (within 2 seconds).
-- [ ] Fast to deploy.
+- [x] Web-compliant.
+- [x] Fast to build (within 2 seconds).
+- [x] Fast to deploy.
 - [ ] Relatively low on memory and CPU.
 
 ## Running
