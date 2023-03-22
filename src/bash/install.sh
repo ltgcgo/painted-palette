@@ -1,10 +1,10 @@
 #!/bin/bash
 installVer=
 sysArch=x86_64
-if [ -e "$(which denoi)" ] ; then
+if [ -e "$(which deno)" ] ; then
 	installVer=deno
 	echo "Deno is found."
-elif [ -e "$(which nodei)" ] ; then
+elif [ -e "$(which node)" ] ; then
 	installVer=node
 	echo "Node is found."
 else
@@ -12,7 +12,8 @@ else
 		installVer=node
 		echo "Termux detected. Installing Node.js on Termux..."
 		apt update
-		apt install nodejs
+		apt install openssl -y
+		apt install nodejs -y
 		echo "Node installation finished."
 	else
 		installVer=deno

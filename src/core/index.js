@@ -12,13 +12,14 @@ let updateChecker = async function () {
 	remoteVersion = remoteVersion.replaceAll("\r", "\n").replaceAll("\n", "").trim();
 	console.info(`Local: v${BuildInfo.ver}, remote: v${remoteVersion}`);
 	if (remoteVersion != BuildInfo.ver) {
-		console.info(`Update available (v${remoteVersion})! Downloading the new update...`);
-		let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
-		await WingBlade.writeFile("./patched.js", downloadStream);
+		console.info(`Update available (v${remoteVersion})!`);
 		if (WingBlade.os.toLowerCase() == "windows") {
-			console.info(`Please restart ${BuildInfo.name} manually. Quitting...`);
+			console.info(`Please update and restart ${BuildInfo.name} manually. Quitting...`);
 			WingBlade.exit(1);
 		} else {
+			console.info("Downloading the new update...");
+			let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
+			await WingBlade.writeFile("./patched.js", downloadStream);
 			console.info(`${BuildInfo.name} will restart shortly to finish its update.`);
 			WingBlade.exit(0);
 		};
