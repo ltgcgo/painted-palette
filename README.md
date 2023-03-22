@@ -1,37 +1,31 @@
 # painted-palette
-🎨 Painting palettes, one at a time.
+🎨 Painting palettes, one at a time. No additional compilation required, everything already bundled nicely into a single command/package.
 
-No additional compilation required, since everything is bundled nicely into a single package.
+If you're running it on Android with Termux, install it from [F-Droid](https://f-droid.org/en/packages/com.termux/#versions), **not Google Play**!!!
 
-If you run it on Termux, install it from [F-Droid](https://f-droid.org/en/packages/com.termux/#versions), **not Google Play**!!!
-
-Powered by ESBuild. No TypeScript required. Developed by Lightingale Community MLP Fandom Service and all contributors.
+Powered by ESBuild and Deno. No TypeScript used. Developed by Lightingale Community and all contributors.
 
 ## Goals
 - [x] Web-compliant.
 - [x] Fast to build (within 2 seconds).
-- [x] Fast to deploy.
+- [x] Fast to deploy (within 30 seconds for all steps combined).
 - [ ] Relatively low on memory and CPU.
 
 ## Running
-### Development
-#### Dependencies
-* Deno
-* ESBuild
-* kd-tree-javascript
-* pako.js
-* UPNG.js
-* ws
-* xmldom
+### Steps
+#### Linux, Android, Mac OS
+Some steps may not be required, if the installation helper script directly supports your distro/platform.
 
-#### Sources
-* `cnc.js`: The source code for the command and control server.
-* `core.js`: The core code for the bot.
-* `deno.js`: Core code wrapped with Deno interfaces.
-* `node.js`: Core code wrapped with Node interfaces.
-* `helper.sh`: Spin things up with ease!
+* Install the helper script with `bash <(curl -Ls https://sh.ltgc.cc/sh/palette)`. Takes at most 20 seconds to finish on a relatively acceptable Internet connection.
+  * Try `bash <(curl -Ls https://github.com/ltgcgo/painted-palette/raw/main/src/bash/install.sh)` if the above command does not work.
+* Run `./palette-bot paint <yourRedditUsername> <yourRedditPassword>` directly.
+* Start your auto-guided painting adventure!
+
+If upgrades are required, the script should able to download a new version automatically, and restart by itself to load the newer version.
 
 ### Requirements
+All of these are taken care of by the helper script without user intervention. Or if you're a Windows user, the comfort bundle.
+
 #### Deno (recommended)
 Recommended for Linux and Mac.
 
@@ -47,13 +41,19 @@ Recommended for Android (Termux).
 * Node.js 18 or later
 * `ws` (installed automatically)
 
-### Steps
-Some steps may not be required, if the installation helper script directly supports your distro/platform.
+### Development
+#### Dependencies
+* Deno
+* ESBuild
+* kd-tree-javascript
+* pako.js
+* UPNG.js
+* ws
+* xmldom
 
-* Install Deno (recommended, [see the steps](https://deno.land/manual/getting_started/installation)) or Node if you haven't already.
-* Install the helper script with `bash <(curl -Ls https://sh.ltgc.cc/sh/palette)`.
-* Run `./palette-bot` directly.
-* Enter your account username and password.
-* Start your auto-guided painting adventure!
-
-If upgrades are required, the script should able to download a new version automatically, and restart by itself to load the newer version.
+#### Sources
+* ~~`cnc.js`: The source code for the command and control server.~~
+* `core.js`: The core code for the bot.
+* `deno.js`: Core code wrapped with Deno interfaces.
+* `node.js`: Core code wrapped with Node interfaces.
+* `helper.sh`: Spin things up with ease!
