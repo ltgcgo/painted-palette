@@ -5,6 +5,7 @@
 
 let WingBlade = {
 	args: Deno.args,
+	os: Deno.build.os,
 	variant: "Deno",
 	exit: (code = 0) => {
 		Deno.exit(code);

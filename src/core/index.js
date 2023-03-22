@@ -8,6 +8,18 @@ import {RedditAuth} from "./redditAuth.js";
 
 let updateChecker = async function () {
 	// Check for pixel updates in parallel
+	let remoteVersion = ((await fetch("https://github.com/ltgcgo/painted-palette/raw/main/version")).text()).replaceAll("\r", "\n").replaceAll("\n", "").trim();
+	console.info("Local: v${BuildInfo.ver}, remote: v${remoteVersion}");
+	if (remoteVersion != BuildInfo.ver) {
+		console.info("Update available (v${remoteVersion})! Downloading the new update...");
+	};
+	if (WingBlade.os == "Windows") {
+		console.info(`Please restart ${BuildInfo.name} manually. Quitting...`);
+		WingBlade.exit(1);
+	} else {
+		console.info(`${BuildInfo.name} will restart shortly to finish its update.`);
+		//WingBlade.exit(0);
+	};
 };
 
 let main = async function (args) {

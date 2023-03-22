@@ -5,6 +5,7 @@
 
 let WingBlade = {
 	args: process.argv.slice(2),
+	os: os.platform(),
 	variant: "Node",
 	exit: (code = 0) => {
 		process.exit(code);
