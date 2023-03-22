@@ -13,14 +13,15 @@ Powered by ESBuild and Deno. No TypeScript used. Developed by Lightingale Commun
 
 ## Running
 ### Steps
-> **Warning**
->
-> BSD is not supported.
+> **Warning**: BSD is not supported.
+
+> **Warning**: It's generally a bad idea to run the bot on your main account. Spin up disposable alts for bots is recommended.
 
 #### Linux, Android, Mac OS
 * Install the helper script with `bash <(curl -Ls https://sh.ltgc.cc/sh/palette)`. Takes at most 20 seconds to finish on a relatively acceptable Internet connection.
   * Try `bash <(curl -Ls https://github.com/ltgcgo/painted-palette/raw/main/src/bash/install.sh)` if the above command does not work.
 * Run `./palette-bot paint <yourRedditUsername> <yourRedditPassword>` directly.
+  * If you have enabled 2FA, the OTP field is also available. Try running `./palette-bot paint <yourRedditUsername> <yourRedditPassword> <otp>`.
 * Start your auto-guided painting adventure!
 
 If upgrades are required, the script should able to download a new version automatically, and restart by itself to load the newer version.
@@ -30,6 +31,7 @@ If upgrades are required, the script should able to download a new version autom
 * Choose a folder, and extract the bundle.
 * Open a terminal, and direct to that folder.
 * Run `.\deno.exe --allow-net --allow-env --allow-read --allow-write deno.js paint <yourRedditUsername> <yourRedditPassword>`.
+  * If you have enabled 2FA, the OTP field is also available. Try running `.\deno.exe --allow-net --allow-env --allow-read --allow-write deno.js paint <yourRedditUsername> <yourRedditPassword> <otp>`.
 * Start your auto-guided painting adventure!
 
 If upgrades are required, the script should able to download a new version, then terminate itself automatically. But after that, you have to restart the script all by yourself with the command above.
