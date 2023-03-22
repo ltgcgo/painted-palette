@@ -4,7 +4,7 @@ const dim3Prop = Array.from("rgb");
 
 let BuildInfo = {
 	name: "Painted Palette",
-	ver: "0.0.3"
+	ver: "0.0.4"
 };
 
 let dim3Dist = function (a, b) {

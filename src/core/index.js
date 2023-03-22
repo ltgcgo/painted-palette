@@ -1,4 +1,5 @@
 // Painted Palette core code
+// Am I writing V2Ray, but for MLP fandom?
 
 "use strict";
 
@@ -37,8 +38,32 @@ let updateChecker = async function () {
 let main = async function (args) {
 	let acct = args[1], pass = args[2], otp = args[3];
 	console.info(`${BuildInfo.name}@${WingBlade.variant} ${WingBlade.os}_v${BuildInfo.ver}`);
-	let updateThread = setInterval(updateChecker, 20000);
+	let updateThread;
+	if (WingBlade.getEnv("NO_UPDATE") == "1") {
+		console.info(`Updater is disabled.`);
+	} else {
+		updateThread = setInterval(updateChecker, 20000);
+	};
 	switch (args[0]) {
+		case "help": {
+			// Show help
+			switch (acct) {
+				case "ctl": {
+					console.info(`ctl add    Add user credentials for management.\n             Example: ./palette-bot ctl add username password\nctl list   List all added users\nctl stat   Show available statistics\nctl on     Enable a managed user\nctl off    Disable a managed user\nctl user   Show available status for a managed user`);
+					break;
+				};
+				default: {
+					console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken\nbatch      Start a server for managing multiple credentials for painting.\nctl        Controls the painting server. Further help available.\n`);
+					if (WingBlade.os != "windows") {
+						console.info("./install.sh is provided to reinstall this program.");
+					} else {
+						console.info("Manual update is required, but only deno.js needs to be replaced.");
+					};
+				};
+			};
+			WingBlade.exit(1);
+			break;
+		};
 		case "paint": {
 			console.info(`Opening Reddit...`);
 			// Initial Reddit browsing
@@ -73,14 +98,19 @@ let main = async function (args) {
 			// Start the painter
 			break;
 		};
-		case "help": {
-			// Show help
-			console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken fallbackToken refreshToken`);
-			if (WingBlade.os != "windows") {
-				console.info("\n./install.sh is provided to reinstall this program.");
-			} else {
-				console.info("\nManual update is required, but only deno.js needs to be replaced.");
-			};
+		case "batch": {
+			WingBlade.serve(async function () {
+				return new Response("OK.");
+			}, {
+				port: 14514,
+				onListen: ({port}) => {
+					console.info(`Now running in batch mode. To control and/or retrieve info from CLI, use the "ctl" subcommand.`);
+					console.info(`Web UI and REST API available on http://127.0.0.1:${port}/`);
+				}
+			})
+			break;
+		};
+		case "ctl": {
 			WingBlade.exit(1);
 			break;
 		};

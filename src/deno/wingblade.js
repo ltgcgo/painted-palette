@@ -3,6 +3,8 @@
 
 "use strict";
 
+import {serve} from "../../libs/denoServe/server.js";
+
 let WingBlade = {
 	args: Deno.args,
 	os: Deno.build.os,
@@ -12,6 +14,17 @@ let WingBlade = {
 	},
 	getEnv: (key, fallbackValue) => {
 		return Deno.env.get(key) || fallbackValue;
+	},
+	serve: (handler, opt = {}) => {
+		if (!opt?.onListen) {
+			opt.onListen = function ({port, hostname}) {
+				console.error(`Serving at http://${hostname}:${port}`);
+			};
+		};
+		if (!opt?.hostname) {
+			opt.hostname = "127.0.0.1";
+		};
+		return serve(handler, opt);
 	},
 	setEnv: (key, value) => {
 		return Deno.env.set(key, value);

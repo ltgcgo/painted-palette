@@ -72,7 +72,7 @@ let RedditAuth = class {
 		});
 		let authToken = this.authInfo.session.sub;
 		let body = `access_token=${encodeURL(authToken)}`;
-		let resp = await fc.fetch("https://www.reddit.com/logoutproxy", {
+		await fc.fetch("https://www.reddit.com/logoutproxy", {
 			"method": "POST",
 			"headers": {
 				"Content-Type": "application/x-www-form-urlencoded",
@@ -84,7 +84,6 @@ let RedditAuth = class {
 			},
 			body
 		});
-		console.info(resp);
 	};
 	constructor(context) {
 		this.context = context;
