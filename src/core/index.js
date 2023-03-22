@@ -10,11 +10,10 @@ let updateChecker = async function () {
 	// Check for pixel updates in parallel
 	let remoteVersion = await (await fetch("https://github.com/ltgcgo/painted-palette/raw/main/version")).text();
 	remoteVersion = remoteVersion.replaceAll("\r", "\n").replaceAll("\n", "").trim();
-	console.info(`Local: v${BuildInfo.ver}, remote: v${remoteVersion}`);
 	if (remoteVersion != BuildInfo.ver) {
 		console.info(`Update available (v${remoteVersion})!`);
 		if (WingBlade.os.toLowerCase() == "windows") {
-			console.info(`Please update and restart ${BuildInfo.name} manually. Quitting...`);
+			console.info(`Please update and restart ${BuildInfo.name} manually.\nYou only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js\nQuitting...`);
 			WingBlade.exit(1);
 		} else {
 			console.info("Downloading the new update...");
@@ -66,7 +65,12 @@ let main = async function (args) {
 		};
 		case "help": {
 			// Show help
-			console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken fallbackToken refreshToken\n\n./install.sh is provided to reinstall this program.`);
+			console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken fallbackToken refreshToken`);
+			if (WingBlade.os != "windows") {
+				console.info("\n./install.sh is provided to reinstall this program.");
+			} else {
+				console.info("\nManual update is required, but only deno.js needs to be replaced.");
+			};
 			WingBlade.exit(1);
 			break;
 		};

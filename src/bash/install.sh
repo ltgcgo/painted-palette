@@ -11,6 +11,7 @@ else
 	if [ "$TERMUX_VERSION" != "" ] ; then
 		installVer=node
 		echo "Termux detected. Installing Node.js on Termux..."
+		echo "This will take longer than expected. Make sure you have a good enough Internet connection."
 		apt update
 		apt upgrade -y
 		apt install openssl -y
