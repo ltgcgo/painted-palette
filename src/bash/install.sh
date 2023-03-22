@@ -19,6 +19,16 @@ else
 		echo "Node installation finished."
 		echo "If errors happen, try keeping all of your packages up-to-date by running the following command:"
 		echo "apt update && apt upgrade\n"
+	elif [ "$(uname -v)" == "iSH"* ] ; then
+		installVer=node
+		echo "iSH detected. Installing Node.js on iSH..."
+		echo "This will take longer than expected. Make sure you have a good enough Internet connection."
+		apk update
+		apk upgrade
+		apk add nodejs
+		echo "Node installation finished."
+		echo "If errors happen, try keeping all of your packages up-to-date by running the following command:"
+		echo "apk update && apk upgrade\n"
 	else
 		installVer=deno
 		echo "Generic POSIX environment detected."

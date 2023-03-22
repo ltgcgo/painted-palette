@@ -6,6 +6,13 @@ import {BuildInfo} from "./common.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 
+let browserContext, redditAuth;
+let logoutEverywhere = async function () {
+	if (redditAuth) {
+		console.info(`Logging out from Reddit...`);
+		await redditAuth.logout();
+	};
+};
 let updateChecker = async function () {
 	// Check for pixel updates in parallel
 	let remoteVersion = await (await fetch("https://github.com/ltgcgo/painted-palette/raw/main/version")).text();
@@ -13,13 +20,15 @@ let updateChecker = async function () {
 	if (remoteVersion != BuildInfo.ver) {
 		console.info(`Update available (v${remoteVersion})!`);
 		if (WingBlade.os.toLowerCase() == "windows") {
+			await logoutEverywhere();
 			console.info(`Please update and restart ${BuildInfo.name} manually.\nYou only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js\nQuitting...`);
 			WingBlade.exit(1);
 		} else {
 			console.info("Downloading the new update...");
 			let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
 			await WingBlade.writeFile("./patched.js", downloadStream);
-			console.info(`${BuildInfo.name} will restart shortly to finish its update.`);
+			await logoutEverywhere();
+			console.info(`${BuildInfo.name} will restart shortly to finish updating.`);
 			WingBlade.exit(0);
 		};
 	};
@@ -28,19 +37,19 @@ let updateChecker = async function () {
 let main = async function (args) {
 	let acct = args[1], pass = args[2], otp = args[3];
 	console.info(`${BuildInfo.name}@${WingBlade.variant} ${WingBlade.os}_v${BuildInfo.ver}`);
-	let updateThread = setInterval(updateChecker, 15000);
+	let updateThread = setInterval(updateChecker, 20000);
 	switch (args[0]) {
 		case "paint": {
 			console.info(`Opening Reddit...`);
 			// Initial Reddit browsing
-			let browserContext = new FetchContext("https://www.reddit.com");
+			browserContext = new FetchContext("https://www.reddit.com");
 			await browserContext.fetch("https://www.reddit.com", {
 				"init": "browser"
 			});
 			await WingBlade.sleep(1200, 1800);
 			// Begin the Reddit auth flow
 			console.info(`Opening the login page...`);
-			let redditAuth = new RedditAuth(browserContext);
+			redditAuth = new RedditAuth(browserContext);
 			let authResult = await redditAuth.login(acct, pass, otp);
 			if (redditAuth.loggedIn) {
 				// Start the painter

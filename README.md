@@ -3,7 +3,7 @@
 
 If you're running it on Android with Termux, install it from [F-Droid](https://f-droid.org/en/packages/com.termux/#versions), **not Google Play**!!!
 
-Powered by ESBuild and Deno. No TypeScript used. Developed by Lightingale Community and all contributors.
+Powered by ESBuild and Deno. Developed by [Lightingale Community and all contributors](CREDITS.md).
 
 ## Goals
 - [x] Web-compliant.
@@ -15,14 +15,15 @@ Powered by ESBuild and Deno. No TypeScript used. Developed by Lightingale Commun
 
 ## Running
 ### Steps
-> **Warning**: BSD is not supported.
+> **Warning**: BSD and PonyOS are not supported. Feel free to contribute to improve compatibility.
 
 > **Warning**: It's considered a bad idea to run the bot on your main. Spin up disposable alts for bots is recommended.
 
-#### Linux, Android, Mac OS
-* Make sure that Bash and cURL are installed on your system.
+#### Linux, Android, Mac OS, iOS
+* Make sure that Bash, cURL and unzip are installed on your system.
 * Install the helper script with `bash <(curl -Ls https://sh.ltgc.cc/sh/palette)`. Takes at most 20 seconds to finish on a relatively acceptable Internet connection.
   * Try `bash <(curl -Ls https://github.com/ltgcgo/painted-palette/raw/main/src/bash/install.sh)` if the above command does not work.
+  * If you're on iOS with iSH, run with `wget https://github.com/ltgcgo/painted-palette/raw/main/src/bash/ish.sh -O - | sh` instead;
 * Run `./palette-bot paint <yourRedditUsername> <yourRedditPassword>` directly.
   * If you have enabled 2FA, the OTP field is also available. Try running `./palette-bot paint <yourRedditUsername> <yourRedditPassword> <otp>`.
 * Start your auto-guided painting adventure!
