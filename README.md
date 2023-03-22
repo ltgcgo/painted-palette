@@ -9,6 +9,8 @@ Powered by ESBuild and Deno. No TypeScript used. Developed by Lightingale Commun
 - [x] Web-compliant.
 - [x] Fast to build (within 2 seconds).
 - [x] Fast to deploy (within 30 seconds for all steps combined).
+- [x] No need to install dependencies before running.
+- [x] Automatic updater (for *nix).
 - [ ] Relatively low on memory and CPU.
 
 ## Running
