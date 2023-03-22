@@ -12,9 +12,12 @@ else
 		installVer=node
 		echo "Termux detected. Installing Node.js on Termux..."
 		apt update
+		apt upgrade -y
 		apt install openssl -y
 		apt install nodejs -y
 		echo "Node installation finished."
+		echo "If errors happen, try keeping all of your packages up-to-date by running the following command:"
+		echo "apt update && apt upgrade\n"
 	else
 		installVer=deno
 		echo "Generic POSIX environment detected."

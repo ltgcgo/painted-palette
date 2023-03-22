@@ -2,6 +2,10 @@
 
 "use strict";
 
+const contexts = {
+	"browser": "Browser navigation"
+};
+
 let FetchContext = class extends EventTarget {
 	#concurrency = 0;
 	#fire(type) {
@@ -85,11 +89,11 @@ let FetchContext = class extends EventTarget {
 				this.#concurrency --;
 				this.#fire("concurrency");
 				keepGoing = false;
-				console.error(`Fetch success.`);
+				console.error(`${contexts[opt.init] || "Fetch"} success.`);
 			} catch (err) {
 				this.#concurrency --;
 				this.#fire("concurrency");
-				console.error(`Fetch failed.`);
+				console.error(`${contexts[opt.init] || "Fetch"} failed.`);
 			};
 		};
 		response?.headers.forEach((v, k) => {
