@@ -2,7 +2,15 @@
 
 "use strict";
 
-let FetchContext = class {
+let FetchContext = class extends EventTarget {
+	#concurrency = 0;
+	#fire(type) {
+		this.dispatchEvent(new Event(type));
+	};
+	get concurrency() {
+		// Expose the count of currently active connections.
+		return this.#concurrency;
+	};
 	origin;
 	referer;
 	globalHeaders = {
@@ -19,6 +27,20 @@ let FetchContext = class {
 		"DNT": "1"
 	};
 	cookies = {};
+	allFinish() {
+		let upThis = this;
+		return new Promise((accept, reject) => {
+			if (this.#concurrency < 1) {
+				accept();
+			} else {
+				upThis.addEventListener("concurrency", () => {
+					if (upThis.#concurrency < 1) {
+						accept();
+					};
+				});
+			};
+		});
+	};
 	async fetch(url, opt = {}) {
 		opt.headers = opt?.headers || {};
 		for (let header in this.globalHeaders) {
@@ -57,10 +79,16 @@ let FetchContext = class {
 		while (retry && keepGoing) {
 			retry --;
 			try {
+				this.#concurrency ++;
+				this.#fire("concurrency");
 				response = await fetch(url, opt);
+				this.#concurrency --;
+				this.#fire("concurrency");
 				keepGoing = false;
 				console.error(`Fetch success.`);
 			} catch (err) {
+				this.#concurrency --;
+				this.#fire("concurrency");
 				console.error(`Fetch failed.`);
 			};
 		};
@@ -73,6 +101,7 @@ let FetchContext = class {
 		return response;
 	};
 	constructor(origin) {
+		super();
 		this.origin = origin;
 	};
 };

@@ -6,6 +6,10 @@ import {BuildInfo} from "./common.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 
+let updateChecker = async function () {
+	// Check for pixel updates in parallel
+};
+
 let main = async function (args) {
 	let acct = args[1], pass = args[2], otp = args[3];
 	console.info(`${BuildInfo.name}@${WingBlade.variant} v${BuildInfo.ver}`);
@@ -50,7 +54,7 @@ let main = async function (args) {
 			break;
 		};
 		default: {
-			console.info(`Unknown subcommand ${args[0]}. Execute "help" for help.`);
+			console.info(`Unknown subcommand "${args[0] || ""}". Execute "help" for help.`);
 			WingBlade.exit(1);
 		};
 	};
