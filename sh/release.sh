@@ -5,7 +5,8 @@ rm -rf build/*
 cp -r dist/* build
 cp -r node_modules build
 cp -r package.json build
-cp -r conf/include build
+cp -r conf/include/* build
+cp -r src/bash/* build
 rm build/node_modules/.package-lock.json
 cd build
 zip -r9v deno_release.zip deno.js

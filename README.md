@@ -15,9 +15,10 @@ Powered by ESBuild and Deno. No TypeScript used. Developed by Lightingale Commun
 ### Steps
 > **Warning**: BSD is not supported.
 
-> **Warning**: It's generally a bad idea to run the bot on your main account. Spin up disposable alts for bots is recommended.
+> **Warning**: It's considered a bad idea to run the bot on your main. Spin up disposable alts for bots is recommended.
 
 #### Linux, Android, Mac OS
+* Make sure that Bash and cURL are installed on your system.
 * Install the helper script with `bash <(curl -Ls https://sh.ltgc.cc/sh/palette)`. Takes at most 20 seconds to finish on a relatively acceptable Internet connection.
   * Try `bash <(curl -Ls https://github.com/ltgcgo/painted-palette/raw/main/src/bash/install.sh)` if the above command does not work.
 * Run `./palette-bot paint <yourRedditUsername> <yourRedditPassword>` directly.
@@ -44,7 +45,7 @@ Recommended for Linux and Mac.
 
 * Bash
 * cURL
-* Deno 1.30 or later
+* Deno 1.30 or later (installed automatically when not available)
 
 #### Node.js
 Recommended for Android (Termux).
@@ -53,6 +54,7 @@ Recommended for Android (Termux).
 * cURL
 * Node.js 18 or later
 * `ws` (installed automatically)
+* `undici` (installed automatically)
 
 ### Development
 #### Dependencies

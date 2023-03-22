@@ -6,12 +6,18 @@
 let WingBlade = {
 	args: Deno.args,
 	variant: "Deno",
+	exit: (code = 0) => {
+		Deno.exit(code);
+	},
 	getEnv: (key, fallbackValue) => {
 		return Deno.env.get(key) || fallbackValue;
 	},
-	sleep: function (ms) {
+	setEnv: (key, value) => {
+		return Deno.env.set(key, value);
+	},
+	sleep: function (ms, maxAdd = 0) {
 		return new Promise((y, n) => {
-			let as = AbortSignal.timeout(ms);
+			let as = AbortSignal.timeout(ms + Math.floor(maxAdd * Math.random()));
 			as.addEventListener("abort", () => {
 				y();
 			});

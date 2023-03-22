@@ -1,9 +1,23 @@
 #!/bin/bash
 # Always restart if no failure is detected
+PATH=./:$PATH
 QUIT=0
+RUNTIME=
+ADDITIONAL=
+if [ -e "$(which deno)" ] ; then
+	RUNTIME=deno
+	ADDITIONAL="run --allow-net --allow-env --allow-read --allow-write"
+elif [ -e "$(which node)" ] ; then
+	RUNTIME=node
+else
+	echo "No available runtime. Quitting."
+	exit 1
+fi
 while [ "$QUIT" == "0" ] ; do
 	QUIT=1
-	echo "Yes!" && QUIT=0
-	sleep 1s
+	$RUNTIME $ADDITIONAL ${RUNTIME}.js "$@" && QUIT=0
+	if [ "$QUIT" == "0" ] ; then
+		sleep 1s
+	fi
 done
 exit

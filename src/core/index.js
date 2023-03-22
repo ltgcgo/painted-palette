@@ -17,7 +17,7 @@ let main = async function (args) {
 			await browserContext.fetch("https://www.reddit.com", {
 				"init": "browser"
 			});
-			await WingBlade.sleep(2000);
+			await WingBlade.sleep(1200, 1800);
 			// Begin the Reddit auth flow
 			console.info(`Opening the login page...`);
 			let redditAuth = new RedditAuth(browserContext);
@@ -30,6 +30,7 @@ let main = async function (args) {
 			} else {
 				// Error out
 				console.info(`Reddit login failed. Reason: ${authResult}`);
+				WingBlade.exit(1);
 			};
 			break;
 		};
@@ -44,11 +45,13 @@ let main = async function (args) {
 		};
 		case "help": {
 			// Show help
-			console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\ntest       Use the provided credentials to paint on the test server`);
+			console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken fallbackToken refreshToken`);
+			WingBlade.exit(1);
 			break;
 		};
 		default: {
 			console.info(`Unknown subcommand ${args[0]}. Execute "help" for help.`);
+			WingBlade.exit(1);
 		};
 	};
 };
