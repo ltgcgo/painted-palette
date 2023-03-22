@@ -61,6 +61,7 @@ let main = async function (args) {
 				console.info(`Reddit login failed. Reason: ${authResult}`);
 				WingBlade.exit(1);
 			};
+			await logoutEverywhere();
 			break;
 		};
 		case "test": {
