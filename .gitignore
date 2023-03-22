@@ -4,6 +4,7 @@ deno.lock
 package-lock.json
 yarn.lock
 /build/
+/conf/include/
 /dist/*.map
 /dist/*.js
 /dist/*.mjs
