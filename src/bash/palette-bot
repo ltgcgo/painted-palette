@@ -4,16 +4,21 @@ PATH=./:$PATH
 QUIT=0
 RUNTIME=
 ADDITIONAL=
-if [ -e "$(which deno)" ] ; then
+if [ -e "./deno.js" ] ; then
 	RUNTIME=deno
 	ADDITIONAL="run --allow-net --allow-env --allow-read --allow-write"
-elif [ -e "$(which node)" ] ; then
+elif [ -e "./node.js" ] ; then
 	RUNTIME=node
 else
-	echo "No available runtime. Quitting."
+	echo "No available scripts. Quitting."
 	exit 1
 fi
 while [ "$QUIT" == "0" ] ; do
+	if [ -e "./patched.js" ] ; then
+		rm "./${RUNTIME}.js"
+		mv "./patched.js" "./${RUNTIME}.js"
+		echo "Updated the script to the latest version. Restarting!"
+	fi
 	QUIT=1
 	$RUNTIME $ADDITIONAL ${RUNTIME}.js "$@" && QUIT=0
 	if [ "$QUIT" == "0" ] ; then

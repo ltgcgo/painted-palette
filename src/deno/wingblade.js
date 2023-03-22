@@ -23,6 +23,9 @@ let WingBlade = {
 				y();
 			});
 		});
+	},
+	writeFile: async function (path, data, opt) {
+		await Deno.writeFile(path, data, opt);
 	}
 };
 

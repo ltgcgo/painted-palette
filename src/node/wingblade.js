@@ -24,6 +24,22 @@ let WingBlade = {
 			});*/
 			setTimeout(y, ms + Math.floor(maxAdd * Math.random()));
 		});
+	},
+	writeFile: async function (path, data, opt = {}) {
+		// Deno.writeFile
+		let newOpt = {
+			flag: "w"
+		};
+		if (opt.append) {
+			newOpt.flag = "a";
+		};
+		if (opt.signal) {
+			newOpt.signal = opt.signal;
+		};
+		if (opt.mode) {
+			newOpt.mode = opt.mode;
+		};
+		await fs.promises.writeFile(path, data, newOpt);
 	}
 };
 

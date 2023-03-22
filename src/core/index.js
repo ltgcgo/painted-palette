@@ -8,23 +8,27 @@ import {RedditAuth} from "./redditAuth.js";
 
 let updateChecker = async function () {
 	// Check for pixel updates in parallel
-	let remoteVersion = ((await fetch("https://github.com/ltgcgo/painted-palette/raw/main/version")).text()).replaceAll("\r", "\n").replaceAll("\n", "").trim();
-	console.info("Local: v${BuildInfo.ver}, remote: v${remoteVersion}");
+	let remoteVersion = await (await fetch("https://github.com/ltgcgo/painted-palette/raw/main/version")).text();
+	remoteVersion = remoteVersion.replaceAll("\r", "\n").replaceAll("\n", "").trim();
+	console.info(`Local: v${BuildInfo.ver}, remote: v${remoteVersion}`);
 	if (remoteVersion != BuildInfo.ver) {
-		console.info("Update available (v${remoteVersion})! Downloading the new update...");
-	};
-	if (WingBlade.os == "Windows") {
-		console.info(`Please restart ${BuildInfo.name} manually. Quitting...`);
-		WingBlade.exit(1);
-	} else {
-		console.info(`${BuildInfo.name} will restart shortly to finish its update.`);
-		//WingBlade.exit(0);
+		console.info(`Update available (v${remoteVersion})! Downloading the new update...`);
+		let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
+		await WingBlade.writeFile("./patched.js", downloadStream);
+		if (WingBlade.os.toLowerCase() == "windows") {
+			console.info(`Please restart ${BuildInfo.name} manually. Quitting...`);
+			WingBlade.exit(1);
+		} else {
+			console.info(`${BuildInfo.name} will restart shortly to finish its update.`);
+			WingBlade.exit(0);
+		};
 	};
 };
 
 let main = async function (args) {
 	let acct = args[1], pass = args[2], otp = args[3];
-	console.info(`${BuildInfo.name}@${WingBlade.variant} v${BuildInfo.ver}`);
+	console.info(`${BuildInfo.name}@${WingBlade.variant} ${WingBlade.os}_v${BuildInfo.ver}`);
+	let updateThread = setInterval(updateChecker, 15000);
 	switch (args[0]) {
 		case "paint": {
 			console.info(`Opening Reddit...`);
@@ -61,7 +65,7 @@ let main = async function (args) {
 		};
 		case "help": {
 			// Show help
-			console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken fallbackToken refreshToken`);
+			console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken fallbackToken refreshToken\n\n./install.sh is provided to reinstall this program.`);
 			WingBlade.exit(1);
 			break;
 		};
