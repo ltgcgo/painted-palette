@@ -6,6 +6,56 @@ const contexts = {
 	"browser": "Browser navigation"
 };
 
+let textToObj = function (str) {
+	let newObj = {};
+	str.split("\n").forEach((e) => {
+		if (e.trim().length) {
+			let fields = e.split("\t");
+			newObj[fields[0]] = fields[1];
+		};
+	});
+	return newObj;
+};
+const browserHeaders = [textToObj(`User-Agent	Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+Accept	text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language	en-US,en;q=0.9
+Accept-Encoding	gzip, deflate, br
+DNT	1
+Upgrade-Insecure-Requests	1
+Sec-Fetch-Dest	empty
+Sec-Fetch-Mode	cors
+Sec-Fetch-Site	same-origin
+Sec-Fetch-User	?1`), textToObj(`Sec-CH-UA	"Microsoft Edge";v="111", "Not(A:Brand";v="8", "Chromium";v="111"
+Sec-CH-UA-Mobile	?0
+Sec-CH-UA-Platform	"Windows"
+Upgrade-Insecure-Requests	1
+User-Agent	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.51
+Accept	text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site	same-origin
+Sec-Fetch-Mode	cors
+Sec-Fetch-User	?1
+Sec-Fetch-Dest	empty
+Accept-Encoding	gzip, deflate, br
+Accept-Language	en-US,en;q=0.9`), textToObj(`Upgrade-Insecure-Requests	1
+User-Agent	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36
+Accept	text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site	same-origin
+Sec-Fetch-Mode	cors
+Sec-Fetch-User	?1
+Sec-Fetch-Dest	empty
+Sec-CH-UA	"Google Chrome";v="111", "Not(A:Brand";v="8", "Chromium";v="111"
+Sec-CH-UA-Mobile	?0
+Sec-CH-UA-Platform	"Windows"
+Accept-Encoding	gzip, deflate, br
+Accept-Language	en-US,en;q=0.9`)];
+let getBrowserHeaders = function () {
+	let chosenIndex = Math.floor(Math.random() * 9);
+	if (chosenIndex > 2) {
+		chosenIndex = 2;
+	};
+	return browserHeaders[chosenIndex];
+};
+
 let FetchContext = class extends EventTarget {
 	#concurrency = 0;
 	#fire(type) {
@@ -17,19 +67,7 @@ let FetchContext = class extends EventTarget {
 	};
 	origin;
 	referer;
-	globalHeaders = {
-		"Accept": "*/*",
-		"User-Agent": /*"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"*/"Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
-		"Accept-Language": "en-US,en-GB;q=0.9,en;q=0.8",
-		/*"Sec-CH-UA": `Sec-CH-UA: " Not A;Brand";v="99", "Chromium";v="108", "Google Chrome";v="108"`,
-		"Sec-CH-UA-Mobile": "?0",
-		"Sec-CH-UA-Platform": "Windows",*/
-		"Sec-Fetch-Dest": "empty",
-		"Sec-Fetch-Mode": "cors",
-		"Sec-Fetch-Site": "same-origin",
-		"Upgrade-Insecure-Requests": "1",
-		"DNT": "1"
-	};
+	globalHeaders = getBrowserHeaders();
 	cookies = {};
 	allFinish() {
 		let upThis = this;
@@ -56,14 +94,20 @@ let FetchContext = class extends EventTarget {
 		if (this.referer) {
 			opt.headers["Referer"] = this.referer;
 		};
+		if (!opt.credentials) {
+			opt.credentials == "omit";
+		};
 		switch (opt.init) {
 			case "browser": {
-				opt.headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
 				opt.headers["Sec-Fetch-Dest"] = "document";
 				opt.headers["Sec-Fetch-Mode"] = "navigate";
-				opt.headers["Sec-Fetch-Site"] = "none";
-				opt.headers["Sec-Fetch-User"] = "?1";
+				//opt.headers["Sec-Fetch-Site"] = "none";
+				//opt.headers["Sec-Fetch-User"] = "?1";
 				break;
+			};
+			default: {
+				opt.headers["Accept"] = "*/*";
+				delete opt.headers["Sec-Fetch-User"];
 			};
 		};
 		let cookieArr = [];

@@ -7,8 +7,7 @@ import {BuildInfo} from "./common.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 
-let browserContext, redditAuth;
-let logoutEverywhere = async function () {
+let logoutEverywhere = async function (browserContext, redditAuth) {
 	if (redditAuth) {
 		console.info(`Logging out from Reddit...`);
 		await redditAuth.logout();
@@ -67,26 +66,31 @@ let main = async function (args) {
 		case "paint": {
 			console.info(`Opening Reddit...`);
 			// Initial Reddit browsing
-			browserContext = new FetchContext("https://www.reddit.com");
+			let browserContext = new FetchContext("https://www.reddit.com");
 			await browserContext.fetch("https://www.reddit.com", {
 				"init": "browser"
 			});
 			await WingBlade.sleep(1200, 1800);
 			// Begin the Reddit auth flow
 			console.info(`Opening the login page...`);
-			redditAuth = new RedditAuth(browserContext);
+			let redditAuth = new RedditAuth(browserContext);
 			let authResult = await redditAuth.login(acct, pass, otp);
 			if (redditAuth.loggedIn) {
 				// Start the painter
 				//console.info(browserContext.cookies);
 				//console.info(redditAuth.authInfo);
-				console.info(`You're now logged in. Starting the painter...`);
+				console.info(`Logged in as ${acct}. Starting the painter...`);
 			} else {
 				// Error out
 				console.info(`Reddit login failed. Reason: ${authResult}`);
 				WingBlade.exit(1);
 			};
-			await logoutEverywhere();
+			await logoutEverywhere(browserContext, redditAuth);
+			if (!redditAuth.loggedIn) {
+				console.info(`Logged out from ${acct}.`);
+			} else {
+				console.info(`Logout failed as ${acct}.`);
+			};
 			break;
 		};
 		case "test": {
