@@ -7,6 +7,11 @@ import {BuildInfo} from "./common.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 
+const remSvc = {
+	cnc: "",
+	tpl: ""
+};
+
 let logoutEverywhere = async function (browserContext, redditAuth) {
 	if (redditAuth) {
 		console.info(`Logging out from Reddit...`);
@@ -52,7 +57,7 @@ let main = async function (args) {
 					break;
 				};
 				default: {
-					console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken\nbatch      Start a server for managing multiple credentials for painting.\nctl        Controls the painting server. Further help available.\n`);
+					console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken\nbatch      Start a server for batch managing. Reads and saves to a file.\n             Example: ./palette-bot batch creds.json\nctl        Controls the painting server. Further help available.\n`);
 					if (WingBlade.os != "windows") {
 						console.info("./install.sh is provided to reinstall this program.");
 					} else {
@@ -103,6 +108,8 @@ let main = async function (args) {
 			break;
 		};
 		case "batch": {
+			let confFile = acct || "config.json";
+			console.info(`Reading configuration data from "${confFile}".`);
 			WingBlade.serve(async function () {
 				return new Response("OK.");
 			}, {

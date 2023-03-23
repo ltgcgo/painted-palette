@@ -1,6 +1,6 @@
 "use strict";
 
-const dim3Prop = Array.from("rgb");
+const dim3Prop = [0, 1, 2];
 
 let BuildInfo = {
 	name: "Painted Palette",
@@ -15,7 +15,12 @@ let dim3Dist = function (a, b) {
 	return Math.sqrt(sum);
 };
 
+let sortDist = function (a, b) {
+	return a[1] - b[1];
+};
+
 export {
 	BuildInfo,
-	dim3Dist
+	dim3Dist,
+	sortDist
 };
