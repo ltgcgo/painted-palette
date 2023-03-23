@@ -65,6 +65,9 @@ let RedditAuth = class {
 		return "";
 	};
 	async logout() {
+		if (!this.loggedIn) {
+			return;
+		};
 		let fc = this.context;
 		fc.referer = "https://www.reddit.com/";
 		await fc.fetch("https://www.reddit.com/", {

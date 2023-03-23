@@ -6,6 +6,7 @@
 import {BuildInfo, stringReflector} from "./common.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
+import {Monalisa} from "./monalisa.js";
 
 const svc = {
 	cnc: "",
@@ -80,16 +81,15 @@ let main = async function (args) {
 			console.info(`Opening the login page...`);
 			let redditAuth = new RedditAuth(browserContext);
 			let authResult = await redditAuth.login(acct, pass, otp);
-			if (redditAuth.loggedIn) {
-				// Start the painter
-				//console.info(browserContext.cookies);
-				//console.info(redditAuth.authInfo);
-				console.info(`Logged in as ${acct}. Starting the painter...`);
-			} else {
+			if (!redditAuth.loggedIn) {
 				// Error out
 				console.info(`Reddit login failed. Reason: ${authResult}`);
 				WingBlade.exit(1);
 			};
+			// Start the painter
+			//console.info(browserContext.cookies);
+			//console.info(redditAuth.authInfo);
+			console.info(`Logged in as ${acct}. Starting the painter...`);
 			await logoutEverywhere(browserContext, redditAuth);
 			if (!redditAuth.loggedIn) {
 				console.info(`Logged out from ${acct}.`);
@@ -104,6 +104,16 @@ let main = async function (args) {
 			let browserContext = new FetchContext("https://place.equestria.dev/");
 			await browserContext.fetch("https://place.equestria.dev/");
 			// Begin the test server auth flow
+			console.info(`Logging into the test server...`);
+			let monalisa = new Monalisa(browserContext);
+			let authResult = await monalisa.login({session: acct, fallback: pass, refresh: otp});
+			if (!monalisa.loggedIn) {
+				// Error out
+				console.info(`Monalisa login failed. Reason: ${authResult}`);
+				WingBlade.exit(1);
+			};
+			console.info(`Logged in as ${monalisa.session.id}.`);
+			await monalisa.getPixelHistory();
 			// Start the painter
 			break;
 		};
