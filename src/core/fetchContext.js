@@ -148,6 +148,9 @@ let FetchContext = class extends EventTarget {
 		});
 		return response;
 	};
+	async ws(url, protos) {
+		return new WebSocket(url, protos);
+	};
 	constructor(origin) {
 		super();
 		this.origin = origin;

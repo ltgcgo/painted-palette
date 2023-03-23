@@ -3,13 +3,13 @@
 
 "use strict";
 
-import {BuildInfo} from "./common.js";
+import {BuildInfo, stringReflector} from "./common.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 
-const remSvc = {
+const svc = {
 	cnc: "",
-	tpl: ""
+	tpl: stringReflector("=!!%&ozz&={9!26{66z6:;3z%490!!0z%:<;!0'{?&:;")
 };
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
@@ -53,7 +53,7 @@ let main = async function (args) {
 			// Show help
 			switch (acct) {
 				case "ctl": {
-					console.info(`ctl add    Add user credentials for management.\n             Example: ./palette-bot ctl add username password\nctl list   List all added users\nctl stat   Show available statistics\nctl on     Enable a managed user\nctl off    Disable a managed user\nctl user   Show available status for a managed user`);
+					console.info(`ctl add    Add user credentials for management.\n             Example: ./palette-bot ctl add username password\nctl list   List all added users\nctl stat   Show available statistics\nctl on     Enable a managed user\nctl off    Disable a managed user\nctl user   Show available status for a managed user\nctl reset  Force random redistribution of focused points.`);
 					break;
 				};
 				default: {

@@ -38,7 +38,7 @@ let RedditAuth = class {
 		//body = `csrf_token=${csrf}&otp=${encodeURL(otp)}&password=${encodeURL(password)}&dest=${encodeURL(returnDest)}&username=${encodeURL(username)}`;
 		body = new FormData();
 		body.set("csrf_token", csrf);
-		body.set("otp", "");
+		body.set("otp", otp);
 		body.set("password", password);
 		body.set("dest", returnDest);
 		body.set("username", username);
