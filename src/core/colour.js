@@ -14,7 +14,9 @@ let ColourPaletteSpace = class {
 	delColour(point) {
 		return this.tree.remnove(point);
 	};
-	get balanceFactor() {};
+	get balanceFactor() {
+		return this.tree.balanceFactor();
+	};
 	restart(...points) {
 		delete this.tree;
 		this.tree = new kdTree(points, dim3Dist, colourspace);

@@ -58,11 +58,11 @@ let main = async function (args) {
 			// Show help
 			switch (acct) {
 				case "ctl": {
-					console.info(`ctl add    Add user credentials for management.\n             Example: ./palette-bot ctl add username password\nctl list   List all added users\nctl stat   Show available statistics\nctl on     Enable a managed user\nctl off    Disable a managed user\nctl user   Show available status for a managed user\nctl reset  Force random redistribution of focused points.`);
+					console.info(`\nSet the server port with the optional PORT environment variable. 14514 by default.\n\nctl add    Add user credentials for management. OTP is optional\n             Example: ./palette-bot ctl add username password\n             Example: ./palette-bot ctl add username password otp\nctl del    Remove credentials of a user\n             Example: ./palette-bot ctl del username\nctl list   List all added users\nctl stat   Show available statistics\nctl on     Enable a managed user\nctl gon    Enable all managed users\nctl off    Disable a managed user\nctl goff   Disable all managed users\nctl user   Show available statuses for a managed user\nctl reset  Force random redistribution of focused points\nctl power  Set a power value between 1 and 0. 0.1 by default`);
 					break;
 				};
 				default: {
-					console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken\nbatch      Start a server for batch managing. Reads and saves to a file.\n             Example: ./palette-bot batch creds.json\nctl        Controls the painting server. Further help available.\n`);
+					console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken\nbatch      Start a server for managing. Reads and saves to a file. Port number is optional\n             Example: ./palette-bot batch 14514\nctl        Controls the painting server. Further help available\n`);
 					if (WingBlade.os != "windows") {
 						console.info("./install.sh is provided to reinstall this program.");
 					} else {
@@ -105,7 +105,7 @@ let main = async function (args) {
 		case "test": {
 			console.info(`Opening test server...`);
 			// Initial test canvas browsing
-			let browserContext = new FetchContext("https://place.equestria.dev/");
+			let browserContext = new FetchContext("https://place.equestria.dev");
 			await browserContext.fetch("https://place.equestria.dev/");
 			// Begin the test server auth flow
 			console.info(`Logging into the test server...`);
@@ -116,7 +116,8 @@ let main = async function (args) {
 				console.info(`Monalisa login failed. Reason: ${authResult}`);
 				WingBlade.exit(1);
 			};
-			console.info(`Logged in as ${monalisa.session.id}.`);
+			console.info(`Logged in as ${monalisa.session}.`);
+			monalisa.startStream();
 			console.info(JSON.stringify(await monalisa.getPixelHistory()));
 			console.info(JSON.stringify(await monalisa.placePixel(0, 0, Math.floor(32 * Math.random()))));
 			// Start the painter

@@ -1,15 +1,23 @@
 "use strict";
 
 const dim3Prop = [0, 1, 2];
+const dim2Prop = [0, 1];
 
 let BuildInfo = {
 	name: "Painted Palette",
-	ver: "0.0.4"
+	ver: "0.0.5"
 };
 
 let dim3Dist = function (a, b) {
 	let sum = 0;
 	dim3Prop.forEach((e) => {
+		sum += (a[e] - b[e]) ** 2;
+	});
+	return Math.sqrt(sum);
+};
+let dim2Dist = function (a, b) {
+	let sum = 0;
+	dim2Prop.forEach((e) => {
 		sum += (a[e] - b[e]) ** 2;
 	});
 	return Math.sqrt(sum);
@@ -39,6 +47,7 @@ let stringReflector = function (string, reflector = 85) {
 export {
 	BuildInfo,
 	dim3Dist,
+	dim2Dist,
 	sortDist,
 	stringReflector
 };

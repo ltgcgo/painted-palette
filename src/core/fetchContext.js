@@ -137,7 +137,7 @@ let FetchContext = class extends EventTarget {
 			} catch (err) {
 				this.#concurrency --;
 				this.#fire("concurrency");
-				console.error(`${contexts[opt.init] || "Fetch"} failed.`);
+				console.error(`${contexts[opt.init] || "Fetch"} failed.${retry ? " Retrying..." : ""}`);
 			};
 		};
 		response?.headers.forEach((v, k) => {

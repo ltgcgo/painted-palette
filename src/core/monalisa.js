@@ -9,10 +9,14 @@ let Monalisa = class {
 	#refreshToken;
 	#x = 1;
 	#y = 1;
+	ws; // Manged WebSocket
+	ps; // Managed PubSub
+	cc; // Managed CanvasConfiguration
 	loggedIn = false;
 	userdata;
 	session;
 	appUrl;
+	nextAt = 0;
 	setRefresh(token) {
 		let fc = this.#context;
 		fc.cookies["refresh-token"] = token;
@@ -23,7 +27,10 @@ let Monalisa = class {
 		fc.cookies["session-token"] = token;
 		this.#sessionToken = token;
 	};
-	setFocalPoint(x, y) {};
+	setFocalPoint(x = 0, y = 0) {
+		this.#x = 0;
+		this.#y = 0;
+	};
 	getGraphQlHeaders(bodyLength) {
 		return {
 			"Authorization": this.#sessionToken,
@@ -65,11 +72,28 @@ let Monalisa = class {
 		});
 		//console.info(graphQlRep);
 		let graphQlRaw = await graphQlRep.json();
-		return graphQlRaw.data.act.data[0].data;
+		this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
+		console.info(`Next pixel in ${(this.nextAt - Date.now()) / 1000} seconds.`);
+		return this.nextAt;
 	};
 	async place() {};
-	async startStream() {};
-	async start() {};
+	async startStream() {
+		if (!this.ws) {
+			this.ws = new WebSocket(`${this.appUrl.replace("http", "ws")}/query`, "graphql-ws");
+		};
+		let ws = this.ws;
+		if (!this.ps) {
+			this.ps = new RedditPubSub();
+		};
+		let ps = this.ps;
+		ps.attach(ws);
+		ps.addEventListener("data", console.info);
+		ps.addEventListener("ack", console.info);
+		ps.addEventListener("ka", console.info);
+	};
+	/*async act() {
+		this.startStream();
+	};*/
 	async stop() {};
 	async login({session, fallback, refresh}) {
 		if (!session) {
