@@ -7,8 +7,8 @@ let Monalisa = class {
 	#sessionToken;
 	#fallbackToken;
 	#refreshToken;
-	#x = 0;
-	#y = 0;
+	#x = 1;
+	#y = 1;
 	loggedIn = false;
 	userdata;
 	session;
@@ -41,18 +41,32 @@ let Monalisa = class {
 	async getPixelHistory(x = this.#x, y = this.#y, colourIndex = 0) {
 		let canvasIndex = (+(y >= 1000) << 1) + +(x >= 1000);
 		let canvasX = x % 1000, canvasY = y % 1000;
-		let graphQlBody = `{"operationName":"pixelHistory","variables":{"input":{"actionName":"r/replace:get_tile_history","PixelMessageData":{"coordinate":{"x":${canvasX},"y":${canvasY}},"colorIndex":${colourIndex},"canvasIndex":${canvasIndex}}}},"query":"mutation pixelHistory($input: ActInput!) {\n  act(input: $input) {\n    data {\n      ... on BasicMessage {\n        id\n        data {\n          ... on GetTileHistoryResponseMessageData {\n            lastModifiedTimestamp\n            userInfo {\n              userID\n              username\n              __typename\n            }\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}`;
+		let graphQlBody = `{"operationName":"pixelHistory","variables":{"input":{"actionName":"r/replace:get_tile_history","PixelMessageData":{"coordinate":{"x":${canvasX},"y":${canvasY}},"colorIndex":${colourIndex},"canvasIndex":${canvasIndex}}}},"query":"mutation pixelHistory($input: ActInput!) {\\n  act(input: $input) {\\n    data {\\n      ... on BasicMessage {\\n        id\\n        data {\\n          ... on GetTileHistoryResponseMessageData {\\n            lastModifiedTimestamp\\n            userInfo {\\n              userID\\n              username\\n              __typename\\n            }\\n            __typename\\n          }\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"}`;
+		//console.info(`${graphQlBody}`);
 		let graphQlRep = await await this.#context.fetch(`${this.appUrl}/query`, {
 			"headers": this.getGraphQlHeaders(graphQlBody.length),
 			"method": "POST",
 			"body": graphQlBody
 		});
-		console.info(graphQlRep);
+		//console.info(graphQlRep);
 		let graphQlRaw = await graphQlRep.json();
-		console.info(graphQlRaw);
+		return graphQlRaw.data.act.data[0].data;
 	};
 	async selectPixel() {};
-	async placePixel(x, y, colour) {};
+	async placePixel(x = this.#x, y = this.#y, colourIndex = 0) {
+		let canvasIndex = (+(y >= 1000) << 1) + +(x >= 1000);
+		let canvasX = x % 1000, canvasY = y % 1000;
+		let graphQlBody = `{"operationName":"setPixel","variables":{"input":{"actionName":"r/replace:set_pixel","PixelMessageData":{"coordinate":{"x":${canvasX},"y":${canvasY}},"colorIndex":${colourIndex},"canvasIndex":${canvasIndex}}}},"query":"mutation setPixel($input: ActInput!) {\\n  act(input: $input) {\\n    data {\\n      ... on BasicMessage {\\n        id\\n        data {\\n          ... on GetUserCooldownResponseMessageData {\\n            nextAvailablePixelTimestamp\\n            __typename\\n          }\\n          ... on SetPixelResponseMessageData {\\n            timestamp\\n            __typename\\n          }\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"}`;
+		//console.info(`${graphQlBody}`);
+		let graphQlRep = await await this.#context.fetch(`${this.appUrl}/query`, {
+			"headers": this.getGraphQlHeaders(graphQlBody.length),
+			"method": "POST",
+			"body": graphQlBody
+		});
+		//console.info(graphQlRep);
+		let graphQlRaw = await graphQlRep.json();
+		return graphQlRaw.data.act.data[0].data;
+	};
 	async place() {};
 	async startStream() {};
 	async start() {};

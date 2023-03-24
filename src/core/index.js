@@ -113,7 +113,8 @@ let main = async function (args) {
 				WingBlade.exit(1);
 			};
 			console.info(`Logged in as ${monalisa.session.id}.`);
-			await monalisa.getPixelHistory();
+			console.info(JSON.stringify(await monalisa.getPixelHistory()));
+			console.info(JSON.stringify(await monalisa.placePixel(0, 0, Math.floor(32 * Math.random()))));
 			// Start the painter
 			break;
 		};
@@ -121,7 +122,7 @@ let main = async function (args) {
 			let confFile = acct || "config.json";
 			console.info(`Reading configuration data from "${confFile}".`);
 			WingBlade.serve(async function () {
-				return new Response("OK.");
+				return new Response("OK. Not implemented.");
 			}, {
 				port: 14514,
 				onListen: ({port}) => {
