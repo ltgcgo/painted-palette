@@ -5,6 +5,8 @@ If you're running it on Android with Termux, install it from [F-Droid](https://f
 
 Powered by ESBuild and Deno. Developed by [Lightingale Community and all contributors](CREDITS.md).
 
+[Why is there a JavaScript headless bot now?](WHY.md)
+
 ## Goals
 - [x] Web-compliant.
 - [x] Fast to build (within 2 seconds).
