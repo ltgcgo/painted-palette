@@ -9,6 +9,7 @@ import {RedditAuth} from "./redditAuth.js";
 import {Monalisa} from "./monalisa.js";
 import webUiBody from "../web/index.htm";
 import webUiCss from "../web/index.css";
+import picoCss from "../../libs/picocss/pico.css";
 import webUiJs from "../web/web.txt";
 
 const svc = {
@@ -144,6 +145,14 @@ let main = async function (args) {
 								});
 								break;
 							};
+							case "/pico.css": {
+								return new Response(picoCss, {
+									"headers": {
+										"Content-Type": "text/css"
+									}
+								});
+								break;
+							};
 							case "/index.css": {
 								return new Response(webUiCss, {
 									"headers": {
@@ -155,7 +164,7 @@ let main = async function (args) {
 							case "/index.js": {
 								return new Response(webUiJs, {
 									"headers": {
-										"Content-Type": "text/css"
+										"Content-Type": "text/javascript"
 									}
 								});
 								break;
