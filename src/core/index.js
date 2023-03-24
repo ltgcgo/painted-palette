@@ -7,6 +7,9 @@ import {BuildInfo, stringReflector} from "./common.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 import {Monalisa} from "./monalisa.js";
+import webUiBody from "../web/index.htm";
+import webUiCss from "../web/index.css";
+import webUiJs from "../web/web.txt";
 
 const svc = {
 	cnc: "",
@@ -121,8 +124,62 @@ let main = async function (args) {
 		case "batch": {
 			let confFile = acct || "config.json";
 			console.info(`Reading configuration data from "${confFile}".`);
-			WingBlade.serve(async function () {
-				return new Response("OK. Not implemented.");
+			WingBlade.serve(async function (request) {
+				let badRequest = new Response("Bad Request", {
+					status: 400
+				});
+				let notFound = new Response("Not Found", {
+					status: 404
+				});
+				let url = new URL(request.url);
+				switch (request.method.toLowerCase()) {
+					case "get": {
+						switch (url.pathname) {
+							case "/":
+							case "/index.htm": {
+								return new Response(webUiBody, {
+									"headers": {
+										"Content-Type": "text/html"
+									}
+								});
+								break;
+							};
+							case "/index.css": {
+								return new Response(webUiCss, {
+									"headers": {
+										"Content-Type": "text/css"
+									}
+								});
+								break;
+							};
+							case "/index.js": {
+								return new Response(webUiJs, {
+									"headers": {
+										"Content-Type": "text/css"
+									}
+								});
+								break;
+							};
+							default: {
+								return notFound;
+							};
+						};
+						break;
+					};
+					case "post": {
+						switch (url.pathname) {
+							default: {
+								return notFound;
+							};
+						};
+						break;
+					};
+					default: {
+						return new Response("Invalid method", {
+							status: 405
+						});
+					};
+				};
 			}, {
 				port: 14514,
 				onListen: ({port}) => {
