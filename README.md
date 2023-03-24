@@ -35,12 +35,14 @@ If upgrades are required, the script should able to download a new version autom
 #### Windows
 * Download the comfort bundle (`deno_windows.zip`) from GitHub Releases.
 * Choose a folder, and extract the bundle.
-* Open a terminal, and direct to that folder.
+<!--* Open a terminal, and direct to that folder.
 * Run `.\deno.exe run --allow-net --allow-env --allow-read --allow-write deno.js paint <yourRedditUsername> <yourRedditPassword>`.
-  * If you have enabled 2FA, the OTP field is also available. Try running `.\deno.exe run --allow-net --allow-env --allow-read --allow-write deno.js paint <yourRedditUsername> <yourRedditPassword> <otp>`.
+  * If you have enabled 2FA, the OTP field is also available. Try running `.\deno.exe run --allow-net --allow-env --allow-read --allow-write deno.js paint <yourRedditUsername> <yourRedditPassword> <otp>`.-->
+* Double click to run `gui.cmd`.
+* Open the URL it spat out in your browser of choice.
 * Start your auto-guided painting adventure!
 
-If upgrades are required, the script should able to download a new version, then terminate itself automatically. But after that, you have to restart the script all by yourself with the command above.
+If upgrades are required, you have to restart the script all by yourself by running `gui.cmd` again.
 
 ### Requirements
 All of these are taken care of by the helper script without user intervention. Or if you're a Windows user, the comfort bundle.

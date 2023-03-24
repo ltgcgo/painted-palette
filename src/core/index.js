@@ -29,15 +29,14 @@ let updateChecker = async function () {
 	remoteVersion = remoteVersion.replaceAll("\r", "\n").replaceAll("\n", "").trim();
 	if (remoteVersion != BuildInfo.ver) {
 		console.info(`Update available (v${remoteVersion})!`);
+		console.info("Downloading the new update...");
+		let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
+		await WingBlade.writeFile("./patched.js", downloadStream);
+		await logoutEverywhere();
 		if (WingBlade.os.toLowerCase() == "windows") {
-			await logoutEverywhere();
-			console.info(`Please update and restart ${BuildInfo.name} manually.\nYou only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js\nQuitting...`);
+			console.info(`Please update and restart ${BuildInfo.name} manually.\nIf you don't see a "patched.js" file appearing in your folder, you only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js\nQuitting...`);
 			WingBlade.exit(1);
 		} else {
-			console.info("Downloading the new update...");
-			let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
-			await WingBlade.writeFile("./patched.js", downloadStream);
-			await logoutEverywhere();
 			console.info(`${BuildInfo.name} will restart shortly to finish updating.`);
 			WingBlade.exit(0);
 		};
@@ -195,6 +194,9 @@ let main = async function (args) {
 				onListen: ({port}) => {
 					console.info(`Now running in batch mode. To control and/or retrieve info from CLI, use the "ctl" subcommand.`);
 					console.info(`Web UI and REST API available on http://127.0.0.1:${port}/`);
+					if (WingBlade.os.toLowerCase() == "windows") {
+						console.info(`Open the link above in your browser of choice, and start fighting, soldier!`);
+					};
 				}
 			})
 			break;
