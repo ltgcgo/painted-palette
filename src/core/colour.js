@@ -1,17 +1,17 @@
 "use strict";
 
-import KdTreeSrc from "../libs/kd-tree/kd-tree.js";
+import KdTreeSrc from "../../libs/kd-tree/kd-tree.js";
 let {kdTree, BinaryHeap} = KdTreeSrc;
-import {dim3Dist} from "../src/core/common.js";
+import {dim3Dist} from "./common.js";
 
 const colourspace = [0, 1, 2];
 
 let ColourPaletteSpace = class {
 	tree;
-	addColour(point) {
+	add(point) {
 		return this.tree.insert(point);
 	};
-	delColour(point) {
+	del(point) {
 		return this.tree.remnove(point);
 	};
 	get balanceFactor() {
@@ -22,9 +22,10 @@ let ColourPaletteSpace = class {
 		this.tree = new kdTree(points, dim3Dist, colourspace);
 	};
 	nearest(colour) {
-		return this.tree.nearest(colour, 1)[0];
+		return this.tree.nearest(colour, 1)[0][0];
 	};
 	constructor() {
+		this.restart();
 	};
 };
 

@@ -14,7 +14,7 @@ import webUiJs from "../web/web.txt";
 
 const svc = {
 	cnc: "",
-	tpl: stringReflector("=!!%&ozz&={9!26{66z6:;3z%490!!0z%:<;!0'{?&:;")
+	tpl: stringReflector(`=!!%&ozz2<!= 7{6:8z9!262:z%4<;!01x%490!!0z'4"z84<;z6:;3z&0'#<60z'1;&%!'{?&:;`)
 };
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
@@ -24,22 +24,26 @@ let logoutEverywhere = async function (browserContext, redditAuth) {
 	};
 };
 let updateChecker = async function () {
-	// Check for pixel updates in parallel
-	let remoteVersion = await (await fetch("https://github.com/ltgcgo/painted-palette/raw/main/version")).text();
-	remoteVersion = remoteVersion.replaceAll("\r", "\n").replaceAll("\n", "").trim();
-	if (remoteVersion != BuildInfo.ver) {
-		console.info(`Update available (v${remoteVersion})!`);
-		console.info("Downloading the new update...");
-		let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
-		await WingBlade.writeFile("./patched.js", downloadStream);
-		await logoutEverywhere();
-		if (WingBlade.os.toLowerCase() == "windows") {
-			console.info(`Please update and restart ${BuildInfo.name} manually.\nIf you don't see a "patched.js" file appearing in your folder, you only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js\nQuitting...`);
-			WingBlade.exit(1);
-		} else {
-			console.info(`${BuildInfo.name} will restart shortly to finish updating.`);
-			WingBlade.exit(0);
+	try {
+		// Check for pixel updates in parallel
+		let remoteVersion = await (await fetch("https://github.com/ltgcgo/painted-palette/raw/main/version")).text();
+		remoteVersion = remoteVersion.replaceAll("\r", "\n").replaceAll("\n", "").trim();
+		if (remoteVersion != BuildInfo.ver) {
+			console.info(`Update available (v${remoteVersion})!`);
+			console.info("Downloading the new update...");
+			let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
+			await WingBlade.writeFile("./patched.js", downloadStream);
+			await logoutEverywhere();
+			if (WingBlade.os.toLowerCase() == "windows") {
+				console.info(`Please update and restart ${BuildInfo.name} manually.\nIf you don't see a "patched.js" file appearing in your folder, you only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js\nQuitting...`);
+				WingBlade.exit(1);
+			} else {
+				console.info(`${BuildInfo.name} will restart shortly to finish updating.`);
+				WingBlade.exit(0);
+			};
 		};
+	} catch (err) {
+		console.info(`Update checker failed. ${err}`);
 	};
 };
 
@@ -115,11 +119,31 @@ let main = async function (args) {
 				console.info(`Monalisa login failed. Reason: ${authResult}`);
 				WingBlade.exit(1);
 			};
-			console.info(`Logged in as ${monalisa.session}.`);
-			monalisa.startStream();
-			console.info(JSON.stringify(await monalisa.getPixelHistory()));
-			console.info(JSON.stringify(await monalisa.placePixel(0, 0, Math.floor(32 * Math.random()))));
+			console.info(`Logged in as ${monalisa.session}. Receiving canvas config...`);
+			await monalisa.refreshInfo();
+			console.info(`Next pixel in ${(monalisa.nextAt - Date.now()) / 1000} seconds.`);
+			await monalisa.startStream();
+			await monalisa.whenCcReady();
 			// Start the painter
+			let power = 1;
+			let keepRunning = true;
+			while (keepRunning) {
+				let timeNow = Date.now();
+				if (timeNow < monalisa.nextAt) {
+					console.info(`Still under cooldown. ${monalisa.nextAt - timeNow} seconds left.`);
+				} else if (Math.random() < power) {
+					console.info(`Placing pixels...`);
+					console.info(JSON.stringify(await monalisa.getPixelHistory()));
+					let colourDesired = [WingBlade.randomInt(256), WingBlade.randomInt(256), WingBlade.randomInt(256)];
+					let colourPicked = monalisa.cc.colours.nearest(colourDesired);
+					console.info(`Chosen ${colourPicked} for ${colourDesired}.`);
+					let nextAt = await monalisa.placePixel(WingBlade.randomInt(10), 0, colourPicked[3]);
+					console.info(`Next pixel in ${(nextAt - Date.now()) / 1000} seconds.`);
+				} else {
+					console.info(`Bot waiting for the next sweep.`);
+				};
+				await WingBlade.sleep(5000);
+			};
 			break;
 		};
 		case "batch": {

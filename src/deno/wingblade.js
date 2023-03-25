@@ -15,6 +15,9 @@ let WingBlade = {
 	getEnv: (key, fallbackValue) => {
 		return Deno.env.get(key) || fallbackValue;
 	},
+	randomInt: (cap) => {
+		return Math.floor(Math.random() * cap);
+	},
 	serve: (handler, opt = {}) => {
 		if (!opt?.onListen) {
 			opt.onListen = function ({port, hostname}) {

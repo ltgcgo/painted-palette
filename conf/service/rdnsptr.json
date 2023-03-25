@@ -1,0 +1,10 @@
+{
+	"bot": [
+		"https://github.com/ltgcgo/painted-palette/raw/main/conf/service/botrdns.png"
+	],
+	"mask": [
+		"https://github.com/ltgcgo/painted-palette/raw/main/conf/service/maskrdns.png"
+	],
+	"offX": 785,
+	"offY": 1502
+}

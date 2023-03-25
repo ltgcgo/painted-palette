@@ -1,21 +1,16 @@
 "use strict";
 
+import {CustomEventSource} from "../../libs/lightfelt/ext/customEvents.js";
+
 const typeToEvent = {
 	"connection_ack": "ack"
 };
 
-let RedditPubSub = class extends EventTarget {
+let RedditPubSub = class extends CustomEventSource {
 	#ws;
 	#idCounter = 1;
-	async #demuxer(ev) {
-		console.info(ev);
-		let msg = JSON.stringify(ev.data) /*JSON.stringify(await ev.data.text())*/;
-		// data, ka, ack
-		this.dispatchEvent(new MessageEvent(typeToEvent[msg.type] || msg.type), {
-			data: msg.data,
-			origin: ev.origin
-		});
-	};
+	#demuxer;
+	#streamCalls = {};
 	start(authToken) {
 		let sendData = {
 			"type": "connection_init",
@@ -34,10 +29,13 @@ let RedditPubSub = class extends EventTarget {
 			"payload": null
 		}));
 	};
-	subscribe(input, operationName, query, extensions = {}) {
-		if (!input || !opName || !query) {
+	subscribe({input, operationName, query, extensions, callback}) {
+		if (!input || !operationName || !query) {
 			throw(`Invalid input`);
 			return;
+		};
+		if (!extensions) {
+			extensions = {};
 		};
 		let sendData = {
 			"id": this.#idCounter,
@@ -51,6 +49,7 @@ let RedditPubSub = class extends EventTarget {
 				query
 			}
 		};
+		this.#streamCalls[this.#idCounter] = callback;
 		this.#ws?.send(JSON.stringify(sendData));
 		this.#idCounter ++;
 	};
@@ -74,6 +73,15 @@ let RedditPubSub = class extends EventTarget {
 	};
 	constructor() {
 		super();
+		this.#demuxer = (async function (ev) {
+			let msg = JSON.parse(ev.data);
+			// PubSub ID stream callback
+			if (this.#streamCalls[msg.id]) {
+				this.#streamCalls[msg.id](msg.payload.data.subscribe.data);
+			};
+			// Emit raw message
+			this.dispatchEvent(typeToEvent[msg.type] || msg.type, msg.payload);
+		}).bind(this);
 	};
 };
 

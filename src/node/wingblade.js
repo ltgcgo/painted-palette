@@ -13,6 +13,9 @@ let WingBlade = {
 	getEnv: (key, fallbackValue) => {
 		return process.env[key] || fallbackValue;
 	},
+	randomInt: (cap) => {
+		return Math.floor(Math.random() * cap);
+	},
 	serve: (handler, opt = {}) => {
 		let port = opt.port || 8000;
 		let hostname = opt.hostname || "127.0.0.1";
