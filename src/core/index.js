@@ -133,10 +133,11 @@ let main = async function (args) {
 					console.info(`Still under cooldown. ${monalisa.nextAt - timeNow} seconds left.`);
 				} else if (Math.random() < power) {
 					console.info(`Placing pixels...`);
-					console.info(JSON.stringify(await monalisa.getPixelHistory()));
+					await monalisa.getPixelHistory();
+					//console.info(JSON.stringify());
 					let colourDesired = [WingBlade.randomInt(256), WingBlade.randomInt(256), WingBlade.randomInt(256)];
 					let colourPicked = monalisa.cc.colours.nearest(colourDesired);
-					console.info(`Chosen ${colourPicked} for ${colourDesired}.`);
+					console.info(`Chose ${colourPicked} for ${colourDesired}.`);
 					let nextAt = await monalisa.placePixel(WingBlade.randomInt(10), 0, colourPicked[3]);
 					console.info(`Next pixel in ${(nextAt - Date.now()) / 1000} seconds.`);
 				} else {

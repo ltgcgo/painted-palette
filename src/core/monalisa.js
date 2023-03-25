@@ -103,7 +103,7 @@ let Monalisa = class extends CustomEventSource {
 	async selectPixel() {};
 	async placePixel(x = this.#x, y = this.#y, colourIndex = 0) {
 		let canvasIndex = this.cc.canvas.nearest([x, y], 1)[0][0][2];
-		console.info(`Chosen canvas ${canvasIndex} for ${x}, ${y}.`);
+		console.info(`Chose canvas ${canvasIndex} for ${x}, ${y}.`);
 		let canvasX = x % this.cc.uWidth, canvasY = y % this.cc.uHeight;
 		let graphQlBody = `{"operationName":"setPixel","variables":{"input":{"actionName":"r/replace:set_pixel","PixelMessageData":{"coordinate":{"x":${canvasX},"y":${canvasY}},"colorIndex":${colourIndex},"canvasIndex":${canvasIndex}}}},"query":"mutation setPixel($input: ActInput!) {\\n  act(input: $input) {\\n    data {\\n      ... on BasicMessage {\\n        id\\n        data {\\n          ... on GetUserCooldownResponseMessageData {\\n            nextAvailablePixelTimestamp\\n            __typename\\n          }\\n          ... on SetPixelResponseMessageData {\\n            timestamp\\n            __typename\\n          }\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"}`;
 		//console.info(`${graphQlBody}`);
