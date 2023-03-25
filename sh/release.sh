@@ -16,6 +16,8 @@ done
 zip -r9v deno_release.zip deno.js
 zip -r9v deno_release.zip palette-bot
 zip -r9v deno_release.zip install.sh
+zip -r9v deno_release.zip palette-proxy
+zip -r9v deno_release.zip snatkitd.sh
 zip -r9v deno_windows.zip deno.js
 zip -r9v deno_windows.zip gui.cmd
 #zip -r9v deno_windows.zip deno.exe
