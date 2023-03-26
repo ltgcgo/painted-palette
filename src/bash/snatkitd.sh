@@ -1,35 +1,6 @@
 #!/bin/bash
 PATH=./:$PATH
-
-# Installation
-transArch=$(uname -m)
-case $transArch in
-	"x86_64")
-		transArch="amd64"
-		;;
-	"arm" | "armv7l" | "armhf")
-		transArch="arm"
-		;;
-	"arm64" | "armv8l" | "aarch64")
-		transArch="arm64"
-		;;
-esac
-if [ -e "$(which hola)" ] ; then
-	echo "Hola is already installed."
-else
-	echo Downloading Hola...
-	curl -Lo hola https://github.com/Snawoot/hola-proxy/releases/latest/download/hola-proxy.linux-${transArch}
-	chmod +x hola
-fi
-if [ -e "$(which opera)" ] ; then
-	echo "Opera is already installed."
-else
-	echo Downloading Opera...
-	curl -Lo opera https://github.com/Snawoot/opera-proxy/releases/latest/download/opera-proxy.linux-${transArch}
-	chmod +x opera
-fi
 # Running
-
 selectContinent=UN
 selectCountry=un
 selectProxy=trash
@@ -50,7 +21,7 @@ function switchNewNode {
 	selectCountry=${ccpool[$(($RANDOM % $ccs))]}
 	selectContinent=${cnpool[$(($RANDOM % $cns))]}
 	selectProxy=${proxy[$(($RANDOM % $proxies))]}
-	selectPort=$(($RANDOM+16384))
+	selectPort=${PROXY_PORT:-$(($RANDOM+16384))}
 	#if [[ "$ipInfo" == *"\"continent_code\":\"NA\""* ]] ; then
 		#selectContinent=AM
 	#elif [[ "$ipInfo" == *"\"continent_code\":\"EU\""* ]] ; then

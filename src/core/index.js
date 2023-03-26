@@ -46,6 +46,13 @@ let updateChecker = async function () {
 		console.info(`Update checker failed. ${err}`);
 	};
 };
+let waitForProxy = async function () {
+	let proxyOn = WingBlade.getEnv("HTTPS_PROXY");
+	if (proxyOn) {
+		console.info(`Waiting for the proxy client on ${proxyOn} ...`);
+		await WingBlade.sleep(4000);
+	};
+};
 
 let main = async function (args) {
 	let acct = args[1], pass = args[2], otp = args[3];
@@ -77,6 +84,7 @@ let main = async function (args) {
 			break;
 		};
 		case "paint": {
+			await waitForProxy();
 			console.info(`Opening Reddit...`);
 			// Initial Reddit browsing
 			let browserContext = new FetchContext("https://www.reddit.com");
@@ -106,6 +114,7 @@ let main = async function (args) {
 			break;
 		};
 		case "test": {
+			await waitForProxy();
 			console.info(`Opening test server...`);
 			// Initial test canvas browsing
 			let browserContext = new FetchContext("https://place.equestria.dev");
@@ -148,6 +157,7 @@ let main = async function (args) {
 			break;
 		};
 		case "batch": {
+			await waitForProxy();
 			let confFile = acct || "config.json";
 			console.info(`Reading configuration data from "${confFile}".`);
 			WingBlade.serve(async function (request) {

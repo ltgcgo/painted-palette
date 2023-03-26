@@ -1,0 +1,56 @@
+#!/bin/bash
+PATH=./:$PATH
+# Installation
+transArch=$(uname -m)
+case $transArch in
+	"x86_64")
+		transArch="amd64"
+		;;
+	"arm" | "armv7l" | "armhf")
+		transArch="arm"
+		;;
+	"arm64" | "armv8l" | "aarch64")
+		transArch="arm64"
+		;;
+esac
+if [ -e "$(which hola)" ] ; then
+	echo "Hola is already installed."
+else
+	echo Downloading Hola...
+	curl -Lo hola https://github.com/Snawoot/hola-proxy/releases/latest/download/hola-proxy.linux-${transArch}
+	chmod +x hola
+fi
+if [ -e "$(which opera)" ] ; then
+	echo "Opera is already installed."
+else
+	echo Downloading Opera...
+	curl -Lo opera https://github.com/Snawoot/opera-proxy/releases/latest/download/opera-proxy.linux-${transArch}
+	chmod +x opera
+fi
+# Always restart if no failure is detected
+QUIT=0
+RUNTIME=
+ADDITIONAL=
+if [ -e "./deno.js" ] ; then
+	RUNTIME=deno
+	ADDITIONAL="run --allow-net --allow-env --allow-read --allow-write"
+elif [ -e "./node.js" ] ; then
+	RUNTIME=node
+else
+	echo "No available scripts. Quitting."
+	exit 1
+fi
+while [ "$QUIT" == "0" ] ; do
+	if [ -e "./patched.js" ] ; then
+		rm "./${RUNTIME}.js"
+		mv "./patched.js" "./${RUNTIME}.js"
+		echo "Updated the script to the latest version. Restarting!"
+	fi
+	QUIT=1
+	export PROXY_PORT=$(($RANDOM+16384))
+	bash snatkitd.sh | HTTP_PROXY="http://127.0.0.1:${PROXY_PORT}" HTTPS_PROXY="${HTTP_PROXY}" $RUNTIME $ADDITIONAL ${RUNTIME}.js "$@" && QUIT=0
+	if [ "$QUIT" == "0" ] ; then
+		sleep 1s
+	fi
+done
+exit

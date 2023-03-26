@@ -122,7 +122,7 @@ let FetchContext = class extends EventTarget {
 		//opt.credentials = opt.credentials || "include";
 		//opt.redirect = opt.redirect || "follow";
 		//console.info(opt);
-		let retry = 5, keepGoing = true;
+		let retry = 10, keepGoing = true;
 		let response;
 		while (retry && keepGoing) {
 			retry --;
@@ -138,6 +138,9 @@ let FetchContext = class extends EventTarget {
 				this.#concurrency --;
 				this.#fire("concurrency");
 				console.error(`${contexts[opt.init] || "Fetch"} failed (${err}).${retry ? " Retrying..." : ""}`);
+				if (retry) {
+					await WingBlade.sleep(2000);
+				};
 			};
 		};
 		response?.headers.forEach((v, k) => {
