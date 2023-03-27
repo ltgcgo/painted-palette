@@ -1,0 +1,39 @@
+#!/bin/bash
+# Always restart if no failure is detected
+PATH=./:$PATH
+# Tor detect
+if [ -e "$(which tor)" ] ; then
+	echo "Tor is found."
+else
+	echo "Please install Tor. Quitting..."
+	exit 1
+fi
+# Running!
+QUIT=0
+RUNTIME=
+ADDITIONAL=
+if [ -e "./deno.js" ] ; then
+	RUNTIME=deno
+	ADDITIONAL="run --allow-net --allow-env --allow-read --allow-write"
+elif [ -e "./node.js" ] ; then
+	RUNTIME=node
+else
+	echo "No available scripts. Quitting."
+	exit 1
+fi
+while [ "$QUIT" == "0" ] ; do
+	if [ -e "./patched.js" ] ; then
+		rm "./${RUNTIME}.js"
+		mv "./patched.js" "./${RUNTIME}.js"
+		echo "Updated the script to the latest version. Restarting!"
+	fi
+	QUIT=1
+	export PROXY_PORT=$(($RANDOM+16384))
+	export CTRL_PORT=$(($RANDOM+16384))
+	export LONGER_START=Tor
+	printf "HTTPTunnelPort ${PROXY_PORT}\nSOCKSPort 0\nControlPort ${CTRL_PORT}\n" | tor -f - | HTTP_PROXY="http://127.0.0.1:${PROXY_PORT}" HTTPS_PROXY="${HTTP_PROXY}" $RUNTIME $ADDITIONAL ${RUNTIME}.js "$@" && QUIT=0
+	if [ "$QUIT" == "0" ] ; then
+		sleep 1s
+	fi
+done
+exit

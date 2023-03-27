@@ -50,8 +50,13 @@ let updateChecker = async function () {
 let waitForProxy = async function () {
 	let proxyOn = WingBlade.getEnv("HTTPS_PROXY");
 	if (proxyOn) {
-		console.info(`Waiting for the proxy client on ${proxyOn} ...`);
-		await WingBlade.sleep(1000);
+		if (WingBlade.getEnv("LONGER_START")) {
+			console.info(`Waiting for ${WingBlade.getEnv("LONGER_START")} on ${proxyOn}, control port on ${WingBlade.getEnv("CTRL_PORT")}...`);
+			await WingBlade.sleep(10000);
+		} else {
+			console.info(`Waiting for the proxy client on ${proxyOn} ...`);
+			await WingBlade.sleep(1000);
+		};
 	};
 };
 
@@ -215,7 +220,7 @@ let main = async function (args) {
 										asn: ipInfo.asn,
 										as: ipInfo.as
 									},
-									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? "Standalone" : "System") : "No Proxy"
+									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy"
 								}), {
 									"headers": {
 										"Content-Type": "application/json"

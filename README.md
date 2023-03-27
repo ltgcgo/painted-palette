@@ -35,7 +35,8 @@ Powered by ESBuild and Deno. Developed by [Lightingale Community and all contrib
     * If you prefer CLI, use `./palette-bot ctl`. Set the custom port number as the `PORT` environment variable if you have that defined. Help is available with `./palette-bot help ctl`.
   * What if you want to have more than 5 accounts going, or just want to hide your IP to Reddit?
     * If you don't know much about commands, replace `./palette-bot` in the examples above with `./palette-proxy`. It will do everything for you automatically, just do not manage more than 30 accounts this way. This will considered as a "standalone proxy" by the program.
-    * If you want to specify an **HTTP** proxy for it to connect, set both the `HTTP_PROXY` and `HTTPS_PROXY` environment variables before running. This will considered as a "system proxy" by the program.
+    * Or if you want to use Tor IPs instead of relatively cleaner IPs,  replace `./palette-bot` with `./palette-tor`. Same as above, only this time you can manage as much as you want. Beware that accounts managed this way may be flagged as bots earlier.
+    * If you want to specify an **HTTP** proxy for it to connect, set both the `HTTP_PROXY` and `HTTPS_PROXY` environment variables before running. This will considered as a "system proxy" by the program. If you want to manage more than 30 accounts, go this route for the rest of your accounts.
 * Start your auto-guided painting adventure!
 
 Only **Deno** supports proxies.

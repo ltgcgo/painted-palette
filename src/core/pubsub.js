@@ -38,7 +38,7 @@ let RedditPubSub = class extends CustomEventSource {
 			extensions = {};
 		};
 		let sendData = {
-			"id": this.#idCounter,
+			"id": `${this.#idCounter}`,
 			"type": "start",
 			"payload": {
 				"variables": {
@@ -53,7 +53,13 @@ let RedditPubSub = class extends CustomEventSource {
 		this.#ws?.send(JSON.stringify(sendData));
 		this.#idCounter ++;
 	};
-	free(id) {};
+	free(id) {
+		this.#ws?.send(JSON.stringify({
+			"id": `${this.#idCounter}`,
+			"type": "stop"
+		}));
+		delete this.#streamCalls[this.#idCounter];
+	};
 	attach(ws) {
 		if (this.#ws) {
 			throw(new Error("Already attached to a WS stream"));
@@ -75,6 +81,9 @@ let RedditPubSub = class extends CustomEventSource {
 		super();
 		this.#demuxer = (async function (ev) {
 			let msg = JSON.parse(ev.data);
+			if (msg.id.constructor == String) {
+				msg.id = parseInt(msg.id);
+			};
 			// PubSub ID stream callback
 			if (this.#streamCalls[msg.id]) {
 				this.#streamCalls[msg.id](msg.payload.data.subscribe.data);
