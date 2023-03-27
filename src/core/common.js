@@ -5,7 +5,7 @@ const dim2Prop = [0, 1];
 
 let BuildInfo = {
 	name: "Painted Palette",
-	ver: "0.0.8"
+	ver: "0.0.9"
 };
 
 let dim3Dist = function (a, b) {
@@ -34,6 +34,12 @@ let humanizedTime = function (inSeconds) {
 	let hr = `${Math.floor(inSeconds / 3600) % 24}`.padStart(2, "0");
 	let day = `${Math.floor(inSeconds / 86400)}`;
 	return `${day}d ${hr}:${min}:${sec}.${ms}`;
+};
+let humanizedPercentage = function (floatv) {
+	floatv = Math.round(floatv * 100) / 100;
+	let intv = `${Math.floor(floatv)}`;
+	let fracv = `${Math.floor(floatv * 100 % 100)}`.padStart(2, "0");
+	return `${intv}.${fracv}%`;
 };
 
 let stringReflector = function (string, reflector = 85) {

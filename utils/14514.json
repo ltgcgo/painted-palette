@@ -1,0 +1,15 @@
+{
+	"users": [{
+		"name": "exampleName",
+		"pass": "examplePass",
+		"pixelCount": 0,
+		"lastColour": "#ffffff",
+		"active": false,
+		"banned": false,
+		"fresh": true,
+		"focusX": 0,
+		"focusY": 0,
+		"cooldown": "Do not store",
+		"statusText": "Do not store"
+	}]
+}

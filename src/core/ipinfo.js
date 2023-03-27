@@ -47,6 +47,7 @@ let IPInfo = class {
 				this.asn = cached.asn;
 				this.as = cached.as;
 				this.cc = cached.cc;
+				this.#infoIp = ipAddress;
 				console.info(`Served GeoIP info from cache.`);
 				return;
 			};

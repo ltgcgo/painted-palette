@@ -79,6 +79,7 @@ Recommended for Android (Termux).
 * Deno
 * ESBuild
 * kd-tree-javascript
+* Mint Flower/Flame
 * pako.js
 * UPNG.js
 * ws

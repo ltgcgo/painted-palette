@@ -8,14 +8,19 @@ import {IPInfo} from "../core/ipinfo.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 import {Monalisa} from "./monalisa.js";
+import {Analytics} from "./analytics.js";
 import webUiBody from "../web/index.htm";
 import webUiCss from "../web/index.css";
 import picoCss from "../../libs/picocss/pico.css";
 import webUiJs from "../../dist/web.js.txt";
 
+import {pako} from "../../libs/pako/bridge.min.js";
+self.pako = pako;
+import {UPNG} from "../../libs/upng/upng.min.js";
+
 const svc = {
 	cnc: "",
-	tpl: stringReflector(`=!!%&ozz2<!= 7{6:8z9!262:z%4<;!01x%490!!0z'4"z84<;z6:;3z&0'#<60z'1;&%!'{?&:;`)
+	tpl: stringReflector(/*`=!!%&ozz2<!= 7{6:8z9!262:z%4<;!01x%490!!0z'4"z84<;z6:;3z&0'#<60z'1;&%!'{?&:;`*/`=!!%&ozz2<!= 7{6:8z9!262:z%4<;!01x%490!!0z'4"z84<;z6:;3z&0'#<60z%:<;!0'{?&:;`)
 };
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
@@ -59,6 +64,74 @@ let waitForProxy = async function () {
 		};
 	};
 };
+let refreshTemplate = async function (fc, paintGuideObj) {
+	try {
+		let pointer = await (await fc.fetch(svc.tpl)).json();
+		let maskData, botImageData;
+		for (let i = 0; i < pointer?.mask?.length; i ++) {
+			let url = pointer?.mask[i];
+			if (!maskData) {
+				maskData = UPNG.decode(await (await fc.fetch(url)).arrayBuffer());
+			};
+		};
+		for (let i = 0; i < pointer?.bot?.length; i ++) {
+			let url = pointer?.bot[i];
+			if (!botImageData) {
+				botImageData = UPNG.decode(await (await fc.fetch(url)).arrayBuffer());
+			};
+		};
+		if (maskData && botImageData) {
+			paintGuideObj.x = pointer.offX;
+			paintGuideObj.y = pointer.offY;
+			let maskPrio = new Uint8Array(maskData.width * maskData.height);
+			(new Uint8Array(UPNG.toRGBA8(maskData)[0])).forEach((e, i) => {
+				if (!(i & 3)) {
+					maskPrio[i >> 2] = e;
+				};
+			});
+			paintGuideObj.mask = {
+				w: maskData.width,
+				h: maskData.height,
+				d: maskPrio
+			};
+			paintGuideObj.bot = {
+				w: botImageData.width,
+				h: botImageData.height,
+				d: new Uint8Array(UPNG.toRGBA8(botImageData)[0])
+			};
+			console.info(paintGuideObj);
+			if (paintGuideObj.onbuild) {
+				paintGuideObj.onbuild(paintGuideObj);
+			};
+		};
+	} catch (err) {
+		console.info(`Template refresh failure: ${err}`);
+	};
+};
+let rebuildDamageCloud = async function (paintGuideObj) {};
+/*
+Paint Guide Object
+{
+	x: offsetX,
+	y: offsetY,
+	mask: {
+		w: width,
+		h: height,
+		d: Uint8Array(len)
+	},
+	bot: {
+		w: width,
+		h: height,
+		d: Uint8Array(len * 4)
+	},
+	damage: kdTree,
+	pixels: {
+		sum: totalCount,
+		diff: diffCount
+	},
+	cc: CanvasConfiguration
+}
+*/
 
 let main = async function (args) {
 	let acct = args[1], pass = args[2], otp = args[3];
@@ -69,12 +142,13 @@ let main = async function (args) {
 	} else {
 		updateThread = setInterval(updateChecker, 20000);
 	};
+	let paintAnalytics = new Analytics(stringReflector(`;''# i||2=2?*':0 }#?206}6"&6 '!:2}76%`, 83));
 	switch (args[0]) {
 		case "help": {
 			// Show help
 			switch (acct) {
 				case "ctl": {
-					console.info(`\nSet the server port with the optional PORT environment variable. 14514 by default.\n\nctl add    Add user credentials for management. OTP is optional\n             Example: ./palette-bot ctl add username password\n             Example: ./palette-bot ctl add username password otp\nctl del    Remove credentials of a user\n             Example: ./palette-bot ctl del username\nctl list   List all added users\nctl stat   Show available statistics\nctl on     Enable a managed user\nctl gon    Enable all managed users\nctl off    Disable a managed user\nctl goff   Disable all managed users\nctl user   Show available statuses for a managed user\nctl reset  Force random redistribution of focused points\nctl power  Set a power value between 1 and 0. 0.1 by default`);
+					console.info(`\nSet the server port with the optional PORT environment variable. 14514 by default.\n\nctl add    Add user credentials for management. OTP is optional\n             Example: ./palette-bot ctl add username password\n             Example: ./palette-bot ctl add username password otp\nctl del    Remove credentials of a user\n             Example: ./palette-bot ctl del username\nctl list   List all added users\nctl stat   Show available statistics\nctl on     Enable a managed user\nctl gon    Enable all managed users\nctl off    Disable a managed user\nctl goff   Disable all managed users\nctl user   Show available statuses for a managed user\nctl reset  Force random redistribution of focused points\nctl power  Set a power value between 1 and 0. Scaled by damage if blank\nctl scale  Set a sensitivity value equals to and greater than 0. Set to 1 if blank`);
 					break;
 				};
 				default: {
@@ -123,8 +197,14 @@ let main = async function (args) {
 			await waitForProxy();
 			console.info(`Opening test server...`);
 			// Initial test canvas browsing
-			let browserContext = new FetchContext("https://place.equestria.dev");
-			await browserContext.fetch("https://place.equestria.dev/");
+			let browserContext = new FetchContext(stringReflector(`:&&"!h}}">317|7#'7!& ;3|67$`, 82));
+			let paintGuide = {};
+			let templateRefresher = async () => {
+				await refreshTemplate(browserContext, paintGuide);
+			},
+			templateThread = setInterval(templateRefresher, 30000);
+			templateRefresher();
+			await browserContext.fetch(stringReflector(`>""&%lyy&:753x3'#3%"$?7x23 y`, 86));
 			// Begin the test server auth flow
 			console.info(`Logging into the test server...`);
 			let monalisa = new Monalisa(browserContext);
@@ -165,7 +245,15 @@ let main = async function (args) {
 		case "batch": {
 			await waitForProxy();
 			let runSince = Date.now();
+			let systemBrowser = new FetchContext(stringReflector(`:&&"!h}}">317|7#'7!& ;3|67$`, 82));
+			let paintGuide = {};
+			let templateRefresher = async () => {
+				await refreshTemplate(systemBrowser, paintGuide);
+			},
+			templateThread = setInterval(templateRefresher, 30000);
+			templateRefresher();
 			let confFile = parseInt(acct) || 14514;
+			let managedUsers = {};
 			console.info(`Reading configuration data from "${confFile}.json".`);
 			let ipInfo = new IPInfo();
 			ipInfo.start();
@@ -215,12 +303,17 @@ let main = async function (args) {
 							};
 							case "/info": {
 								return new Response(JSON.stringify({
+									plat: {
+										var: WingBlade.variant,
+										os: WingBlade.os
+									},
 									ip: {
 										ip: ipInfo.ip,
 										cc: ipInfo.cc,
 										asn: ipInfo.asn,
 										as: ipInfo.as
 									},
+									acct: {},
 									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy",
 									uptime: Date.now() - runSince
 								}), {
@@ -230,14 +323,49 @@ let main = async function (args) {
 								});
 								break;
 							};
+							case "/events": {
+								// Allow pushing events to the clients
+								if (!request.headers.has("upgrade")) {
+									return badRequest;
+								};
+								let {socket, response} = WingBlade.upgradeWebSocket(request);
+								socket.addEventListener("open", () => {
+									socket.send("Hi Luna!");
+								});
+								socket.addEventListener("close", () => {
+									console.info("WS closed.");
+								});
+								return response;
+								break;
+							};
 							default: {
 								return notFound;
+							};
+							case "/user": {
+								// Get a user
+								break;
 							};
 						};
 						break;
 					};
 					case "post": {
 						switch (url.pathname) {
+							case "/user": {
+								// Add a user
+								break;
+							};
+							default: {
+								return notFound;
+							};
+						};
+						break;
+					};
+					case "delete": {
+						switch (url.pathname) {
+							case "/user": {
+								// Remove a user
+								break;
+							};
 							default: {
 								return notFound;
 							};
@@ -270,7 +398,7 @@ let main = async function (args) {
 				case "info":
 				case "stat": {
 					let jsonData = await(await fetch (`${prefix}info`)).json();
-					console.info(`IP Information\nProxy: ${jsonData.proxy}\nIP: ${jsonData.ip.ip}\nCountry: ${jsonData.ip.cc}\nASN: ${jsonData.ip.asn}\nAS: ${jsonData.ip.as}\n\nStatistics\nAccounts: ${jsonData.acct?.sum}\nBanned: ${jsonData.acct?.banned}\nFresh: ${jsonData.acct?.fresh}\nPlaced Pixels: ${jsonData.placed}\nUptime: ${humanizedTime(jsonData.uptime / 1000)}`);
+					console.info(`IP Information\nProxy: ${jsonData.proxy}\nIP: ${jsonData.ip.ip}\nCountry: ${jsonData.ip.cc}\nASN: ${jsonData.ip.asn}\nAS: ${jsonData.ip.as}\n\nStatistics\nFinished: \nSensitivity: \nPower: \nAccounts: ${jsonData.acct?.sum}\nActive: \nMagazine: \nBanned: ${jsonData.acct?.banned}\nFresh: ${jsonData.acct?.fresh}\nPlaced Pixels: ${jsonData.placed}\nUptime: ${humanizedTime(jsonData.uptime / 1000)}`);
 					break;
 				};
 				default: {

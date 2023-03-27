@@ -40,6 +40,9 @@ let WingBlade = {
 			});
 		});
 	},
+	upgradeWebSocket(req, opt) {
+		return Deno.upgradeWebSocket(req, opt);
+	},
 	writeFile: async function (path, data, opt) {
 		await Deno.writeFile(path, data, opt);
 	}

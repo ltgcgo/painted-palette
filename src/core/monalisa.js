@@ -14,9 +14,10 @@ let Monalisa = class extends CustomEventSource {
 	#refreshToken;
 	#x = 0;
 	#y = 0;
-	ws; // Manged WebSocket
+	ws; // Managed WebSocket
 	ps; // Managed PubSub
 	cc; // Managed CanvasConfiguration
+	pg; // Paint Guide
 	psStreams = {
 		conf: 0,
 		canvas: []
@@ -119,6 +120,7 @@ let Monalisa = class extends CustomEventSource {
 	};
 	async place() {};
 	async startStream() {
+		let upThis = this;
 		if (!this.ws || this.ws.readyState > 1) {
 			this.ws = new WebSocket(`${this.appUrl.replace("http", "ws")}/query`, "graphql-ws");
 		};
@@ -155,6 +157,7 @@ let Monalisa = class extends CustomEventSource {
 					let cc = this.cc;
 					// Build canvas point cloud
 					let canvasPos = new kdTree([], dim2Dist, [0, 1]); // [x, y, canvasId]
+					let canvasXy = [];
 					data.canvasConfigurations.forEach((e) => {
 						let mx = data.canvasWidth - 1, my = data.canvasHeight - 1;
 						canvasPos.insert(new Uint16Array([e.dx, e.dy, e.index]));
@@ -163,8 +166,10 @@ let Monalisa = class extends CustomEventSource {
 						canvasPos.insert(new Uint16Array([e.dx + mx, e.dy + my, e.index]));
 						cc.width = Math.max(cc.width || 0, e.dx + data.canvasWidth);
 						cc.height = Math.max(cc.height || 0, e.dy + data.canvasHeight);
+						canvasXy.push(new Uint16Array([e.dx, e.dy]));
 					});
 					cc.canvas = canvasPos;
+					cc.cxy = canvasXy;
 					cc.uWidth = data.canvasWidth;
 					cc.uHeight = data.canvasHeight;
 					console.info(`The total canvas is ${cc.width}x${cc.height}.`);
