@@ -261,6 +261,19 @@ let main = async function (args) {
 			break;
 		};
 		case "ctl": {
+			let port = WingBlade.getEnv("PORT") || "14514";
+			let prefix = `http://127.0.0.1:${port}/`;
+			switch (acct) {
+				case "info":
+				case "stat": {
+					let jsonData = await(await fetch (`${prefix}info`)).json();
+					console.info(`IP Information\nProxy: ${jsonData.proxy}\nIP: ${jsonData.ip.ip}\nCountry: ${jsonData.ip.cc}\nASN: ${jsonData.ip.asn}\nAS: ${jsonData.ip.as}\n\nStatistics\nAccounts:${jsonData.accounts}\nPlaced Pixels:${jsonData.placed}\nUptime: ${jsonData.uptime}`);
+					break;
+				};
+				default: {
+					console.info(`Unknown subcommand "${acct || ""}". Execute "help ctl" for help.`);
+				};
+			};
 			WingBlade.exit(1);
 			break;
 		};
