@@ -7,6 +7,8 @@
 		"https://ponyplace.z19.web.core.windows.net/mask.png",
 		"https://media.githubusercontent.com/media/r-ainbowroad/2023-minimap/main/mlp/mask.png"
 	],
+	"regions": [
+	],
 	"offX": 0,
 	"offY": 0
 }

@@ -1,5 +1,5 @@
 ### JavaScript
-* Lumière Élevé (core code, Deno interface, Node.js interface)
+* Lumière Élevé (core code, Deno interface, Node.js interface, Web UI)
 
 ### OS support
 * Lumière Élevé (Linux, Android, Windows, macOS, iOS)

@@ -1,2 +1,0 @@
-// Only place minimized files here
-"use strict";

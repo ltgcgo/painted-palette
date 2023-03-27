@@ -5,6 +5,9 @@ mkdir -p proxy
 rm -rv dist/*.js
 rm -rv dist/*.mjs
 rm -rv dist/*.map
+# Build some files ahead of the time
+shx live web --minify > /dev/null
+mv proxy/web.js dist/web.js.txt
 # Using esbuild to build all JS files
 #esbuild --bundle src/index.js --outfile=dist/index.js --minify --sourcemap
 #esbuild --bundle src/index.js --target=es6 --outfile=dist/index.es6.js --minify --sourcemap
@@ -29,8 +32,4 @@ ls -1 src | while IFS= read -r dir ; do
 		cat proxy/${dir}.${ext} >> dist/${dir}.${ext}
 	fi
 done
-# Node specific
-#mkdir -p proxy/node
-#mv dist/node.js proxy/node/index.js
-#rm proxy/node.js
 exit

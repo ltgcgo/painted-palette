@@ -4,13 +4,14 @@
 "use strict";
 
 import {BuildInfo, stringReflector} from "./common.js";
+import {IPInfo} from "../core/ipinfo.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 import {Monalisa} from "./monalisa.js";
 import webUiBody from "../web/index.htm";
 import webUiCss from "../web/index.css";
 import picoCss from "../../libs/picocss/pico.css";
-import webUiJs from "../web/web.txt";
+import webUiJs from "../../dist/web.js.txt";
 
 const svc = {
 	cnc: "",
@@ -50,7 +51,7 @@ let waitForProxy = async function () {
 	let proxyOn = WingBlade.getEnv("HTTPS_PROXY");
 	if (proxyOn) {
 		console.info(`Waiting for the proxy client on ${proxyOn} ...`);
-		await WingBlade.sleep(4000);
+		await WingBlade.sleep(1000);
 	};
 };
 
@@ -158,8 +159,10 @@ let main = async function (args) {
 		};
 		case "batch": {
 			await waitForProxy();
-			let confFile = acct || "config.json";
-			console.info(`Reading configuration data from "${confFile}".`);
+			let confFile = parseInt(acct) || 14514;
+			console.info(`Reading configuration data from "${confFile}.json".`);
+			let ipInfo = new IPInfo();
+			ipInfo.start();
 			WingBlade.serve(async function (request) {
 				let badRequest = new Response("Bad Request", {
 					status: 400
@@ -204,6 +207,22 @@ let main = async function (args) {
 								});
 								break;
 							};
+							case "/info": {
+								return new Response(JSON.stringify({
+									ip: {
+										ip: ipInfo.ip,
+										cc: ipInfo.cc,
+										asn: ipInfo.asn,
+										as: ipInfo.as
+									},
+									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? "Standalone" : "System") : "No Proxy"
+								}), {
+									"headers": {
+										"Content-Type": "application/json"
+									}
+								});
+								break;
+							};
 							default: {
 								return notFound;
 							};
@@ -225,7 +244,7 @@ let main = async function (args) {
 					};
 				};
 			}, {
-				port: 14514,
+				port: acct || 14514,
 				onListen: ({port}) => {
 					console.info(`Now running in batch mode. To control and/or retrieve info from CLI, use the "ctl" subcommand.`);
 					console.info(`Web UI and REST API available on http://127.0.0.1:${port}/`);
