@@ -2,7 +2,7 @@
 "use strict";
 
 // Import common values
-import {BuildInfo, humanizedTime} from "../core/common.js";
+import {BuildInfo, humanizedTime, humanizedPercentage} from "../core/common.js";
 
 // Initialize Alpine
 import {} from "../../libs/alpinejs/alpine.js";
@@ -28,7 +28,15 @@ document.addEventListener("alpine:init", () => {
 			as: data.ip.as || "Invalid ASN",
 			proxy: data.proxy,
 			var: data.plat.var || "HorseJS",
-			os: data.plat.os || "HorseOS"
+			os: data.plat.os || "HorseOS",
+			sensitivity: humanizedPercentage(data.bot.sen),
+			maxOn: data.bot.mag,
+			pixels: data.bot.px,
+			ctw: data.ct.w,
+			cth: data.ct.h,
+			cuw: data.cu.w,
+			cuh: data.cu.h,
+			cus: data.cu.s
 		});
 	}, 5000);
 	subSecondTask = setInterval(async () => {

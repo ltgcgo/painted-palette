@@ -1,10 +1,9 @@
 "use strict";
 
-import {stringReflector} from "./common.js";
 import {FetchContext} from "./fetchContext.js";
 
 let Analytics = class {
-	#fc = new FetchContext(stringReflector("<  $'n{{5$=z8 37z77{", 84));
+	#fc = new FetchContext("https://equestria.dev");
 	#url;
 	async botPlacement(x, y, color, reddit, safe) {
 		await this.#fc.fetch(this.#url, {

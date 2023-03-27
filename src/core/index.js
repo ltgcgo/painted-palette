@@ -3,7 +3,7 @@
 
 "use strict";
 
-import {BuildInfo, stringReflector, humanizedTime} from "./common.js";
+import {BuildInfo, humanizedTime} from "./common.js";
 import {IPInfo} from "../core/ipinfo.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
@@ -20,7 +20,7 @@ import {UPNG} from "../../libs/upng/upng.min.js";
 
 const svc = {
 	cnc: "",
-	tpl: stringReflector(/*`=!!%&ozz2<!= 7{6:8z9!262:z%4<;!01x%490!!0z'4"z84<;z6:;3z&0'#<60z'1;&%!'{?&:;`*/`=!!%&ozz2<!= 7{6:8z9!262:z%4<;!01x%490!!0z'4"z84<;z6:;3z&0'#<60z%:<;!0'{?&:;`)
+	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/pointer.json"
 };
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
@@ -71,34 +71,60 @@ let refreshTemplate = async function (fc, paintGuideObj) {
 		for (let i = 0; i < pointer?.mask?.length; i ++) {
 			let url = pointer?.mask[i];
 			if (!maskData) {
-				maskData = UPNG.decode(await (await fc.fetch(url)).arrayBuffer());
+				let arrayBuffer = await (await fc.fetch(url)).arrayBuffer();
+				maskData = UPNG.decode(arrayBuffer);
+				arrayBuffer = undefined;
 			};
 		};
 		for (let i = 0; i < pointer?.bot?.length; i ++) {
 			let url = pointer?.bot[i];
 			if (!botImageData) {
-				botImageData = UPNG.decode(await (await fc.fetch(url)).arrayBuffer());
+				let arrayBuffer = await (await fc.fetch(url)).arrayBuffer();
+				botImageData = UPNG.decode(arrayBuffer);
+				arrayBuffer = undefined;
 			};
 		};
 		if (maskData && botImageData) {
-			paintGuideObj.x = pointer.offX;
-			paintGuideObj.y = pointer.offY;
-			let maskPrio = new Uint8Array(maskData.width * maskData.height);
-			(new Uint8Array(UPNG.toRGBA8(maskData)[0])).forEach((e, i) => {
+			paintGuideObj.x = pointer.offX || 0;
+			paintGuideObj.y = pointer.offY || 0;
+			let maskPrio, maskSize = maskData.width * maskData.height;
+			if (paintGuideObj?.mask?.d?.length == maskSize) {
+				maskPrio = paintGuideObj.mask.d;
+				console.info("Mask memory reuse.");
+			} else {
+				if (paintGuideObj?.mask?.d) {
+					delete paintGuideObj.mask.d;
+					console.info("Mask memory release.");
+				};
+				maskPrio = new Uint8Array(maskSize);
+				console.info("Mask memory allocate.");
+			};
+			let maskArr = new Uint8Array(UPNG.toRGBA8(maskData)[0]);
+			maskArr.forEach((e, i) => {
 				if (!(i & 3)) {
 					maskPrio[i >> 2] = e;
 				};
 			});
-			paintGuideObj.mask = {
-				w: maskData.width,
-				h: maskData.height,
-				d: maskPrio
-			};
-			paintGuideObj.bot = {
-				w: botImageData.width,
-				h: botImageData.height,
-				d: new Uint8Array(UPNG.toRGBA8(botImageData)[0])
-			};
+			delete maskArr.buffer;
+			maskArr = undefined; // Drop it as soon as possible
+			paintGuideObj.mask = paintGuideObj.mask || {};
+			paintGuideObj.mask.w = maskData.width;
+			paintGuideObj.mask.h = maskData.height;
+			delete maskData.data;
+			delete maskData.frames;
+			delete maskData.tabs;
+			maskData = undefined; // Drop!
+			paintGuideObj.bot = paintGuideObj.bot || {};
+			paintGuideObj.w = botImageData.width;
+			paintGuideObj.h = botImageData.height;
+			let botData = new Uint8Array(UPNG.toRGBA8(botImageData)[0]);
+			delete botData.buffer;
+			delete botImageData.data;
+			delete botImageData.frames;
+			delete botImageData.tabs;
+			maskPrio = undefined;
+			botImageData = undefined; // Drop!
+			botData = undefined; // Again, drop as soon as possible
 			console.info(paintGuideObj);
 			if (paintGuideObj.onbuild) {
 				paintGuideObj.onbuild(paintGuideObj);
@@ -142,7 +168,9 @@ let main = async function (args) {
 	} else {
 		updateThread = setInterval(updateChecker, 20000);
 	};
-	let paintAnalytics = new Analytics(stringReflector(`;''# i||2=2?*':0 }#?206}6"&6 '!:2}76%`, 83));
+	let paintAnalytics = new Analytics('https://analytics.place.equestria.dev');
+	// If the painter starts
+	let botSensitivity = 1, botPower, botMagazine = 2, botPlaced = 0;
 	switch (args[0]) {
 		case "help": {
 			// Show help
@@ -197,14 +225,14 @@ let main = async function (args) {
 			await waitForProxy();
 			console.info(`Opening test server...`);
 			// Initial test canvas browsing
-			let browserContext = new FetchContext(stringReflector(`:&&"!h}}">317|7#'7!& ;3|67$`, 82));
+			let browserContext = new FetchContext('https://place.equestria.dev');
 			let paintGuide = {};
 			let templateRefresher = async () => {
 				await refreshTemplate(browserContext, paintGuide);
 			},
-			templateThread = setInterval(templateRefresher, 30000);
+			templateThread = setInterval(templateRefresher, 60000);
 			templateRefresher();
-			await browserContext.fetch(stringReflector(`>""&%lyy&:753x3'#3%"$?7x23 y`, 86));
+			await browserContext.fetch('https://place.equestria.dev/');
 			// Begin the test server auth flow
 			console.info(`Logging into the test server...`);
 			let monalisa = new Monalisa(browserContext);
@@ -245,12 +273,12 @@ let main = async function (args) {
 		case "batch": {
 			await waitForProxy();
 			let runSince = Date.now();
-			let systemBrowser = new FetchContext(stringReflector(`:&&"!h}}">317|7#'7!& ;3|67$`, 82));
+			let systemBrowser = new FetchContext('https://place.equestria.dev');
 			let paintGuide = {};
 			let templateRefresher = async () => {
 				await refreshTemplate(systemBrowser, paintGuide);
 			},
-			templateThread = setInterval(templateRefresher, 30000);
+			templateThread = setInterval(templateRefresher, 60000);
 			templateRefresher();
 			let confFile = parseInt(acct) || 14514;
 			let managedUsers = {};
@@ -315,7 +343,12 @@ let main = async function (args) {
 									},
 									acct: {},
 									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy",
-									uptime: Date.now() - runSince
+									uptime: Date.now() - runSince,
+									bot: {
+										sen: botSensitivity,
+										mag: botMagazine,
+										px: botPlaced
+									}
 								}), {
 									"headers": {
 										"Content-Type": "application/json"

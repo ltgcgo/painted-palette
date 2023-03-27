@@ -36,7 +36,7 @@ let humanizedTime = function (inSeconds) {
 	return `${day}d ${hr}:${min}:${sec}.${ms}`;
 };
 let humanizedPercentage = function (floatv) {
-	floatv = Math.round(floatv * 100) / 100;
+	floatv = Math.round(floatv * 10000) / 100;
 	let intv = `${Math.floor(floatv)}`;
 	let fracv = `${Math.floor(floatv * 100 % 100)}`.padStart(2, "0");
 	return `${intv}.${fracv}%`;
@@ -65,5 +65,6 @@ export {
 	dim2Dist,
 	sortDist,
 	humanizedTime,
+	humanizedPercentage,
 	stringReflector
 };
