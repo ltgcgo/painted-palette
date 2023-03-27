@@ -20,7 +20,7 @@ import {UPNG} from "../../libs/upng/upng.min.js";
 
 const svc = {
 	cnc: "",
-	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/pointer.json"
+	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/rdnsptr.json"
 };
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
@@ -87,36 +87,23 @@ let refreshTemplate = async function (fc, paintGuideObj) {
 		if (maskData && botImageData) {
 			paintGuideObj.x = pointer.offX || 0;
 			paintGuideObj.y = pointer.offY || 0;
-			let maskPrio, maskSize = maskData.width * maskData.height;
-			if (paintGuideObj?.mask?.d?.length == maskSize) {
-				maskPrio = paintGuideObj.mask.d;
-				console.info("Mask memory reuse.");
-			} else {
-				if (paintGuideObj?.mask?.d) {
-					delete paintGuideObj.mask.d;
-					console.info("Mask memory release.");
-				};
-				maskPrio = new Uint8Array(maskSize);
-				console.info("Mask memory allocate.");
+			let maskArr = UPNG.toRGBA8(maskData)[0];
+			let botData = UPNG.toRGBA8(botImageData)[0];
+			let maskView = new DataView(maskArr);
+			let botView = new DataView(botData);
+			let width = maskData.width;
+			for (let i = 0; i < maskArr.byteLength; i += 4) {
+				let prio = maskData.getUint8();
 			};
-			let maskArr = new Uint8Array(UPNG.toRGBA8(maskData)[0]);
-			maskArr.forEach((e, i) => {
-				if (!(i & 3)) {
-					maskPrio[i >> 2] = e;
-				};
-			});
-			delete maskArr.buffer;
 			maskArr = undefined; // Drop it as soon as possible
 			delete maskData.data;
 			delete maskData.frames;
 			delete maskData.tabs;
 			maskData = undefined; // Drop!
-			let botData = new Uint8Array(UPNG.toRGBA8(botImageData)[0]);
 			delete botData.buffer;
 			delete botImageData.data;
 			delete botImageData.frames;
 			delete botImageData.tabs;
-			maskPrio = undefined;
 			botImageData = undefined; // Drop!
 			botData = undefined; // Again, drop as soon as possible
 			console.info(paintGuideObj);

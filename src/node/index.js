@@ -2,10 +2,6 @@
 
 "use strict";
 
-if (!globalThis.self) {
-	globalThis.self = globalThis;
-};
-
 import {WingBlade} from "./wingblade.js";
 self.WingBlade = WingBlade;
 
