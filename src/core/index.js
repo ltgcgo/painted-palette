@@ -3,7 +3,7 @@
 
 "use strict";
 
-import {BuildInfo, stringReflector} from "./common.js";
+import {BuildInfo, stringReflector, humanizedTime} from "./common.js";
 import {IPInfo} from "../core/ipinfo.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
@@ -164,6 +164,7 @@ let main = async function (args) {
 		};
 		case "batch": {
 			await waitForProxy();
+			let runSince = Date.now();
 			let confFile = parseInt(acct) || 14514;
 			console.info(`Reading configuration data from "${confFile}.json".`);
 			let ipInfo = new IPInfo();
@@ -220,7 +221,8 @@ let main = async function (args) {
 										asn: ipInfo.asn,
 										as: ipInfo.as
 									},
-									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy"
+									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy",
+									uptime: Date.now() - runSince
 								}), {
 									"headers": {
 										"Content-Type": "application/json"
@@ -263,11 +265,12 @@ let main = async function (args) {
 		case "ctl": {
 			let port = WingBlade.getEnv("PORT") || "14514";
 			let prefix = `http://127.0.0.1:${port}/`;
+			console.info("");
 			switch (acct) {
 				case "info":
 				case "stat": {
 					let jsonData = await(await fetch (`${prefix}info`)).json();
-					console.info(`IP Information\nProxy: ${jsonData.proxy}\nIP: ${jsonData.ip.ip}\nCountry: ${jsonData.ip.cc}\nASN: ${jsonData.ip.asn}\nAS: ${jsonData.ip.as}\n\nStatistics\nAccounts:${jsonData.accounts}\nPlaced Pixels:${jsonData.placed}\nUptime: ${jsonData.uptime}`);
+					console.info(`IP Information\nProxy: ${jsonData.proxy}\nIP: ${jsonData.ip.ip}\nCountry: ${jsonData.ip.cc}\nASN: ${jsonData.ip.asn}\nAS: ${jsonData.ip.as}\n\nStatistics\nAccounts: ${jsonData.acct?.sum}\nBanned: ${jsonData.acct?.banned}\nFresh: ${jsonData.acct?.fresh}\nPlaced Pixels: ${jsonData.placed}\nUptime: ${humanizedTime(jsonData.uptime / 1000)}`);
 					break;
 				};
 				default: {

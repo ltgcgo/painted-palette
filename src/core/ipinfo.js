@@ -4,12 +4,13 @@ import {FetchContext} from "./fetchContext.js";
 
 //const remotes = ["https://ifconfig.me/ip", "https://ipecho.net/plain", "https://ip4.seeip.org", "https://api4.my-ip.io/ip.txt"];
 // unusable "https://ip.seeip.org"
-const remotes = ["https://ifconfig.co/ip", "https://icanhazip.com/", "https://api.ipify.org/", "https://ipapi.co/ip", "https://api.my-ip.io/ip.txt", "https://api.ip.sb/ip"];
+const remotes = ["https://ifconfig.me/ip", "https://ipecho.net/plain", "https://ifconfig.co/ip", "https://icanhazip.com/", "https://api.ipify.org/", "https://ipapi.co/ip", "https://api.my-ip.io/ip.txt", "https://api.ip.sb/ip"];
 
 let IPInfo = class {
 	#fc = new FetchContext();
 	#monitorThread = 0;
 	#infoIp = "127.0.0.1";
+	#cache = {};
 	ip = "127.0.0.1";
 	cc = "UN";
 	asn = 0;
@@ -41,6 +42,14 @@ let IPInfo = class {
 		if (this.#infoIp != ipAddress && ipAddress != "127.0.0.1") {
 			console.info(`IP address updated to: ${ipAddress}`);
 			this.ip = ipAddress;
+			if (this.#cache[ipAddress]) {
+				let cached = this.#cache[ipAddress];
+				this.asn = cached.asn;
+				this.as = cached.as;
+				this.cc = cached.cc;
+				console.info(`Served GeoIP info from cache.`);
+				return;
+			};
 			let ipInfo;
 			try {
 				let ipsb = await this.#fc.fetch(`https://api.ip.sb/geoip/${ipAddress}`);
@@ -51,6 +60,13 @@ let IPInfo = class {
 					this.cc = ipInfo.country_code || ipInfo.region_code || "UN";
 					if (this.asn) {
 						this.#infoIp = ipAddress;
+						if (!this.#cache[ipAddress]) {
+							this.#cache[ipAddress] = {
+								asn: this.asn,
+								as: this.as,
+								cc: this.cc
+							};
+						};
 					} else {
 						this.#infoIp = "0.0.0.0";
 					};
@@ -74,6 +90,13 @@ let IPInfo = class {
 						};
 						if (this.asn) {
 							this.#infoIp = ipAddress;
+							if (!this.#cache[ipAddress]) {
+								this.#cache[ipAddress] = {
+									asn: this.asn,
+									as: this.as,
+									cc: this.cc
+								};
+							};
 						} else {
 							this.#infoIp = "0.0.0.0";
 						};
@@ -87,6 +110,13 @@ let IPInfo = class {
 							this.cc = ipInfo.country_code || ipInfo.country || "UN";
 							if (this.asn) {
 								this.#infoIp = ipAddress;
+								if (!this.#cache[ipAddress]) {
+									this.#cache[ipAddress] = {
+										asn: this.asn,
+										as: this.as,
+										cc: this.cc
+									};
+								};
 							} else {
 								this.#infoIp = "0.0.0.0";
 							};
@@ -106,6 +136,13 @@ let IPInfo = class {
 								this.cc = ipInfo.country_code2 || "UN";
 								if (this.asn) {
 									this.#infoIp = ipAddress;
+									if (!this.#cache[ipAddress]) {
+										this.#cache[ipAddress] = {
+											asn: this.asn,
+											as: this.as,
+											cc: this.cc
+										};
+									};
 								} else {
 									this.#infoIp = "0.0.0.0";
 								};
@@ -119,6 +156,13 @@ let IPInfo = class {
 									this.cc = ipInfo.country_code || "UN";
 									if (this.asn) {
 										this.#infoIp = ipAddress;
+										if (!this.#cache[ipAddress]) {
+											this.#cache[ipAddress] = {
+												asn: this.asn,
+												as: this.as,
+												cc: this.cc
+											};
+										};
 									} else {
 										this.#infoIp = "0.0.0.0";
 									};

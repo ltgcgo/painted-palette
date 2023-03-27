@@ -5,7 +5,7 @@ const dim2Prop = [0, 1];
 
 let BuildInfo = {
 	name: "Painted Palette",
-	ver: "0.0.7"
+	ver: "0.0.8"
 };
 
 let dim3Dist = function (a, b) {
@@ -25,6 +25,15 @@ let dim2Dist = function (a, b) {
 
 let sortDist = function (a, b) {
 	return a[1] - b[1];
+};
+
+let humanizedTime = function (inSeconds) {
+	let ms = `${Math.floor(inSeconds % 1 * 100)}`.padStart(2, "0");
+	let sec = `${Math.floor(inSeconds % 60)}`.padStart(2, "0");
+	let min = `${Math.floor(inSeconds / 60) % 60}`.padStart(2, "0");
+	let hr = `${Math.floor(inSeconds / 3600) % 24}`.padStart(2, "0");
+	let day = `${Math.floor(inSeconds / 86400)}`;
+	return `${day}d ${hr}:${min}:${sec}.${ms}`;
 };
 
 let stringReflector = function (string, reflector = 85) {
@@ -49,5 +58,6 @@ export {
 	dim3Dist,
 	dim2Dist,
 	sortDist,
+	humanizedTime,
 	stringReflector
 };
