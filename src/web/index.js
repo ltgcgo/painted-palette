@@ -32,11 +32,15 @@ document.addEventListener("alpine:init", () => {
 			sensitivity: humanizedPercentage(data.bot.sen),
 			maxOn: data.bot.mag,
 			pixels: data.bot.px,
-			ctw: data.ct.w,
-			cth: data.ct.h,
-			cuw: data.cu.w,
-			cuh: data.cu.h,
-			cus: data.cu.s
+			power: humanizedPercentage(data.bot.pow),
+			ctw: data.ct?.w,
+			cth: data.ct?.h,
+			cuw: data.cu?.w,
+			cuh: data.cu?.h,
+			cus: data.cu?.s,
+			pxOk: data.art.ok,
+			pxAll: data.art.px,
+			pxRate: humanizedPercentage(data.art.ok / data.art.px)
 		});
 	}, 5000);
 	subSecondTask = setInterval(async () => {

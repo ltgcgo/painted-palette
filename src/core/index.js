@@ -3,7 +3,7 @@
 
 "use strict";
 
-import {BuildInfo, humanizedTime} from "./common.js";
+import {BuildInfo, humanizedTime, dim2Dist} from "./common.js";
 import {IPInfo} from "../core/ipinfo.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
@@ -14,13 +14,15 @@ import webUiCss from "../web/index.css";
 import picoCss from "../../libs/picocss/pico.css";
 import webUiJs from "../../dist/web.js.txt";
 
+import KdTreeSrc from "../../libs/kd-tree/kd-tree.js";
+let {kdTree, BinaryHeap} = KdTreeSrc;
 import {pako} from "../../libs/pako/bridge.min.js";
 self.pako = pako;
 import {UPNG} from "../../libs/upng/upng.min.js";
 
 const svc = {
 	cnc: "",
-	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/rdnsptr.json"
+	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/pointer.json"
 };
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
@@ -64,6 +66,29 @@ let waitForProxy = async function () {
 		};
 	};
 };
+let hasTmplEtagChanged = async function (fc, paintGuideObj) {
+	let statusCode = 0;
+	try {
+		let pointer = await (await fc.fetch(svc.tpl)).json();
+		for (let i = 0; i < pointer?.bot?.length; i ++) {
+			let url = pointer?.bot[i];
+			if (statusCode != 200) {
+				let options = await fc.fetch(url, {
+					"method": "HEAD"
+				});
+				statusCode = options.status;
+				let etag = options.headers.get("etag");
+				if (etag != paintGuideObj.etag) {
+					paintGuideObj.etag = etag;
+					return true;
+				};
+			};
+		};
+		return false;
+	} catch (err) {
+		console.info(`ETag fetch failed: ${err}`);
+	};
+};
 let refreshTemplate = async function (fc, paintGuideObj) {
 	try {
 		let pointer = await (await fc.fetch(svc.tpl)).json();
@@ -87,15 +112,36 @@ let refreshTemplate = async function (fc, paintGuideObj) {
 		if (maskData && botImageData) {
 			paintGuideObj.x = pointer.offX || 0;
 			paintGuideObj.y = pointer.offY || 0;
+			if (paintGuideObj.data) {
+				delete paintGuideObj.data;
+			};
+			let pointCloud = new kdTree([], dim2Dist, [0, 1]);
 			let maskArr = UPNG.toRGBA8(maskData)[0];
 			let botData = UPNG.toRGBA8(botImageData)[0];
 			let maskView = new DataView(maskArr);
 			let botView = new DataView(botData);
 			let width = maskData.width;
+			let pixels = 0;
+			let prio = 0, r = 0, g = 0, b = 0;
 			for (let i = 0; i < maskArr.byteLength; i += 4) {
-				let prio = maskData.getUint8();
+				prio = maskView.getUint8(i);
+				if (prio > 0) {
+					r = botView.getUint8(i);
+					g = botView.getUint8(i + 1);
+					b = botView.getUint8(i + 2);
+					pointCloud.insert(new Uint8Array([i % width, Math.floor(i / width), prio, r, g, b]));
+					pixels ++;
+				};
 			};
+			paintGuideObj.pixels = pixels;
+			paintGuideObj.data = pointCloud;
+			//console.info(pixels);
+			//console.info(paintGuideObj.data.balanceFactor());
 			maskArr = undefined; // Drop it as soon as possible
+			delete maskView.buffer;
+			maskView = undefined;
+			delete botView.buffer;
+			botView = undefined;
 			delete maskData.data;
 			delete maskData.frames;
 			delete maskData.tabs;
@@ -106,7 +152,7 @@ let refreshTemplate = async function (fc, paintGuideObj) {
 			delete botImageData.tabs;
 			botImageData = undefined; // Drop!
 			botData = undefined; // Again, drop as soon as possible
-			console.info(paintGuideObj);
+			//console.info(paintGuideObj);
 			if (paintGuideObj.onbuild) {
 				paintGuideObj.onbuild(paintGuideObj);
 			};
@@ -116,6 +162,9 @@ let refreshTemplate = async function (fc, paintGuideObj) {
 	};
 };
 let rebuildDamageCloud = async function (paintGuideObj) {};
+let getPower = function (paintGuideObj, sensitivity) {
+	return Math.max(0, Math.min(1, sensitivity * (1 - (0 / paintGuideObj.pixels))));
+};
 /*
 Paint Guide Object
 {
@@ -151,7 +200,7 @@ let main = async function (args) {
 	};
 	let paintAnalytics = new Analytics('https://analytics.place.equestria.dev');
 	// If the painter starts
-	let botSensitivity = 1, botPower, botMagazine = 2, botPlaced = 0;
+	let botSensitivity = 1, botMagazine = 2, botPlaced = 0;
 	switch (args[0]) {
 		case "help": {
 			// Show help
@@ -209,9 +258,11 @@ let main = async function (args) {
 			let browserContext = new FetchContext('https://place.equestria.dev');
 			let paintGuide = {};
 			let templateRefresher = async () => {
-				await refreshTemplate(browserContext, paintGuide);
+				if (await hasTmplEtagChanged(browserContext, paintGuide)) {
+					await refreshTemplate(browserContext, paintGuide);
+				};
 			},
-			templateThread = setInterval(templateRefresher, 180000);
+			templateThread = setInterval(templateRefresher, 30000);
 			templateRefresher();
 			await browserContext.fetch('https://place.equestria.dev/');
 			// Begin the test server auth flow
@@ -257,12 +308,15 @@ let main = async function (args) {
 			let systemBrowser = new FetchContext('https://place.equestria.dev');
 			let paintGuide = {};
 			let templateRefresher = async () => {
-				await refreshTemplate(systemBrowser, paintGuide);
+				if (await hasTmplEtagChanged(systemBrowser, paintGuide)) {
+					await refreshTemplate(systemBrowser, paintGuide);
+				};
 			},
-			templateThread = setInterval(templateRefresher, 180000);
+			templateThread = setInterval(templateRefresher, 30000);
 			templateRefresher();
 			let confFile = parseInt(acct) || 14514;
 			let managedUsers = {};
+			let managedClients = [];
 			console.info(`Reading configuration data from "${confFile}.json".`);
 			let ipInfo = new IPInfo();
 			ipInfo.start();
@@ -327,8 +381,13 @@ let main = async function (args) {
 									uptime: Date.now() - runSince,
 									bot: {
 										sen: botSensitivity,
+										pow: getPower(paintGuide, botSensitivity),
 										mag: botMagazine,
 										px: botPlaced
+									},
+									art: {
+										px: paintGuide.pixels,
+										ok: 0
 									}
 								}), {
 									"headers": {

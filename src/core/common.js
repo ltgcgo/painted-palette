@@ -27,7 +27,7 @@ let sortDist = function (a, b) {
 	return a[1] - b[1];
 };
 
-let humanizedTime = function (inSeconds) {
+let humanizedTime = function (inSeconds = 0) {
 	let ms = `${Math.floor(inSeconds % 1 * 100)}`.padStart(2, "0");
 	let sec = `${Math.floor(inSeconds % 60)}`.padStart(2, "0");
 	let min = `${Math.floor(inSeconds / 60) % 60}`.padStart(2, "0");
@@ -35,7 +35,7 @@ let humanizedTime = function (inSeconds) {
 	let day = `${Math.floor(inSeconds / 86400)}`;
 	return `${day}d ${hr}:${min}:${sec}.${ms}`;
 };
-let humanizedPercentage = function (floatv) {
+let humanizedPercentage = function (floatv = 0) {
 	floatv = Math.round(floatv * 10000) / 100;
 	let intv = `${Math.floor(floatv)}`;
 	let fracv = `${Math.floor(floatv * 100 % 100)}`.padStart(2, "0");
