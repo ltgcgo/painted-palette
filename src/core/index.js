@@ -107,16 +107,10 @@ let refreshTemplate = async function (fc, paintGuideObj) {
 			});
 			delete maskArr.buffer;
 			maskArr = undefined; // Drop it as soon as possible
-			paintGuideObj.mask = paintGuideObj.mask || {};
-			paintGuideObj.mask.w = maskData.width;
-			paintGuideObj.mask.h = maskData.height;
 			delete maskData.data;
 			delete maskData.frames;
 			delete maskData.tabs;
 			maskData = undefined; // Drop!
-			paintGuideObj.bot = paintGuideObj.bot || {};
-			paintGuideObj.w = botImageData.width;
-			paintGuideObj.h = botImageData.height;
 			let botData = new Uint8Array(UPNG.toRGBA8(botImageData)[0]);
 			delete botData.buffer;
 			delete botImageData.data;
@@ -230,7 +224,7 @@ let main = async function (args) {
 			let templateRefresher = async () => {
 				await refreshTemplate(browserContext, paintGuide);
 			},
-			templateThread = setInterval(templateRefresher, 60000);
+			templateThread = setInterval(templateRefresher, 180000);
 			templateRefresher();
 			await browserContext.fetch('https://place.equestria.dev/');
 			// Begin the test server auth flow
@@ -278,7 +272,7 @@ let main = async function (args) {
 			let templateRefresher = async () => {
 				await refreshTemplate(systemBrowser, paintGuide);
 			},
-			templateThread = setInterval(templateRefresher, 60000);
+			templateThread = setInterval(templateRefresher, 180000);
 			templateRefresher();
 			let confFile = parseInt(acct) || 14514;
 			let managedUsers = {};
