@@ -18,6 +18,9 @@ let WingBlade = {
 	randomInt: (cap) => {
 		return Math.floor(Math.random() * cap);
 	},
+	readFile: async function (path, opt) {
+		return await Deno.readFile(path, opt);
+	},
 	serve: (handler, opt = {}) => {
 		if (!opt?.onListen) {
 			opt.onListen = function ({port, hostname}) {

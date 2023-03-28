@@ -9,6 +9,7 @@ import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 import {Monalisa} from "./monalisa.js";
 import {Analytics} from "./analytics.js";
+import {PaintGuide} from "./paintGuide.js";
 import webUiBody from "../web/index.htm";
 import webUiCss from "../web/index.css";
 import picoCss from "../../libs/picocss/pico.css";
@@ -20,9 +21,11 @@ import {pako} from "../../libs/pako/bridge.min.js";
 self.pako = pako;
 import {UPNG} from "../../libs/upng/upng.min.js";
 
+let utf8Decode = new TextDecoder(), utf8Encode = new TextEncoder();
+
 const svc = {
 	cnc: "",
-	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/pointer.json"
+	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/rdnsptr.json"
 };
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
@@ -200,7 +203,12 @@ let main = async function (args) {
 	};
 	let paintAnalytics = new Analytics('https://analytics.place.equestria.dev');
 	// If the painter starts
-	let botSensitivity = 1, botMagazine = 2, botPlaced = 0;
+	let conf = {
+		sensitivity: 1,
+		magazine: 5,
+		users: {}
+	};
+	let botPlaced = 0;
 	switch (args[0]) {
 		case "help": {
 			// Show help
@@ -314,10 +322,28 @@ let main = async function (args) {
 			},
 			templateThread = setInterval(templateRefresher, 30000);
 			templateRefresher();
-			let confFile = parseInt(acct) || 14514;
-			let managedUsers = {};
+			let confFile = `${parseInt(acct) || 14514}.json`;
 			let managedClients = [];
-			console.info(`Reading configuration data from "${confFile}.json".`);
+			let socketStreams = [];
+			let announceStream = function (json) {
+				let serialized = JSON.stringify(json);
+				socketStreams.forEach((e) => {
+					e.send(serialized);
+				});
+			};
+			console.info(`Reading configuration data from "${confFile}".`);
+			try {
+				conf = JSON.parse(utf8Decode.decode(await WingBlade.readFile(confFile)));
+			} catch (err) {
+				console.info(`File read error: ${err}`);
+				console.info(`If you are running this for the first time, you can safely ignore the error above.`);
+			};
+			let fileSaver = async function () {
+				console.info(`Saving configuration file...`);
+				await WingBlade.writeFile(confFile, utf8Encode.encode(JSON.stringify(conf)));
+			},
+			fileSaveThread = setInterval(fileSaver, 30000);
+			fileSaver();
 			let ipInfo = new IPInfo();
 			ipInfo.start();
 			WingBlade.serve(async function (request) {
@@ -327,12 +353,16 @@ let main = async function (args) {
 				let notFound = new Response("Not Found", {
 					status: 404
 				});
+				let success = new Response("OK", {
+					status: 200
+				});
 				let url = new URL(request.url);
 				switch (request.method.toLowerCase()) {
 					case "get": {
 						switch (url.pathname) {
 							case "/":
 							case "/index.htm": {
+								console.info(`Web UI is opened. Welcome aboard, soldier!`);
 								return new Response(webUiBody, {
 									"headers": {
 										"Content-Type": "text/html"
@@ -380,9 +410,9 @@ let main = async function (args) {
 									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy",
 									uptime: Date.now() - runSince,
 									bot: {
-										sen: botSensitivity,
-										pow: getPower(paintGuide, botSensitivity),
-										mag: botMagazine,
+										sen: conf.sensitivity,
+										pow: getPower(paintGuide, conf.sensitivity),
+										mag: conf.magazine,
 										px: botPlaced
 									},
 									art: {
@@ -403,7 +433,13 @@ let main = async function (args) {
 								};
 								let {socket, response} = WingBlade.upgradeWebSocket(request);
 								socket.addEventListener("open", () => {
-									socket.send("Hi Luna!");
+									console.info(`Web UI subscribed to realtime events.`);
+									socket.send(JSON.stringify({"event": "init"}));
+									socket.addEventListener("close", () => {
+										console.info(`Web UI disconnected from realtime events.`);
+										socketStreams.splice(socketStreams.indexOf(socket), 1);
+									});
+									socketStreams.push(socket);
 								});
 								socket.addEventListener("close", () => {
 									console.info("WS closed.");
@@ -411,12 +447,13 @@ let main = async function (args) {
 								return response;
 								break;
 							};
+							case "/user": {
+								// Get users
+								return new Response(JSON.stringify(conf.users));;
+								break;
+							};
 							default: {
 								return notFound;
-							};
-							case "/user": {
-								// Get a user
-								break;
 							};
 						};
 						break;
@@ -425,6 +462,39 @@ let main = async function (args) {
 						switch (url.pathname) {
 							case "/user": {
 								// Add a user
+								let json = await request.json();
+								if (conf.users[json.acct]) {
+									announceStream({"event": "error", "data": `Account "${json.acct}" already exists.`});
+									return new Response("Already existed.", {
+										status: 400
+									});
+								} else {
+									conf.users[json.acct] = json;
+									announceStream({"event": "user", "data": json.acct});
+									return success;
+								};
+								break;
+							};
+							default: {
+								return notFound;
+							};
+						};
+						break;
+					};
+					case "put": {
+						switch (url.pathname) {
+							case "/user": {
+								// Get a user
+								let json = await request.text();
+								if (conf.users[json]) {
+									return new Response(JSON.stringify(conf.users[json]));
+								} else {
+									announceStream({"event": "error", "data": `Account "${json}" doesn't exist.`});
+									return new Response("Doesn't exist.", {
+										status: 400
+									});
+								};
+								return success;
 								break;
 							};
 							default: {
@@ -437,6 +507,17 @@ let main = async function (args) {
 						switch (url.pathname) {
 							case "/user": {
 								// Remove a user
+								let json = await request.text();
+								if (conf.users[json]) {
+									delete conf.users[json];
+									announceStream({"event": "userdel", "data": json});
+									return success;
+								} else {
+									announceStream({"event": "error", "data": `Account "${json}" doesn't exist.`});
+									return new Response("Doesn't exist.", {
+										status: 400
+									});
+								};
 								break;
 							};
 							default: {

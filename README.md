@@ -18,7 +18,9 @@ Powered by ESBuild and Deno. Developed by [Lightingale Community and all contrib
 
 ## Running
 ### Steps
-> **Warning**: BSD and PonyOS are not supported. Feel free to contribute to improve compatibility.
+> **Warning**: Only Deno supports proxies. Node.js does not respect proxy settings.
+
+> **Warning**: BSD, iOS and PonyOS are not supported. Feel free to contribute to improve compatibility.
 
 > **Warning**: It's considered a bad idea to run the bot on your main. Spin up disposable alts for bots is recommended.
 
@@ -26,12 +28,11 @@ Powered by ESBuild and Deno. Developed by [Lightingale Community and all contrib
 * Make sure that Bash, cURL and unzip are installed on your system.
 * Install the helper script with `bash <(curl -Ls https://sh.ltgc.cc/sh/palette)`. Takes at most 20 seconds to finish on a relatively acceptable Internet connection.
   * Try `bash <(curl -Ls https://github.com/ltgcgo/painted-palette/raw/main/src/bash/install.sh)` if the above command does not work.
-  * ~~If you're on iOS with iSH, run with `wget https://github.com/ltgcgo/painted-palette/raw/main/src/bash/ish.sh -O - | sh` instead.~~ Node.js on iOS is broken.
 * How would you like to run it?
   * If you just need it to manage a single account, run `./palette-bot paint <yourRedditUsername> <yourRedditPassword>` directly.
     * If you have enabled 2FA, the OTP field is also available. Try running `./palette-bot paint <yourRedditUsername> <yourRedditPassword> <otp>`.
-  * If you need it to manage multiple, run `./palette-bot batch`. You can specify a port for it to listen on, but it'd be on `14514` by default.
-    * If you don't know much about commands, just use your favourite browser and click on that URL it shows. Then you can do everything there.
+  * If you need it to manage multiple, or just want a nice GUI, run `./palette-bot batch`. You can specify a port for it to listen on, but it'd be on `14514` by default.
+    * If you don't know much about commands, just use your favourite browser and click on that URL it shows. You can do everything there.
     * If you prefer CLI, use `./palette-bot ctl`. Set the custom port number as the `PORT` environment variable if you have that defined. Help is available with `./palette-bot help ctl`.
   * What if you want to have more than 5 accounts going, or just want to hide your IP to Reddit?
     * If you don't know much about commands, replace `./palette-bot` in the examples above with `./palette-proxy`. It will do everything for you automatically, just do not manage more than 30 accounts this way. This will considered as a "standalone proxy" by the program.
@@ -39,9 +40,7 @@ Powered by ESBuild and Deno. Developed by [Lightingale Community and all contrib
     * If you want to specify an **HTTP** proxy for it to connect, set both the `HTTP_PROXY` and `HTTPS_PROXY` environment variables before running. This will considered as a "system proxy" by the program. If you want to manage more than 30 accounts, go this route for the rest of your accounts.
 * Start your auto-guided painting adventure!
 
-Only **Deno** supports proxies.
-
-If upgrades are required, the script should able to download a new version automatically, and restart by itself to load the newer version.
+If upgrades are required, the script should able to download a new version automatically, and restart by itself to load the newer version. It can pretty much manage everything all by itself, unless something drastic happens.
 
 #### Windows
 * Download the comfort bundle (`deno_windows.zip`) from GitHub Releases.
