@@ -209,14 +209,12 @@ let main = async function (args) {
 			let systemBrowser = new FetchContext('https://place.equestria.dev');
 			let paintGuide = new PaintGuide(svc.tpl);
 			let templateRefresher = async () => {
-				if (await hasTmplEtagChanged(systemBrowser, paintGuide)) {
-					await refreshTemplate(systemBrowser, paintGuide);
-				};
+				paintGuide.updateTemplate();
 			},
 			templateThread = setInterval(templateRefresher, 30000);
 			templateRefresher();
 			let confFile = `${parseInt(acct) || 14514}.json`;
-			let managedClients = [];
+			let managedClients = [], streamingClient;
 			let socketStreams = [];
 			let announceStream = function (json) {
 				let serialized = JSON.stringify(json);
