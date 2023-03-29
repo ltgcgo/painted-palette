@@ -33,7 +33,7 @@ let RedditAuth = class {
 		});
 		await WingBlade.sleep(2000, 3000);
 		// Authenticating
-		console.info(`CSRF token fetched (${csrf})! Logging in...`);
+		console.info(`[RedtAuth]  CSRF token fetched (${csrf})! Logging in...`);
 		fc.referer = "https://www.reddit.com/login/";
 		//body = `csrf_token=${csrf}&otp=${encodeURL(otp)}&password=${encodeURL(password)}&dest=${encodeURL(returnDest)}&username=${encodeURL(username)}`;
 		body = new FormData();
@@ -58,7 +58,7 @@ let RedditAuth = class {
 		fc.referer = "https://www.reddit.com/";
 		this.loggedIn = true;
 		await WingBlade.sleep(500, 1500);
-		console.info(`Reloading Reddit home page...`);
+		console.info(`[RedtAuth]  Reloading Reddit home page...`);
 		await fc.fetch("https://www.reddit.com/", {
 			"init": "browser"
 		});

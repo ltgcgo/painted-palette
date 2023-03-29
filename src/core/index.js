@@ -3,7 +3,7 @@
 
 "use strict";
 
-import {BuildInfo, humanizedTime, dim2Dist} from "./common.js";
+import {BuildInfo, humanizedTime} from "./common.js";
 import {IPInfo} from "../core/ipinfo.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
@@ -15,11 +15,8 @@ import webUiCss from "../web/index.css";
 import picoCss from "../../libs/picocss/pico.css";
 import webUiJs from "../../dist/web.js.txt";
 
-import KdTreeSrc from "../../libs/kd-tree/kd-tree.js";
-let {kdTree, BinaryHeap} = KdTreeSrc;
 import {pako} from "../../libs/pako/bridge.min.js";
 self.pako = pako;
-import {UPNG} from "../../libs/upng/upng.min.js";
 
 let utf8Decode = new TextDecoder(), utf8Encode = new TextEncoder();
 
@@ -30,7 +27,7 @@ const svc = {
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
 	if (redditAuth) {
-		console.info(`Logging out from Reddit...`);
+		console.info(`[Core]      Logging out from Reddit...`);
 		await redditAuth.logout();
 	};
 };
@@ -40,157 +37,38 @@ let updateChecker = async function () {
 		let remoteVersion = await (await fetch("https://github.com/ltgcgo/painted-palette/raw/main/version")).text();
 		remoteVersion = remoteVersion.replaceAll("\r", "\n").replaceAll("\n", "").trim();
 		if (remoteVersion != BuildInfo.ver) {
-			console.info(`Update available (v${remoteVersion})!`);
-			console.info("Downloading the new update...");
+			console.info(`[Updater]   Update available (v${remoteVersion})!`);
+			console.info(`[Updater]   Downloading the new update...`);
 			let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
 			await WingBlade.writeFile("./patched.js", downloadStream);
 			await logoutEverywhere();
 			if (WingBlade.os.toLowerCase() == "windows") {
-				console.info(`Please update and restart ${BuildInfo.name} manually.\nIf you don't see a "patched.js" file appearing in your folder, you only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js\nQuitting...`);
+				console.info(`[Updater]   Please update and restart ${BuildInfo.name} manually.\nIf you don't see a "patched.js" file appearing in your folder, you only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js\nQuitting...`);
 				WingBlade.exit(1);
 			} else {
-				console.info(`${BuildInfo.name} will restart shortly to finish updating.`);
+				console.info(`[Updater]   ${BuildInfo.name} will restart shortly to finish updating.`);
 				WingBlade.exit(0);
 			};
 		};
 	} catch (err) {
-		console.info(`Update checker failed. ${err}`);
+		console.info(`[Updater]   Update checker failed. ${err}`);
 	};
 };
 let waitForProxy = async function () {
 	let proxyOn = WingBlade.getEnv("HTTPS_PROXY");
 	if (proxyOn) {
 		if (WingBlade.getEnv("LONGER_START")) {
-			console.info(`Waiting for ${WingBlade.getEnv("LONGER_START")} on ${proxyOn}, control port on ${WingBlade.getEnv("CTRL_PORT")}...`);
+			console.info(`[Core]      Waiting for ${WingBlade.getEnv("LONGER_START")} on ${proxyOn}, control port on ${WingBlade.getEnv("CTRL_PORT")}...`);
 			await WingBlade.sleep(10000);
 		} else {
-			console.info(`Waiting for the proxy client on ${proxyOn} ...`);
+			console.info(`[Core]      Waiting for the proxy client on ${proxyOn} ...`);
 			await WingBlade.sleep(1000);
 		};
 	};
 };
-let hasTmplEtagChanged = async function (fc, paintGuideObj) {
-	let statusCode = 0;
-	try {
-		let pointer = await (await fc.fetch(svc.tpl)).json();
-		for (let i = 0; i < pointer?.bot?.length; i ++) {
-			let url = pointer?.bot[i];
-			if (statusCode != 200) {
-				let options = await fc.fetch(url, {
-					"method": "HEAD"
-				});
-				statusCode = options.status;
-				let etag = options.headers.get("etag");
-				if (etag != paintGuideObj.etag) {
-					paintGuideObj.etag = etag;
-					return true;
-				};
-			};
-		};
-		return false;
-	} catch (err) {
-		console.info(`ETag fetch failed: ${err}`);
-	};
-};
-let refreshTemplate = async function (fc, paintGuideObj) {
-	try {
-		let pointer = await (await fc.fetch(svc.tpl)).json();
-		let maskData, botImageData;
-		for (let i = 0; i < pointer?.mask?.length; i ++) {
-			let url = pointer?.mask[i];
-			if (!maskData) {
-				let arrayBuffer = await (await fc.fetch(url)).arrayBuffer();
-				maskData = UPNG.decode(arrayBuffer);
-				arrayBuffer = undefined;
-			};
-		};
-		for (let i = 0; i < pointer?.bot?.length; i ++) {
-			let url = pointer?.bot[i];
-			if (!botImageData) {
-				let arrayBuffer = await (await fc.fetch(url)).arrayBuffer();
-				botImageData = UPNG.decode(arrayBuffer);
-				arrayBuffer = undefined;
-			};
-		};
-		if (maskData && botImageData) {
-			paintGuideObj.x = pointer.offX || 0;
-			paintGuideObj.y = pointer.offY || 0;
-			if (paintGuideObj.data) {
-				delete paintGuideObj.data;
-			};
-			let pointCloud = new kdTree([], dim2Dist, [0, 1]);
-			let maskArr = UPNG.toRGBA8(maskData)[0];
-			let botData = UPNG.toRGBA8(botImageData)[0];
-			let maskView = new DataView(maskArr);
-			let botView = new DataView(botData);
-			let width = maskData.width;
-			let pixels = 0;
-			let prio = 0, r = 0, g = 0, b = 0;
-			for (let i = 0; i < maskArr.byteLength; i += 4) {
-				prio = maskView.getUint8(i);
-				if (prio > 0) {
-					r = botView.getUint8(i);
-					g = botView.getUint8(i + 1);
-					b = botView.getUint8(i + 2);
-					pointCloud.insert(new Uint8Array([i % width, Math.floor(i / width), prio, r, g, b]));
-					pixels ++;
-				};
-			};
-			paintGuideObj.pixels = pixels;
-			paintGuideObj.data = pointCloud;
-			//console.info(pixels);
-			//console.info(paintGuideObj.data.balanceFactor());
-			maskArr = undefined; // Drop it as soon as possible
-			delete maskView.buffer;
-			maskView = undefined;
-			delete botView.buffer;
-			botView = undefined;
-			delete maskData.data;
-			delete maskData.frames;
-			delete maskData.tabs;
-			maskData = undefined; // Drop!
-			delete botData.buffer;
-			delete botImageData.data;
-			delete botImageData.frames;
-			delete botImageData.tabs;
-			botImageData = undefined; // Drop!
-			botData = undefined; // Again, drop as soon as possible
-			//console.info(paintGuideObj);
-			if (paintGuideObj.onbuild) {
-				paintGuideObj.onbuild(paintGuideObj);
-			};
-		};
-	} catch (err) {
-		console.info(`Template refresh failure: ${err}`);
-	};
-};
-let rebuildDamageCloud = async function (paintGuideObj) {};
 let getPower = function (paintGuideObj, sensitivity) {
 	return Math.max(0, Math.min(1, sensitivity * (1 - (0 / paintGuideObj.pixels))));
 };
-/*
-Paint Guide Object
-{
-	x: offsetX,
-	y: offsetY,
-	mask: {
-		w: width,
-		h: height,
-		d: Uint8Array(len)
-	},
-	bot: {
-		w: width,
-		h: height,
-		d: Uint8Array(len * 4)
-	},
-	damage: kdTree,
-	pixels: {
-		sum: totalCount,
-		diff: diffCount
-	},
-	cc: CanvasConfiguration
-}
-*/
 
 let main = async function (args) {
 	let acct = args[1], pass = args[2], otp = args[3];
@@ -231,7 +109,7 @@ let main = async function (args) {
 		};
 		case "paint": {
 			await waitForProxy();
-			console.info(`Opening Reddit...`);
+			console.info(`[Core]      Opening Reddit...`);
 			// Initial Reddit browsing
 			let browserContext = new FetchContext("https://www.reddit.com");
 			await browserContext.fetch("https://www.reddit.com", {
@@ -239,72 +117,87 @@ let main = async function (args) {
 			});
 			await WingBlade.sleep(1200, 1800);
 			// Begin the Reddit auth flow
-			console.info(`Opening the login page...`);
+			console.info(`[Core]      Opening the login page...`);
 			let redditAuth = new RedditAuth(browserContext);
 			let authResult = await redditAuth.login(acct, pass, otp);
 			if (!redditAuth.loggedIn) {
 				// Error out
-				console.info(`Reddit login failed. Reason: ${authResult}`);
+				console.info(`[Core]      Reddit login failed. Reason: ${authResult}`);
 				WingBlade.exit(1);
 			};
 			// Start the painter
 			//console.info(browserContext.cookies);
 			//console.info(redditAuth.authInfo);
-			console.info(`Logged in as ${acct}. Starting the painter...`);
+			console.info(`[Core]      Logged in as ${acct}. Starting the painter...`);
 			await logoutEverywhere(browserContext, redditAuth);
 			if (!redditAuth.loggedIn) {
-				console.info(`Logged out from ${acct}.`);
+				console.info(`[Core]      Logged out from ${acct}.`);
 			} else {
-				console.info(`Logout failed as ${acct}.`);
+				console.info(`[Core]      Logout failed as ${acct}.`);
 			};
 			break;
 		};
 		case "test": {
 			await waitForProxy();
-			console.info(`Opening test server...`);
+			console.info(`[Core]      Opening test server...`);
 			// Initial test canvas browsing
 			let browserContext = new FetchContext('https://place.equestria.dev');
-			let paintGuide = {};
-			let templateRefresher = async () => {
-				if (await hasTmplEtagChanged(browserContext, paintGuide)) {
-					await refreshTemplate(browserContext, paintGuide);
-				};
-			},
-			templateThread = setInterval(templateRefresher, 30000);
-			templateRefresher();
+			let paintGuide = new PaintGuide(svc.tpl);
 			await browserContext.fetch('https://place.equestria.dev/');
 			// Begin the test server auth flow
-			console.info(`Logging into the test server...`);
+			console.info(`[Core]      Logging into the test server...`);
 			let monalisa = new Monalisa(browserContext);
+			monalisa.pg = paintGuide;
+			let templateRefresher = async () => {
+				paintGuide.updateTemplate();
+			},
+			templateThread = setInterval(templateRefresher, 30000);
+			let rebuildPartitions = async () => {
+				await monalisa.partitionPixels();
+				monalisa?.pp?.forEach((e, i) => {
+					console.info(`[Core]      Canvas #${i} has ${e.length} points.`);
+				});
+				monalisa.rebuildDamageCloud();
+			};
+			monalisa.addEventListener("canvasconfig", rebuildPartitions)
+			paintGuide.addEventListener("templateupdate", rebuildPartitions);
+			templateRefresher();
 			let authResult = await monalisa.login({session: acct, fallback: pass, refresh: otp});
 			if (!monalisa.loggedIn) {
 				// Error out
-				console.info(`Monalisa login failed. Reason: ${authResult}`);
+				console.info(`[Core]      Monalisa login failed. Reason: ${authResult}`);
 				WingBlade.exit(1);
 			};
-			console.info(`Logged in as ${monalisa.session}. Receiving canvas config...`);
+			console.info(`[Core]      Logged in as ${monalisa.session}. Receiving canvas config...`);
 			await monalisa.refreshInfo();
-			console.info(`Next pixel in ${(monalisa.nextAt - Date.now()) / 1000} seconds.`);
-			await monalisa.startStream();
+			console.info(`[Core]      Cold start. Next pixel in ${(monalisa.nextAt - Date.now()) / 1000} seconds.`);
+			await monalisa.startStream(true);
+			console.info(`[Core]      Waiting for canvas configuration.`);
 			await monalisa.whenCcReady();
+			console.info(`[Core]      Waiting for pixel partitioning.`);
+			await monalisa.whenPpReady();
+			console.info(`[Core]      ${paintGuide.pixels} managed pixels in total.`);
+			console.info(`[Core]      Waiting for canvas clouds and damage clouds.`);
 			// Start the painter
 			let power = 1;
 			let keepRunning = true;
+			monalisa.focusPixel();
 			while (keepRunning) {
 				let timeNow = Date.now();
 				if (timeNow < monalisa.nextAt) {
-					console.info(`Still under cooldown. ${monalisa.nextAt - timeNow} seconds left.`);
+					console.info(`[Core]      Still under cooldown. ${monalisa.nextAt - timeNow} seconds left.`);
 				} else if (Math.random() < power) {
-					console.info(`Placing pixels...`);
+					console.info(`[Core]      Requesting pixel placing...`);
 					await monalisa.getPixelHistory();
+					await monalisa.place();
 					//console.info(JSON.stringify());
-					let colourDesired = [WingBlade.randomInt(256), WingBlade.randomInt(256), WingBlade.randomInt(256)];
-					let colourPicked = monalisa.cc.colours.nearest(colourDesired);
-					console.info(`Chose ${colourPicked} for ${colourDesired}.`);
-					let nextAt = await monalisa.placePixel(WingBlade.randomInt(10), 0, colourPicked[3]);
-					console.info(`Next pixel in ${(nextAt - Date.now()) / 1000} seconds.`);
+					//let colourDesired = [WingBlade.randomInt(256), WingBlade.randomInt(256), WingBlade.randomInt(256)];
+					//let colourPicked = monalisa.cc.colours.nearest(colourDesired);
+					//console.info(`[Core]      Chose ${colourPicked} for ${colourDesired}.`);
+					//let nextAt = await monalisa.placePixel(WingBlade.randomInt(10), 0, colourPicked[3]);
+					//console.info(`[Core]      Next pixel in ${(nextAt - Date.now()) / 1000} seconds.`);
 				} else {
-					console.info(`Bot waiting for the next sweep.`);
+					console.info(`[Core]      Bot waiting for the next sweep.`);
 				};
 				await WingBlade.sleep(5000);
 			};
@@ -314,7 +207,7 @@ let main = async function (args) {
 			await waitForProxy();
 			let runSince = Date.now();
 			let systemBrowser = new FetchContext('https://place.equestria.dev');
-			let paintGuide = {};
+			let paintGuide = new PaintGuide(svc.tpl);
 			let templateRefresher = async () => {
 				if (await hasTmplEtagChanged(systemBrowser, paintGuide)) {
 					await refreshTemplate(systemBrowser, paintGuide);
@@ -331,15 +224,15 @@ let main = async function (args) {
 					e.send(serialized);
 				});
 			};
-			console.info(`Reading configuration data from "${confFile}".`);
+			console.info(`[Core]      Reading configuration data from "${confFile}".`);
 			try {
 				conf = JSON.parse(utf8Decode.decode(await WingBlade.readFile(confFile)));
 			} catch (err) {
-				console.info(`File read error: ${err}`);
-				console.info(`If you are running this for the first time, you can safely ignore the error above.`);
+				console.info(`[Core]      File read error: ${err}`);
+				console.info(`[Core]      If you are running this for the first time, you can safely ignore the error above.`);
 			};
 			let fileSaver = async function () {
-				console.info(`Saving configuration file...`);
+				console.info(`[Core]      Saving configuration file...`);
 				await WingBlade.writeFile(confFile, utf8Encode.encode(JSON.stringify(conf)));
 			},
 			fileSaveThread = setInterval(fileSaver, 30000);
@@ -362,7 +255,7 @@ let main = async function (args) {
 						switch (url.pathname) {
 							case "/":
 							case "/index.htm": {
-								console.info(`Web UI is opened. Welcome aboard, soldier!`);
+								console.info(`[Core]      Web UI is opened. Welcome aboard, soldier!`);
 								return new Response(webUiBody, {
 									"headers": {
 										"Content-Type": "text/html"
@@ -433,16 +326,16 @@ let main = async function (args) {
 								};
 								let {socket, response} = WingBlade.upgradeWebSocket(request);
 								socket.addEventListener("open", () => {
-									console.info(`Web UI subscribed to realtime events.`);
+									console.info(`[Core]      Web UI subscribed to realtime events.`);
 									socket.send(JSON.stringify({"event": "init"}));
 									socket.addEventListener("close", () => {
-										console.info(`Web UI disconnected from realtime events.`);
+										console.info(`[Core]      Web UI disconnected from realtime events.`);
 										socketStreams.splice(socketStreams.indexOf(socket), 1);
 									});
 									socketStreams.push(socket);
 								});
 								socket.addEventListener("close", () => {
-									console.info("WS closed.");
+									console.info("[Core]     WS closed.");
 								});
 								return response;
 								break;
@@ -535,10 +428,10 @@ let main = async function (args) {
 			}, {
 				port: acct || 14514,
 				onListen: ({port}) => {
-					console.info(`Now running in batch mode. To control and/or retrieve info from CLI, use the "ctl" subcommand.`);
-					console.info(`Web UI and REST API available on http://127.0.0.1:${port}/`);
+					console.info(`[Core]      Now running in batch mode. To control and/or retrieve info from CLI, use the "ctl" subcommand.`);
+					console.info(`[Core]      Web UI and REST API available on http://127.0.0.1:${port}/`);
 					if (WingBlade.os.toLowerCase() == "windows") {
-						console.info(`Open the link above in your browser of choice, and start fighting, soldier!`);
+						console.info(`[Core]      Open the link above in your browser of choice, and start fighting, soldier!`);
 					};
 				}
 			})

@@ -37,10 +37,10 @@ let IPInfo = class {
 			};
 			ipAddress = (await ipRep.text()).replaceAll("\n", "").trim();
 		} catch (err) {
-			console.info(`IP address fetch failed. ${err}`);
+			console.info(`[IPInfo]    IP address fetch failed. ${err}`);
 		};
 		if (this.#infoIp != ipAddress && ipAddress != "127.0.0.1") {
-			console.info(`IP address updated to: ${ipAddress}`);
+			console.info(`[IPInfo]    IP address updated to: ${ipAddress}`);
 			this.ip = ipAddress;
 			if (this.#cache[ipAddress]) {
 				let cached = this.#cache[ipAddress];
@@ -48,7 +48,7 @@ let IPInfo = class {
 				this.as = cached.as;
 				this.cc = cached.cc;
 				this.#infoIp = ipAddress;
-				console.info(`Served GeoIP info from cache.`);
+				console.info(`[IPInfo]    Served GeoIP info from cache.`);
 				return;
 			};
 			let ipInfo;
@@ -72,7 +72,7 @@ let IPInfo = class {
 						this.#infoIp = "0.0.0.0";
 					};
 				} else {
-					console.info(`Blocked from IP.SB. Switchting to BGPView...`);
+					console.info(`[IPInfo]    Blocked from IP.SB. Switchting to BGPView...`);
 					// Fetch information from BGPView
 					let ipsb = await this.#fc.fetch(`https://api.bgpview.io/ip/${ipAddress}`);
 					if (ipsb.status == 200) {
@@ -102,7 +102,7 @@ let IPInfo = class {
 							this.#infoIp = "0.0.0.0";
 						};
 					} else {
-						console.info(`Blocked from BGPView. Switchting to IPAPI.co...`);
+						console.info(`[IPInfo]    Blocked from BGPView. Switchting to IPAPI.co...`);
 						let ipsb = await this.#fc.fetch(`https://ipapi.co/json/`);
 						if (ipsb.status == 200) {
 							let ipInfo = await ipsb.json();
@@ -122,7 +122,7 @@ let IPInfo = class {
 								this.#infoIp = "0.0.0.0";
 							};
 						} else {
-							console.info(`Blocked from IPAPI.co. Switchting to IPGeolocation...`);
+							console.info(`[IPInfo]    Blocked from IPAPI.co. Switchting to IPGeolocation...`);
 							let ipsb = await this.#fc.fetch(`https://api.ipgeolocation.io/ipgeo?include=hostname&ip=${ipAddress}`, {
 								"headers": {
 									"Origin": "https://ipgeolocation.io",
@@ -148,7 +148,7 @@ let IPInfo = class {
 									this.#infoIp = "0.0.0.0";
 								};
 							} else {
-								console.info(`Blocked from IPGeolocation. Switchting to IPAPI.com...`);
+								console.info(`[IPInfo]    Blocked from IPGeolocation. Switchting to IPAPI.com...`);
 								let ipsb = await this.#fc.fetch(`https://ipapi.com/ip_api.php?ip=${ipAddress}`);
 								if (ipsb.status == 200) {
 									let ipInfo = (await ipsb.json()).data;
@@ -168,7 +168,7 @@ let IPInfo = class {
 										this.#infoIp = "0.0.0.0";
 									};
 								} else {
-									console.info(`Blocked from IPAPI.com.`);
+									console.info(`[IPInfo]    Blocked from IPAPI.com.`);
 								};
 							};
 						};
@@ -176,7 +176,7 @@ let IPInfo = class {
 				};
 				//console.info(this);
 			} catch (err) {
-				console.error(`GeoIP service failed: ${err}`);
+				console.error(`[IPInfo]    GeoIP service failed: ${err}`);
 			};
 		} else {
 			//console.info(`IP address still on: ${ipAddress}`);

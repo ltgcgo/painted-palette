@@ -17,7 +17,7 @@ while [ "$QUIT" == "0" ] ; do
 	if [ -e "./patched.js" ] ; then
 		rm "./${RUNTIME}.js"
 		mv "./patched.js" "./${RUNTIME}.js"
-		echo "Updated the script to the latest version. Restarting!"
+		echo "[Helper]    Updated the script to the latest version. Restarting!"
 	fi
 	QUIT=1
 	$RUNTIME $ADDITIONAL ${RUNTIME}.js "$@" && QUIT=0

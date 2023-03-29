@@ -8,6 +8,7 @@ const colourspace = [0, 1, 2];
 
 let ColourPaletteSpace = class {
 	tree;
+	gate = 110.851252; // Maximum allowed difference
 	add(point) {
 		return this.tree.insert(point);
 	};
@@ -22,7 +23,12 @@ let ColourPaletteSpace = class {
 		this.tree = new kdTree(points, dim3Dist, colourspace);
 	};
 	nearest(colour) {
-		return this.tree.nearest(colour, 1)[0][0];
+		let result = this.tree.nearest(colour, 1)[0];
+		if (result[1] > this.gate) {
+			console.info(`[Colour]    Target colour exceeded colour similarity gate.`);
+			return;
+		};
+		return result[0];
 	};
 	constructor() {
 		this.restart();

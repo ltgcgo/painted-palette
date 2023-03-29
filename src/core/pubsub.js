@@ -81,7 +81,7 @@ let RedditPubSub = class extends CustomEventSource {
 		super();
 		this.#demuxer = (async function (ev) {
 			let msg = JSON.parse(ev.data);
-			if (msg.id.constructor == String) {
+			if (msg.id?.constructor == String) {
 				msg.id = parseInt(msg.id);
 			};
 			// PubSub ID stream callback

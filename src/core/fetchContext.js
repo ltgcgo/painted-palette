@@ -133,11 +133,13 @@ let FetchContext = class extends EventTarget {
 				this.#concurrency --;
 				this.#fire("concurrency");
 				keepGoing = false;
-				console.error(`${contexts[opt.init] || "Fetch"} success.`);
+				if (retry < 9) {
+					console.error(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} success.`);
+				};
 			} catch (err) {
 				this.#concurrency --;
 				this.#fire("concurrency");
-				console.error(`${contexts[opt.init] || "Fetch"} failed (${err}).${retry ? " Retrying..." : ""}`);
+				console.error(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} failed (${err}).${retry ? " Retrying..." : ""}`);
 				if (retry) {
 					await WingBlade.sleep(2000);
 				};

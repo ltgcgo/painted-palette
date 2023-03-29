@@ -81,6 +81,7 @@ Recommended for Android (Termux).
 * Mint Flower/Flame
 * pako.js
 * UPNG.js
+* uuid
 * ws
 * xmldom
 
