@@ -41,6 +41,10 @@ let humanizedPercentage = function (floatv = 0) {
 	let fracv = `${Math.floor(floatv * 100 % 100)}`.padStart(2, "0");
 	return `${intv}.${fracv}%`;
 };
+let humanizedSize = function (bytes) {
+	let scale = Math.floor(Math.log2(bytes) / 10) || 0;
+	return `${Math.round((bytes / (1024 ** scale)) * 1000) / 1000} ${['B','KiB','MiB','GiB','TiB'][scale]}`;
+};
 
 let stringReflector = function (string, reflector = 85) {
 	// Only takes Uint16
@@ -66,5 +70,6 @@ export {
 	sortDist,
 	humanizedTime,
 	humanizedPercentage,
+	humanizedSize,
 	stringReflector
 };

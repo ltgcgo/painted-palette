@@ -83,7 +83,7 @@ let main = async function (args) {
 	// If the painter starts
 	let conf = {
 		sensitivity: 1,
-		magazine: 5,
+		magazine: 8,
 		users: {}
 	};
 	let botPlaced = 0;
@@ -298,10 +298,16 @@ let main = async function (args) {
 										asn: ipInfo.asn,
 										as: ipInfo.as
 									},
-									acct: {},
+									acct: {
+										total: managedClients.length,
+										active: 0,
+										fresh: 0,
+										banned: 0
+									},
 									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy",
 									mem: WingBlade.memUsed().rss,
 									uptime: Date.now() - runSince,
+									instance: paintAnalytics.uuid,
 									bot: {
 										sen: conf.sensitivity,
 										pow: getPower(paintGuide, conf.sensitivity),
@@ -335,7 +341,7 @@ let main = async function (args) {
 									socketStreams.push(socket);
 								});
 								socket.addEventListener("close", () => {
-									console.info("[Core]     WS closed.");
+									console.info("[Core]      WS closed.");
 								});
 								return response;
 								break;

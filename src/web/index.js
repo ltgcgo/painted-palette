@@ -2,7 +2,12 @@
 "use strict";
 
 // Import common values
-import {BuildInfo, humanizedTime, humanizedPercentage} from "../core/common.js";
+import {
+	BuildInfo,
+	humanizedTime,
+	humanizedSize,
+	humanizedPercentage
+} from "../core/common.js";
 
 // Initialize Alpine
 import {} from "../../libs/alpinejs/alpine.js";
@@ -20,6 +25,7 @@ document.addEventListener("alpine:init", () => {
 	let users = [], userIndex = {};
 	Alpine.store("buildInfo", BuildInfo);
 	Alpine.store("userdata", users);
+	Alpine.store("wsConnected", 0);
 	let userMan = Alpine.store("userdata");
 	let runSince = 0;
 	infoThread = setInterval(async () => {
@@ -37,6 +43,12 @@ document.addEventListener("alpine:init", () => {
 			maxOn: data.bot.mag,
 			pixels: data.bot.px,
 			power: humanizedPercentage(data.bot.pow),
+			instance: data.instance,
+			memory: humanizedSize(data.mem),
+			acct: data.acct.total,
+			active: data.acct.active,
+			banned: data.acct.banned,
+			fresh: data.acct.fresh,
 			ctw: data.ct?.w,
 			cth: data.ct?.h,
 			cuw: data.cu?.w,
@@ -49,7 +61,7 @@ document.addEventListener("alpine:init", () => {
 	}, 5000);
 	subSecondTask = setInterval(async () => {
 		Alpine.store("sessionUptime", runSince ? humanizedTime((Date.now() - runSince) / 1000) : "Waiting for data...");
-	}, 10);
+	}, 100);
 	slowSubTask = setInterval(async () => {
 		//
 	}, 500);
@@ -85,6 +97,20 @@ document.addEventListener("alpine:init", () => {
 	};
 	let eventStream,
 	eventTapper = function () {
+		fetch("/user").then((r) => {return r.json()}).then((json) => {
+			while (userMan.length > 0) {
+				userMan.pop();
+			};
+			for (let name in json) {
+				let e = json[name];
+				userMan.push({
+					acct: e.acct.slice(0, 20),
+					name: e.acct
+				});
+			};
+			rebuildAcctIndex();
+		});
+		Alpine.store("wsConnected", 1);
 		console.info("WebSocket connecting...");
 		eventStream = new WebSocket(`ws://${location.host}/events`);
 		eventStream.addEventListener("message", async function (ev) {
@@ -93,6 +119,7 @@ document.addEventListener("alpine:init", () => {
 			switch (data.event) {
 				case "init": {
 					userAddLock = true;
+					Alpine.store("wsConnected", 2);
 					console.info("WebSocket connected.");
 					break;
 				};
@@ -128,21 +155,12 @@ document.addEventListener("alpine:init", () => {
 		});
 		eventStream.addEventListener("close", function () {
 			userAddLock = false;
+			Alpine.store("wsConnected", 0);
 			console.info("WebSocket disconnected. Retrying in seconds.");
-			setTimeout(eventTapper, 2000);
+			setTimeout(eventTapper, 5000);
 		});
 	};
 	eventTapper();
-	fetch("/user").then((r) => {return r.json()}).then((json) => {
-		for (let name in json) {
-			let e = json[name];
-			userMan.push({
-				acct: e.acct.slice(0, 20),
-				name: e.acct
-			});
-		};
-		rebuildAcctIndex();
-	});
 	self.delUser = (name) => {
 		fetch("/user", {
 			"method": "DELETE",

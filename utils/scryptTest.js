@@ -2,20 +2,16 @@ import {scrypt} from "../libs/scrypt/scrypt.js";
 import {Base64} from "../libs/js-base64/base64.js";
 
 let utf8Enc = new TextEncoder();
-
-//let globalSalt = utf8Enc.encode("I Love Princess Luna!".normalize("NFKC"));
 let globalSalt = Base64.toUint8Array("iEUGI-iCw0geuADPcHQImZe2qpGQlSJl");
-console.info(`Salt: ${globalSalt}`);
 
-let derivePassword = function (string) {
-	return scrypt.syncScrypt(
+let deriveHash = function (string) {
+	return Base64.fromUint8Array(scrypt.syncScrypt(
 		utf8Enc.encode(string.normalize("NFKC")),
 		globalSalt,
-		4096, 8, 1, 24
-	);
+		8192, 8, 1, 24
+	), true);
 };
 
-let derived = derivePassword("Hi Luna!");
-//console.info(derived);
-console.info(Base64.fromUint8Array(derived, true));
-//console.info(Base64.toUint8Array(Base64.fromUint8Array(derived, true)));
+for (let r = 0; r < 16; r ++) {
+	console.info(deriveHash("Hi Luna!"));
+};
