@@ -7,6 +7,7 @@ import KdTreeSrc from "../../libs/kd-tree/kd-tree.js";
 let {kdTree, BinaryHeap} = KdTreeSrc;
 import {ColourPaletteSpace} from "./colour.js";
 import {UPNG} from "../../libs/upng/upng.min.js";
+import {deriveHash} from "./derive.js";
 
 let Monalisa = class extends CustomEventSource {
 	#context;
@@ -15,11 +16,14 @@ let Monalisa = class extends CustomEventSource {
 	#refreshToken;
 	#x = 0;
 	#y = 0;
+	#isPlacing = false;
 	ws; // Managed WebSocket
 	ps; // Managed PubSub
 	cc; // Managed CanvasConfiguration
 	pg; // Paint Guide
 	pp; // Point Partition
+	an; // Attached analytics object
+	ra; // Attached Reddit authenticator
 	psStreams = {
 		conf: 0,
 		canvas: []
@@ -157,7 +161,7 @@ let Monalisa = class extends CustomEventSource {
 				};
 				pixel = pixel[0][0];
 				if (pixel[0] != e[0] || pixel[1] != e[1]) {
-					console.info(`[Monalisa]  PG (${e[0]}, ${e[1]}) does not match canvas (${pixel[0]}, ${pixel[1]}).`);
+					//console.info(`[Monalisa]  PG (${e[0]}, ${e[1]}) does not match canvas (${pixel[0]}, ${pixel[1]}).`);
 					return;
 				};
 				if (e[4] != pixel[2] || e[5] != pixel[3] || e[6] != pixel[4] ) {
@@ -179,21 +183,31 @@ let Monalisa = class extends CustomEventSource {
 		this.#y = y;
 	};
 	async placePixel({x = this.#x, y = this.#y, ci = 0}) {
-		// ci means colour index
-		let canvasIndex = this.cc.canvas.nearest([x, y], 1)[0][0][2];
-		console.info(`[Monalisa]  Chose canvas ${canvasIndex} for ${x}, ${y}.`);
-		let canvasX = x % this.cc.uWidth, canvasY = y % this.cc.uHeight;
-		let graphQlBody = `{"operationName":"setPixel","variables":{"input":{"actionName":"r/replace:set_pixel","PixelMessageData":{"coordinate":{"x":${canvasX},"y":${canvasY}},"colorIndex":${ci},"canvasIndex":${canvasIndex}}}},"query":"mutation setPixel($input: ActInput!) {\\n  act(input: $input) {\\n    data {\\n      ... on BasicMessage {\\n        id\\n        data {\\n          ... on GetUserCooldownResponseMessageData {\\n            nextAvailablePixelTimestamp\\n            __typename\\n          }\\n          ... on SetPixelResponseMessageData {\\n            timestamp\\n            __typename\\n          }\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"}`;
-		//console.info(`${graphQlBody}`);
-		let graphQlRep = await await this.#context.fetch(`${this.appUrl}/query`, {
-			"headers": this.getGraphQlHeaders(graphQlBody.length),
-			"method": "POST",
-			"body": graphQlBody
-		});
-		//console.info(graphQlRep);
-		let graphQlRaw = await graphQlRep.json();
-		this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
-		return this.nextAt;
+		if (this.#isPlacing) {
+			console.info(`[Monalisa]  Another instance of pixel placing ongoing.`);
+			return;
+		};
+		this.#isPlacing = true;
+		try {
+			// ci means colour index
+			let canvasIndex = this.cc.canvas.nearest([x, y], 1)[0][0][2];
+			console.info(`[Monalisa]  Chose canvas ${canvasIndex} for ${x}, ${y}.`);
+			let canvasX = x % this.cc.uWidth, canvasY = y % this.cc.uHeight;
+			let graphQlBody = `{"operationName":"setPixel","variables":{"input":{"actionName":"r/replace:set_pixel","PixelMessageData":{"coordinate":{"x":${canvasX},"y":${canvasY}},"colorIndex":${ci},"canvasIndex":${canvasIndex}}}},"query":"mutation setPixel($input: ActInput!) {\\n  act(input: $input) {\\n    data {\\n      ... on BasicMessage {\\n        id\\n        data {\\n          ... on GetUserCooldownResponseMessageData {\\n            nextAvailablePixelTimestamp\\n            __typename\\n          }\\n          ... on SetPixelResponseMessageData {\\n            timestamp\\n            __typename\\n          }\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"}`;
+			//console.info(`${graphQlBody}`);
+			let graphQlRep = await await this.#context.fetch(`${this.appUrl}/query`, {
+				"headers": this.getGraphQlHeaders(graphQlBody.length),
+				"method": "POST",
+				"body": graphQlBody
+			});
+			//console.info(graphQlRep);
+			let graphQlRaw = await graphQlRep.json();
+			this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
+			return this.nextAt;
+		} catch (err) {
+			console.info(`[Monalisa]  Pixel placement failed. ${err}`);
+		};
+		this.#isPlacing = false;
 	};
 	async place() {
 		if (!this.cc?.damage) {
@@ -337,6 +351,9 @@ let Monalisa = class extends CustomEventSource {
 								let pngView = new DataView(pngData);
 								let offset = canvasXy[canvasId];
 								let iteratedPx = 0, validPixels = 0;
+								if (!this.pp) {
+									await this.whenPpReady();
+								};
 								this.pp[canvasId]?.forEach(([rx, ry]) => {
 									let x = rx % cc.uWidth, y = ry % cc.uHeight;
 									let ri = (y * cc.uWidth + x) << 2;

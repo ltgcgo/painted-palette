@@ -22,7 +22,7 @@ let utf8Decode = new TextDecoder(), utf8Encode = new TextEncoder();
 
 const svc = {
 	cnc: "",
-	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/rdnsptr.json"
+	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/pointer.json"
 };
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
@@ -128,7 +128,8 @@ let main = async function (args) {
 			// Start the painter
 			//console.info(browserContext.cookies);
 			//console.info(redditAuth.authInfo);
-			console.info(`[Core]      Logged in as ${acct}. Starting the painter...`);
+			console.info(`[Core]      Logged in as ${acct} (${redditAuth.userHash}).`);
+			console.info(`Starting the painter...`);
 			await logoutEverywhere(browserContext, redditAuth);
 			if (!redditAuth.loggedIn) {
 				console.info(`[Core]      Logged out from ${acct}.`);
@@ -299,6 +300,7 @@ let main = async function (args) {
 									},
 									acct: {},
 									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy",
+									mem: WingBlade.memUsed().rss,
 									uptime: Date.now() - runSince,
 									bot: {
 										sen: conf.sensitivity,

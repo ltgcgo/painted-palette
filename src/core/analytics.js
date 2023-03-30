@@ -7,27 +7,30 @@ let Analytics = class {
 	#fc = new FetchContext("https://equestria.dev");
 	#uuid = uuid.v4();
 	#url;
-	async botPlacement(x, y, color, reddit, safe) {
+	async botPlacement({userHash, x, y, color, reddit, safe, fail = false}) {
+		// UID must be a hash already derived with Scrypt
 		await this.#fc.fetch(this.#url, {
 			"method": "POST",
 			"body": JSON.stringify({
-				"event": "pixel",
+				"event": fail ? "pixelfail" : "pixel",
 				"type": "bot-js",
 				"id": this.#uuid,
+				userHash,
 				"pos": {x, y},
 				color,
-				"nextPixelPlace": {reddit, safe},
+				"nextPixelPlace": fail ? reddit : {reddit, safe},
 				"environment": "maneplace"
 			})
 		});
 	};
-	async sendError(message) {
+	async sendError(userHash, message) {
 		await this.#fc.fetch(this.#url, {
 			"method": "POST",
 			"body": JSON.stringify({
 				"event": "error",
 				"type": "bot-js",
 				"id": this.#uuid,
+				userHash,
 				message
 			})
 		});

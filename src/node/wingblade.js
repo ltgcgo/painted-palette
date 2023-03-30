@@ -103,6 +103,9 @@ let WingBlade = {
 	getEnv: (key, fallbackValue) => {
 		return process.env[key] || fallbackValue;
 	},
+	memUsed: () => {
+		return process.memoryUsage();
+	},
 	randomInt: (cap) => {
 		return Math.floor(Math.random() * cap);
 	},

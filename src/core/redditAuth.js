@@ -1,6 +1,8 @@
 "use strict";
 
 import {DOMParser} from "../../libs/xmldom/xmldom.js";
+import {deriveHash} from "./derive.js";
+
 let encodeURL = encodeURIComponent;
 
 let returnDest = "https://www.reddit.com";
@@ -9,6 +11,7 @@ let domParser = new DOMParser();
 let RedditAuth = class {
 	context;
 	loggedIn = false;
+	userHash = "";
 	get authInfo() {
 		let fc = this.context;
 		return {
@@ -18,6 +21,7 @@ let RedditAuth = class {
 		};
 	};
 	async login(username = "", password = "", otp = "") {
+		this.userHash = deriveHash(username);
 		let fc = this.context;
 		// Fetching CSRF token
 		let body = await (await fc.fetch("https://www.reddit.com/login/", {

@@ -15,6 +15,9 @@ let WingBlade = {
 	getEnv: (key, fallbackValue) => {
 		return Deno.env.get(key) || fallbackValue;
 	},
+	memUsed: () => {
+		return Deno.memoryUsage();
+	},
 	randomInt: (cap) => {
 		return Math.floor(Math.random() * cap);
 	},
