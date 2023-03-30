@@ -11,10 +11,10 @@ Powered by ESBuild and Deno. Developed by [Lightingale Community and all contrib
 - [x] Web-compliant.
 - [x] Fast to build (within 2 seconds).
 - [x] Fast to deploy (within 30 seconds for all steps combined).
-- [ ] Easy to deploy (anyone can run it).
+- [x] Easy to deploy (anyone can run it).
 - [x] No need to install dependencies before running.
 - [x] Automatic updater.
-- [ ] Relatively low on memory and CPU.
+- [x] Relatively low on memory and CPU.
 
 ## Running
 ### Steps
