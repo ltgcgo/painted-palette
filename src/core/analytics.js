@@ -35,6 +35,18 @@ let Analytics = class {
 			})
 		});
 	};
+	async accountFail(userHash, nextPixelPlace) {
+		await this.#fc.fetch(this.#url, {
+			"method": "POST",
+			"body": JSON.stringify({
+				"event": "accfail",
+				"type": "bot-js",
+				"id": this.uuid,
+				userHash,
+				nextPixelPlace
+			})
+		});
+	};
 	constructor(url) {
 		this.#url = url;
 		console.info(`[Analytics] Created analytics as ${this.uuid}.`);
