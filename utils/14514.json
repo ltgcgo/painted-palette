@@ -1,14 +1,16 @@
 {
 	"users": [{
-		"name": "exampleName",
+		"acct": "exampleName",
 		"pass": "examplePass",
+		"otp": "",
 		"pixelCount": 0,
 		"lastColour": "#ffffff",
-		"active": false,
+		"enabled": false,
 		"banned": false,
 		"fresh": true,
 		"focusX": 0,
 		"focusY": 0,
+		"active": "Do not store",
 		"cooldown": "Do not store",
 		"statusText": "Do not store"
 	}]

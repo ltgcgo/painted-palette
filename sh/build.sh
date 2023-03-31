@@ -6,7 +6,7 @@ rm -rv dist/*.js
 rm -rv dist/*.mjs
 rm -rv dist/*.map
 # Build some files ahead of the time
-shx live web --minify > /dev/null
+shx live web ${1:---minify} > /dev/null
 mv proxy/web.js dist/web.js.txt
 # Using esbuild to build all JS files
 #esbuild --bundle src/index.js --outfile=dist/index.js --minify --sourcemap

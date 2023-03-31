@@ -97,6 +97,7 @@ let WingBlade = {
 	args: process.argv.slice(2),
 	os: os.platform(),
 	variant: "Node",
+	version: process.version.replace("v", ""),
 	exit: (code = 0) => {
 		process.exit(code);
 	},

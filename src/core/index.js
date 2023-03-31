@@ -4,17 +4,19 @@
 "use strict";
 
 import {BuildInfo, humanizedTime} from "./common.js";
-import {IPInfo} from "../core/ipinfo.js";
+import {IPInfo} from "./ipinfo.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
 import {Monalisa} from "./monalisa.js";
 import {Analytics} from "./analytics.js";
 import {PaintGuide} from "./paintGuide.js";
+
 import webUiBody from "../web/index.htm";
 import webUiCss from "../web/index.css";
 import picoCss from "../../libs/picocss/pico.css";
 import webUiJs from "../../dist/web.js.txt";
 
+import {CustomEventSource} from "../../libs/lightfelt/ext/customEvents.js";
 import {pako} from "../../libs/pako/bridge.min.js";
 self.pako = pako;
 
@@ -24,6 +26,7 @@ const svc = {
 	cnc: "",
 	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/pointer.json"
 };
+const batchModeOrigin = 'https://place.equestria.dev';
 
 let logoutEverywhere = async function (browserContext, redditAuth) {
 	if (redditAuth) {
@@ -66,8 +69,221 @@ let waitForProxy = async function () {
 		};
 	};
 };
-let getPower = function (paintGuideObj, sensitivity) {
-	return Math.max(0, Math.min(1, sensitivity * (1 - (0 / paintGuideObj.pixels))));
+
+let ManagedUser = class extends CustomEventSource {
+	username = "";
+	password = "";
+	otp = "";
+	active = false;
+	fc = new FetchContext(batchModeOrigin);
+	redditAuth; // Attach a Reddit authenticator
+	monalisa; // Attach a painter
+	get authInfo() {
+		return this.redditAuth?.authInfo;
+	};
+	async enable() {
+		await this.redditAuth?.login(this.username, this.password, this.otp);
+		await this.monalisa?.login(this.username, this.password, this.otp);
+		this.active = true;
+		return;
+	};
+	async disable() {
+		await this.monalisa?.logout();
+		await this.redditAuth?.logout();
+		this.active = false;
+		return;
+	};
+	constructor() {
+		super();
+	};
+};
+let MultiUserManager = class extends CustomEventSource {
+	#sweeping = false;
+	managed = {};
+	length = 0;
+	pg; // Attach a global paint guide
+	cc = {}; // Reused canvas config
+	conf; // Attach a config object
+	activeWs; // Attach a Monalisa object to listen to WS streams
+	has(username) {
+		if (this.managed[username]) {
+			return true;
+		} else {
+			//console.info(`[MultiMan]  Account ${username} does not exist.`);
+			return false;
+		};
+	};
+	get(username) {};
+	getPower() {
+		// Scale power based on received damage
+		if (this.conf?.power != undefined) {
+			return this.conf.power || 0;
+		};
+		return Math.max(0, Math.min(1,
+			(this.conf?.sensitivity || 1) * ((this.cc?.damaged || 0) / (this.pg?.pixels || 1))
+		));
+	};
+	async countActive() {
+		let sum = 0;
+		for (let i in this.managed) {
+			if (this.managed[i]?.active) {
+				sum ++;
+			};
+		};
+		return sum;
+	};
+	async enable(username, noEnable) {
+		if (!this.has(username)) {
+			return;
+		};
+		this.conf.users[username].enabled = true;
+		if (!this.managed[username].active) {
+			this.managed[username].enable();
+			this.conf.users[username].active = true;
+			this.dispatchEvent("user", username);
+		};
+	};
+	async disable(username, noDisable) {
+		if (!this.has(username)) {
+			return;
+		};
+		if (!noDisable) {
+			this.conf.users[username].enabled = false;
+		};
+		if (this.managed[username].active) {
+			this.managed[username].disable();
+			this.conf.users[username].active = false;
+			this.dispatchEvent("user", username);
+		};
+	};
+	async add(confObj, noActive) {
+		let {acct, pass, otp} = confObj;
+		if (this.has(acct)) {
+			console.info(`[MultiMan]  Account ${username} already exists.`);
+			return;
+		};
+		if (confObj.enabled == undefined) {
+			confObj.enabled = true;
+		};
+		if (!this.conf.users[acct]) {
+			this.conf.users[acct] = confObj;
+		};
+		if (!this.managed[acct]) {
+			let e = new ManagedUser();
+			e.monalisa = new Monalisa(e.fc);
+			e.monalisa.cc = this.cc;
+			e.monalisa.pg = this.pg;
+			this.managed[acct] = e;
+		};
+		this.length ++;
+		await this.selectActiveWs();
+	};
+	async remove(username) {
+		let success = false;
+		if (this.managed[username]) {
+			this.managed[username].disable();
+			delete this.managed[username];
+			success = true;
+		};
+		if (this.conf.users[username]) {
+			delete this.conf.users[username];
+			success = true;
+		};
+		if (success) {
+			this.length --;
+		};
+		await this.selectActiveWs();
+	};
+	async selectActiveWs() {
+		// Disconnect WS if disabled/inactive
+		if (this.activeWs && !this.activeWs.active) {
+			await this.activeWs.monalisa.stopStream();
+			this.activeWs = undefined;
+		};
+		if (this.activeWs) {
+			return;
+		};
+		// Automatically select a user to listen to WS streams
+		for (let uname in this.managed) {
+			let e = this.managed[uname];
+			if (!this.activeWs) {
+				if (e.active && !e.wsActive) {
+					await e.monalisa.startStream();
+					this.activeWs = e;
+				} else {
+					//console.info(e);
+				};
+			};
+		};
+	};
+	async rebuild() {
+		//console.info(`[MultiMan]  Rebuilding requested.`);
+		// Sync the managed object with the conf file
+		for (let uname in this.managed) {
+			if (!this.conf?.users[uname]) {
+				delete this.managed[uname];
+				console.info(`[MultiMan]  Account ${uname} removed upon rebuild.`);
+			};
+		};
+		// Disable and remove users if they do not appear
+		let activeCount = 0;
+		//console.info(this.conf.users);
+		for (let uname in this.conf.users) {
+			let e = this.conf.users[uname];
+			if (!this.managed[uname]) {
+				console.info(`[MultiMan]  Account ${uname} added upon rebuild.`);
+				await this.add(e);
+			};
+			let re = this.managed[uname];
+			if (re.active) {
+				activeCount ++;
+			};
+			if (e.enabled && !re.active) {
+				if (activeCount < this.conf.magazine) {
+					await this.enable(uname, true);
+					activeCount ++;
+				} else {
+					await this.disable(uname, true);
+				};
+			} else if (!e.enabled && re.active) {
+				await this.disable(uname);
+				activeCount --;
+			};
+		};
+		await this.selectActiveWs();
+	};
+	async sweep() {
+		// Conduct a sweep cycle
+		if (this.#sweeping) {
+			console.info(`[MultiMan]  Sweeping cycle already ongoing.`);
+			return;
+		};
+		this.#sweeping = true;
+		this.#sweeping = false;
+	};
+	async allOn() {
+		for (let uname in this.conf.users) {
+			await this.enable(uname);
+		};
+		await this.rebuild();
+	};
+	async allOff() {
+		for (let uname in this.conf.users) {
+			await this.disable(uname);
+		};
+		await this.rebuild();
+	};
+	async random() {
+		for (let uname in this.managed) {
+			let e = this.managed[uname];
+			e.monalisa.focusPixel();
+		};
+		await this.rebuild();
+	};
+	constructor(conf) {
+		super();
+		this.conf = conf;
+	};
 };
 
 let main = async function (args) {
@@ -215,7 +431,6 @@ let main = async function (args) {
 			templateThread = setInterval(templateRefresher, 30000);
 			templateRefresher();
 			let confFile = `${parseInt(acct) || 14514}.json`;
-			let managedClients = [], streamingClient;
 			let socketStreams = [];
 			let announceStream = function (json) {
 				let serialized = JSON.stringify(json);
@@ -226,6 +441,11 @@ let main = async function (args) {
 			console.info(`[Core]      Reading configuration data from "${confFile}".`);
 			try {
 				conf = JSON.parse(utf8Decode.decode(await WingBlade.readFile(confFile)));
+				for (let user in conf.users) {
+					if (conf.users[user].active?.constructor) {
+						delete conf.users[user].active;
+					};
+				};
 			} catch (err) {
 				console.info(`[Core]      File read error: ${err}`);
 				console.info(`[Core]      If you are running this for the first time, you can safely ignore the error above.`);
@@ -236,6 +456,19 @@ let main = async function (args) {
 			},
 			fileSaveThread = setInterval(fileSaver, 30000);
 			fileSaver();
+			let maman = new MultiUserManager(conf);
+			maman.pg = paintGuide;
+			let mamanSync = async () => {
+				await maman.rebuild();
+				for (let data in maman.managed) {
+					announceStream({"event": "user", data});
+				};
+			},
+			mamanThread = setInterval(mamanSync, 5000);
+			await mamanSync();
+			maman.addEventListener("user", ({data}) => {
+				announceStream({"event": "user", data});
+			});
 			let ipInfo = new IPInfo();
 			ipInfo.start();
 			WingBlade.serve(async function (request) {
@@ -289,9 +522,10 @@ let main = async function (args) {
 							case "/info": {
 								return new Response(JSON.stringify({
 									plat: {
-										var: WingBlade.variant,
+										var: `${WingBlade.variant} ${WingBlade.version}`,
 										os: WingBlade.os
 									},
+									ver: BuildInfo.ver,
 									ip: {
 										ip: ipInfo.ip,
 										cc: ipInfo.cc,
@@ -299,7 +533,7 @@ let main = async function (args) {
 										as: ipInfo.as
 									},
 									acct: {
-										total: managedClients.length,
+										total: maman.length,
 										active: 0,
 										fresh: 0,
 										banned: 0
@@ -310,7 +544,7 @@ let main = async function (args) {
 									instance: paintAnalytics.uuid,
 									bot: {
 										sen: conf.sensitivity,
-										pow: getPower(paintGuide, conf.sensitivity),
+										pow: maman.getPower(),
 										mag: conf.magazine,
 										px: botPlaced
 									},
@@ -334,6 +568,7 @@ let main = async function (args) {
 								socket.addEventListener("open", () => {
 									console.info(`[Core]      Web UI subscribed to realtime events.`);
 									socket.send(JSON.stringify({"event": "init"}));
+									socket.send(JSON.stringify({"event": "error", "data": `This version ${BuildInfo.ver} is a build dedicated for testing. Provided credentials are testing tokens, not Reddit credentials.\nIf you have already generated testing tokens, paste them in the account field, and hit "login" to add them for management.`}));
 									socket.addEventListener("close", () => {
 										console.info(`[Core]      Web UI disconnected from realtime events.`);
 										socketStreams.splice(socketStreams.indexOf(socket), 1);
@@ -349,6 +584,24 @@ let main = async function (args) {
 							case "/user": {
 								// Get users
 								return new Response(JSON.stringify(conf.users));;
+								break;
+							};
+							case "/redist": {
+								// Force random redist
+								await maman.random();
+								return success;
+								break;
+							};
+							case "/allOn": {
+								// Force random redist
+								await maman.allOn();
+								return success;
+								break;
+							};
+							case "/allOff": {
+								// Force random redist
+								await maman.allOff();
+								return success;
 								break;
 							};
 							default: {
@@ -368,9 +621,20 @@ let main = async function (args) {
 										status: 400
 									});
 								} else {
-									conf.users[json.acct] = json;
+									await maman.add(json);
 									announceStream({"event": "user", "data": json.acct});
 									return success;
+								};
+								break;
+							};
+							case "/power": {
+								// Set power
+								let json = await request.json();
+								if (json >= 0 && json <= 1) {
+									conf.power = json;
+									return success;
+								} else {
+									return badRequest;
 								};
 								break;
 							};
@@ -396,6 +660,34 @@ let main = async function (args) {
 								return success;
 								break;
 							};
+							case "/on": {
+								// Enable a user
+								let json = await request.text();
+								if (conf.users[json]) {
+									maman.enable(json);
+									return success;
+								} else {
+									announceStream({"event": "error", "data": `Account "${json}" doesn't exist.`});
+									return new Response("Doesn't exist.", {
+										status: 400
+									});
+								};
+								break;
+							};
+							case "/off": {
+								// Disable a user
+								let json = await request.text();
+								if (conf.users[json]) {
+									maman.disable(json);
+									return success;
+								} else {
+									announceStream({"event": "error", "data": `Account "${json}" doesn't exist.`});
+									return new Response("Doesn't exist.", {
+										status: 400
+									});
+								};
+								break;
+							};
 							default: {
 								return notFound;
 							};
@@ -408,7 +700,7 @@ let main = async function (args) {
 								// Remove a user
 								let json = await request.text();
 								if (conf.users[json]) {
-									delete conf.users[json];
+									await maman.remove(json);
 									announceStream({"event": "userdel", "data": json});
 									return success;
 								} else {
@@ -418,6 +710,10 @@ let main = async function (args) {
 									});
 								};
 								break;
+							};
+							case "/power": {
+								delete conf.power;
+								return success;
 							};
 							default: {
 								return notFound;
@@ -446,12 +742,89 @@ let main = async function (args) {
 		case "ctl": {
 			let port = WingBlade.getEnv("PORT") || "14514";
 			let prefix = `http://127.0.0.1:${port}/`;
-			console.info("");
+			console.info(``);
 			switch (acct) {
 				case "info":
 				case "stat": {
 					let jsonData = await(await fetch (`${prefix}info`)).json();
 					console.info(`IP Information\nProxy: ${jsonData.proxy}\nIP: ${jsonData.ip.ip}\nCountry: ${jsonData.ip.cc}\nASN: ${jsonData.ip.asn}\nAS: ${jsonData.ip.as}\n\nStatistics\nFinished: \nSensitivity: \nPower: \nAccounts: ${jsonData.acct?.sum}\nActive: \nMagazine: \nBanned: ${jsonData.acct?.banned}\nFresh: ${jsonData.acct?.fresh}\nPlaced Pixels: ${jsonData.placed}\nUptime: ${humanizedTime(jsonData.uptime / 1000)}`);
+					break;
+				};
+				case "list": {
+					let jsonData = await(await fetch (`${prefix}user`)).json();
+					console.info(jsonData);
+					break;
+				};
+				case "add": {
+					console.info(await(await fetch (`${prefix}user`, {
+						"method": "POST",
+						"body": JSON.stringify({
+							"acct": args[2],
+							"pass": args[3],
+							"otp": args[4] || "",
+						})
+					})).text());
+					break;
+				};
+				case "del": {
+					console.info(await(await fetch (`${prefix}user`, {
+						"method": "DELETE",
+						"body": args[2]
+					})).text());
+					break;
+				};
+				case "on": {
+					console.info(await(await fetch (`${prefix}on`, {
+						"method": "PUT",
+						"body": args[2]
+					})).text());
+					break;
+				};
+				case "off": {
+					console.info(await(await fetch (`${prefix}off`, {
+						"method": "PUT",
+						"body": args[2]
+					})).text());
+					break;
+				};
+				case "gon": {
+					console.info(await(await fetch (`${prefix}allOn`)).text());
+					break;
+				};
+				case "goff": {
+					console.info(await(await fetch (`${prefix}allOff`)).text());
+					break;
+				};
+				case "user": {
+					console.info(await(await fetch (`${prefix}user`, {
+						"method": "PUT",
+						"body": args[2]
+					})).json());
+					break;
+				};
+				case "reset": {
+					console.info(await(await fetch (`${prefix}redist`)).text());
+					break;
+				};
+				case "power": {
+					let value = JSON.parse(pass || "-1");
+					if (value <= 1 && value >= 0) {
+						console.info(await(await fetch (`${prefix}power`, {
+							"method": "POST",
+							"body": `${value}`
+						})).text());
+					} else {
+						console.info(await(await fetch (`${prefix}power`, {
+							"method": "DELETE"
+						})).text());
+					};
+					break;
+				};
+				case "scale": {
+					console.info(await(await fetch (`${prefix}sensitivity`, {
+						"method": "POST",
+						"body": args[2] || "1"
+					})).text());
 					break;
 				};
 				default: {

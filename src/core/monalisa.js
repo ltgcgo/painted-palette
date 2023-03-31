@@ -24,12 +24,14 @@ let Monalisa = class extends CustomEventSource {
 	pp; // Point Partition
 	an; // Attached analytics object
 	ra; // Attached Reddit authenticator
+	lastColour = "transparent";
 	psStreams = {
 		conf: 0,
 		canvas: []
 	}; // PubSub streams
 	disableStream = false;
 	loggedIn = false;
+	wsActive = false;
 	userdata;
 	session;
 	appUrl;
@@ -78,7 +80,7 @@ let Monalisa = class extends CustomEventSource {
 	whenPpReady() {
 		let upThis = this;
 		return new Promise((r) => {
-			if (upThis.pp?.constructor) {
+			if (upThis.cc?.pp?.constructor) {
 				r();
 			} else {
 				let processor;
@@ -89,6 +91,9 @@ let Monalisa = class extends CustomEventSource {
 				upThis.addEventListener("pixelpartition", processor);
 			};
 		});
+	};
+	getFocal() {
+		return {x: this.#x, y: this.#y};
 	};
 	async refreshSession() {};
 	async refreshInfo() {
@@ -132,7 +137,7 @@ let Monalisa = class extends CustomEventSource {
 			//console.info("CanvasConfiguration OK. Waiting for template.");
 			await this.pg.whenTemplateReady();
 			//console.info("Template OK. Partitioning...");
-			delete this.pp;
+			delete this.cc.pp;
 			let partitionPixels = [];
 			// Add canvas ID information to each pixel
 			this.pg.points.forEach((e) => {
@@ -143,7 +148,7 @@ let Monalisa = class extends CustomEventSource {
 				};
 				partitionPixels[cid].push(e);
 			});
-			this.pp = partitionPixels;
+			this.cc.pp = partitionPixels;
 			this.dispatchEvent("pixelpartition");
 		} else {
 			console.info("[Monalisa]  Nothing to partition.");
@@ -203,6 +208,8 @@ let Monalisa = class extends CustomEventSource {
 			//console.info(graphQlRep);
 			let graphQlRaw = await graphQlRep.json();
 			this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
+			this.dispatchEvent("pixelsuccess");
+			this.#isPlacing = false;
 			return this.nextAt;
 		} catch (err) {
 			console.info(`[Monalisa]  Pixel placement failed. ${err}`);
@@ -247,12 +254,15 @@ let Monalisa = class extends CustomEventSource {
 			console.info(`[Monalisa]  No palette colour available for (${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
 			return;
 		};
+		this.lastColour = `rgba(${colour[0]},${colour[1]},${colour[2]})`;
 		await this.placePixel({ci: colour[3]});
 		console.info(`[Monalisa]  Painted (${this.#x}, ${this.#y}) as ${colour[3]}, P(${colour[0], colour[1], colour[2]}) D(${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
 	};
 	async startStream(actuallyResponds) {
+		this.disableStream = false;
 		console.info(`[Monalisa]  Connecting to canvas...`);
 		let upThis = this;
+		//console.info(this);
 		if (!this.ws || this.ws.readyState > 1) {
 			this.ws = new WebSocket(`${this.appUrl.replace("http", "ws")}/query`, "graphql-ws");
 			console.info(`[Monalisa]  New WebSocket connection created.`);
@@ -271,6 +281,7 @@ let Monalisa = class extends CustomEventSource {
 			console.info(ev.data);
 		});*/ // Keep alive packets
 		ws.addEventListener("open", (ev) => {
+			upThis.wsActive = true;
 			console.info(`[Monalisa]  Canvas listener started.`);
 			ps.start(this.#sessionToken);
 			ps.subscribe({
@@ -351,10 +362,10 @@ let Monalisa = class extends CustomEventSource {
 								let pngView = new DataView(pngData);
 								let offset = canvasXy[canvasId];
 								let iteratedPx = 0, validPixels = 0;
-								if (!this.pp) {
+								if (!this.cc.pp) {
 									await this.whenPpReady();
 								};
-								this.pp[canvasId]?.forEach(([rx, ry]) => {
+								this.cc.pp[canvasId]?.forEach(([rx, ry]) => {
 									let x = rx % cc.uWidth, y = ry % cc.uHeight;
 									let ri = (y * cc.uWidth + x) << 2;
 									iteratedPx ++;
@@ -403,6 +414,7 @@ let Monalisa = class extends CustomEventSource {
 			// Reconnect if disconnections are detected
 			if (!this.disableStream) {
 				ps.detach(ws);
+				upThis.wsActive = false;
 				console.info(`[Monalisa]  Canvas stream closed. Restarting in seconds.`);
 				await WingBlade.sleep(4000);
 				this.startStream(actuallyResponds);
@@ -412,7 +424,12 @@ let Monalisa = class extends CustomEventSource {
 	/*async act() {
 		this.startStream();
 	};*/
-	async stop() {};
+	async stopStream() {
+		this.disableStream = true;
+		this.ws = undefined;
+		this.ps = undefined;
+		return this.ws?.close();
+	};
 	async login({session, fallback, refresh}) {
 		if (!session) {
 			return "Blank session.";
@@ -435,6 +452,7 @@ let Monalisa = class extends CustomEventSource {
 		this.loggedIn = true;
 		await this.refreshInfo();
 	};
+	async logout() {};
 	constructor(browserContext) {
 		super();
 		this.appUrl = browserContext.origin;

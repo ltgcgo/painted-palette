@@ -39,6 +39,7 @@ document.addEventListener("alpine:init", () => {
 			proxy: data.proxy,
 			var: data.plat.var || "HorseJS",
 			os: data.plat.os || "HorseOS",
+			ver: data.ver || "0.0.0",
 			sensitivity: humanizedPercentage(data.bot.sen),
 			maxOn: data.bot.mag,
 			pixels: data.bot.px,
@@ -97,22 +98,12 @@ document.addEventListener("alpine:init", () => {
 	};
 	let eventStream,
 	eventTapper = function () {
-		fetch("/user").then((r) => {return r.json()}).then((json) => {
-			while (userMan.length > 0) {
-				userMan.pop();
-			};
-			for (let name in json) {
-				let e = json[name];
-				userMan.push({
-					acct: e.acct.slice(0, 20),
-					name: e.acct
-				});
-			};
-			rebuildAcctIndex();
-		});
 		Alpine.store("wsConnected", 1);
 		console.info("WebSocket connecting...");
 		eventStream = new WebSocket(`ws://${location.host}/events`);
+		eventStream.addEventListener("open", () => {
+			console.info("WebSocket connected.");
+		});
 		eventStream.addEventListener("message", async function (ev) {
 			let {data} = ev;
 			data = JSON.parse(data);
@@ -120,7 +111,21 @@ document.addEventListener("alpine:init", () => {
 				case "init": {
 					userAddLock = true;
 					Alpine.store("wsConnected", 2);
-					console.info("WebSocket connected.");
+					fetch("/user").then((r) => {return r.json()}).then((json) => {
+						while (userMan.length > 0) {
+							userMan.pop();
+						};
+						for (let name in json) {
+							let e = json[name];
+							//console.info(e);
+							userMan.push({
+								acct: e.acct.slice(0, 32),
+								name: e.acct,
+								active: e.active
+							});
+						};
+						rebuildAcctIndex();
+					});
 					break;
 				};
 				case "user": {
@@ -129,11 +134,17 @@ document.addEventListener("alpine:init", () => {
 						"body": data.data
 					})).json();
 					if (userIndex[data.data]?.constructor != Number) {
+						//console.info(userData);
 						userMan.push({
-							acct: data.data.slice(0, 20),
-							name: data.data
+							acct: data.data.slice(0, 32),
+							name: data.data,
+							active: userData.active
 						});
 						rebuildAcctIndex();
+					} else {
+						let e = userMan[userIndex[data.data]];
+						//console.info(userData);
+						e.active = userData.active;
 					};
 					let manipulator = userMan[userIndex[data.data]];
 					break;
@@ -164,6 +175,36 @@ document.addEventListener("alpine:init", () => {
 	self.delUser = (name) => {
 		fetch("/user", {
 			"method": "DELETE",
+			"body": name
+		});
+	};
+	self.pSet = (power) => {
+		if (power < 0 || power > 1) {
+			fetch("/power", {
+				"method": "DELETE"
+			});
+			return;
+		};
+		fetch("/power", {
+			"method": "POST",
+			"body": power
+		});
+	};
+	self.randDist = () => {
+		fetch("/redist");
+	};
+	self.gAct = (action) => {
+		fetch(action ? "/allOn" : "/allOff");
+	};
+	self.uOn = (name) => {
+		fetch("/on", {
+			"method": "PUT",
+			"body": name
+		});
+	};
+	self.uOff = (name) => {
+		fetch("/off", {
+			"method": "PUT",
 			"body": name
 		});
 	};
