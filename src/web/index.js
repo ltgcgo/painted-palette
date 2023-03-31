@@ -56,6 +56,7 @@ document.addEventListener("alpine:init", () => {
 			cuh: data.cu?.h,
 			cus: data.cu?.s,
 			pxOk: data.art.ok,
+			pxNo: data.art.px - data.art.ok,
 			pxAll: data.art.px,
 			pxRate: humanizedPercentage(data.art.ok / data.art.px)
 		});
@@ -138,13 +139,21 @@ document.addEventListener("alpine:init", () => {
 						userMan.push({
 							acct: data.data.slice(0, 32),
 							name: data.data,
-							active: userData.active
+							active: userData.active,
+							focusX: userData.focusX,
+							focusY: userData.focusY,
+							lastColour: userData.lastColour,
+							placed: userData.placed
 						});
 						rebuildAcctIndex();
 					} else {
 						let e = userMan[userIndex[data.data]];
 						//console.info(userData);
 						e.active = userData.active;
+						e.focusX = userData.focusX;
+						e.focusY = userData.focusY;
+						e.lastColour = userData.lastColour;
+						e.placed = userData.placed;
 					};
 					let manipulator = userMan[userIndex[data.data]];
 					break;

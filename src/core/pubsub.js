@@ -86,7 +86,10 @@ let RedditPubSub = class extends CustomEventSource {
 			};
 			// PubSub ID stream callback
 			if (this.#streamCalls[msg.id]) {
+				//console.info(`[PubSub]    Stream ${JSON.stringify(msg.id)} has its receiver called.`);
 				this.#streamCalls[msg.id](msg.payload.data.subscribe.data);
+			} else {
+				//console.info(`[PubSub]    Stream ${JSON.stringify(msg.id)} does not have any receiver.`);
 			};
 			// Emit raw message
 			this.dispatchEvent(typeToEvent[msg.type] || msg.type, msg.payload);

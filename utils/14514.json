@@ -3,7 +3,7 @@
 		"acct": "exampleName",
 		"pass": "examplePass",
 		"otp": "",
-		"pixelCount": 0,
+		"placed": 0,
 		"lastColour": "#ffffff",
 		"enabled": false,
 		"banned": false,

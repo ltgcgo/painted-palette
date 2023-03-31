@@ -24,7 +24,7 @@ let utf8Decode = new TextDecoder(), utf8Encode = new TextEncoder();
 
 const svc = {
 	cnc: "",
-	tpl: "https://github.com/ltgcgo/painted-palette/raw/main/conf/service/pointer.json"
+	tpl: "https://gh.ltgc.cc/painted-palette/conf/service/pointer.json"
 };
 const batchModeOrigin = 'https://place.equestria.dev';
 
@@ -37,12 +37,17 @@ let logoutEverywhere = async function (browserContext, redditAuth) {
 let updateChecker = async function () {
 	try {
 		// Check for pixel updates in parallel
-		let remoteVersion = await (await fetch("https://github.com/ltgcgo/painted-palette/raw/main/version")).text();
+		let remoteVersion = await (await fetch("https://gh.ltgc.cc/painted-palette/version")).text();
 		remoteVersion = remoteVersion.replaceAll("\r", "\n").replaceAll("\n", "").trim();
 		if (remoteVersion != BuildInfo.ver) {
 			console.info(`[Updater]   Update available (v${remoteVersion})!`);
 			console.info(`[Updater]   Downloading the new update...`);
-			let downloadStream = (await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`)).body;
+			let downloadReq = await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`);
+			if (downloadReq.status != 200) {
+				console.info(`[Updater]   Download error: ${downloadReq.statusText}`);
+				return;
+			};
+			let downloadStream = downloadReq.body;
 			await WingBlade.writeFile("./patched.js", downloadStream);
 			await logoutEverywhere();
 			if (WingBlade.os.toLowerCase() == "windows") {
@@ -81,20 +86,34 @@ let ManagedUser = class extends CustomEventSource {
 	get authInfo() {
 		return this.redditAuth?.authInfo;
 	};
+	startPp() {
+		this.monalisa?.pg?.addEventListener("templateupdate", async () => {
+			await this.monalisa.partitionPixels();
+			await this.monalisa.rebuildDamageCloud();
+		});
+	};
 	async enable() {
 		await this.redditAuth?.login(this.username, this.password, this.otp);
-		await this.monalisa?.login(this.username, this.password, this.otp);
+		await this.monalisa?.login({
+			username: this.username,
+			password: this.password,
+			otp: this.otp});
+		this.monalisa.setSession(this.username);
 		this.active = true;
 		return;
 	};
 	async disable() {
+		await this.monalisa?.stopStream();
 		await this.monalisa?.logout();
 		await this.redditAuth?.logout();
 		this.active = false;
 		return;
 	};
-	constructor() {
+	constructor({username = "", password = "", otp = ""}) {
 		super();
+		this.username = username;
+		this.password = password;
+		this.otp = otp;
 	};
 };
 let MultiUserManager = class extends CustomEventSource {
@@ -123,6 +142,37 @@ let MultiUserManager = class extends CustomEventSource {
 			(this.conf?.sensitivity || 1) * ((this.cc?.damaged || 0) / (this.pg?.pixels || 1))
 		));
 	};
+	getPlaced() {
+		let placed = 0;
+		for (let u in this.conf.users) {
+			placed += this.conf.users[u].placed || 0;
+		};
+		return placed;
+	};
+	getCounts() {
+		let stat = {
+			active: 0,
+			enabled: 0,
+			banned: 0,
+			fresh: 0
+		};
+		for (let u in this.conf.users) {
+			let e = this.conf.users[u];
+			if (e.active) {
+				stat.active ++;
+			};
+			if (e.enabled) {
+				stat.enabled ++;
+			};
+			if (e.banned) {
+				stat.banned ++;
+			};
+			if (e.fresh) {
+				stat.fresh ++;
+			};
+		};
+		return stat;
+	};
 	async countActive() {
 		let sum = 0;
 		for (let i in this.managed) {
@@ -137,10 +187,12 @@ let MultiUserManager = class extends CustomEventSource {
 			return;
 		};
 		this.conf.users[username].enabled = true;
-		if (!this.managed[username].active) {
-			this.managed[username].enable();
-			this.conf.users[username].active = true;
-			this.dispatchEvent("user", username);
+		if (!noEnable) {
+			if (!this.managed[username].active) {
+				this.managed[username].enable();
+				this.conf.users[username].active = true;
+				this.dispatchEvent("user", username);
+			};
 		};
 	};
 	async disable(username, noDisable) {
@@ -169,10 +221,22 @@ let MultiUserManager = class extends CustomEventSource {
 			this.conf.users[acct] = confObj;
 		};
 		if (!this.managed[acct]) {
-			let e = new ManagedUser();
+			let e = new ManagedUser({
+				username: confObj.acct,
+				password: confObj.pass,
+				otp: confObj.otp
+			});
 			e.monalisa = new Monalisa(e.fc);
 			e.monalisa.cc = this.cc;
 			e.monalisa.pg = this.pg;
+			confObj.placed = confObj.placed || 0;
+			e.monalisa.addEventListener("pixelsuccess", async function () {
+				let focusXY = e.monalisa.getFocus();
+				confObj.focusX = focusXY.x;
+				confObj.focusY = focusXY.y;
+				confObj.lastColour = e.monalisa.lastColour;
+				confObj.placed ++;
+			});
 			this.managed[acct] = e;
 		};
 		this.length ++;
@@ -196,7 +260,8 @@ let MultiUserManager = class extends CustomEventSource {
 	};
 	async selectActiveWs() {
 		// Disconnect WS if disabled/inactive
-		if (this.activeWs && !this.activeWs.active) {
+		if (this.activeWs && (!this.activeWs.active)) {
+			console.info(`[MultiMan]  Stopping current WS stream as ${this.activeWs.username}...`);
 			await this.activeWs.monalisa.stopStream();
 			this.activeWs = undefined;
 		};
@@ -207,8 +272,9 @@ let MultiUserManager = class extends CustomEventSource {
 		for (let uname in this.managed) {
 			let e = this.managed[uname];
 			if (!this.activeWs) {
-				if (e.active && !e.wsActive) {
-					await e.monalisa.startStream();
+				if (e.active && !e.monalisa.wsActive && !(e.monalisa.ws?.readyState == 1)) {
+					console.info(`[MultiMan]  Connecting to WS stream as ${e.username}...`);
+					e.monalisa.startStream(true);
 					this.activeWs = e;
 				} else {
 					//console.info(e);
@@ -259,6 +325,17 @@ let MultiUserManager = class extends CustomEventSource {
 			return;
 		};
 		this.#sweeping = true;
+		for (let uname in this.managed) {
+			let e = this.managed[uname];
+			if (!e.active) {
+				//console.info(`[MultiMan]  User ${uname} is not activated.`);
+			} else if (Math.random() < this.getPower()) {
+				//console.info(`[MultiMan]  User ${uname} is selected on sweep.`);
+				e.monalisa.place();
+			} else {
+				//console.info(`[MultiMan]  User ${uname} not selected.`);
+			};
+		};
 		this.#sweeping = false;
 	};
 	async allOn() {
@@ -298,7 +375,7 @@ let main = async function (args) {
 	let paintAnalytics = new Analytics('https://analytics.place.equestria.dev');
 	// If the painter starts
 	let conf = {
-		sensitivity: 1,
+		sensitivity: 2,
 		magazine: 8,
 		users: {}
 	};
@@ -370,13 +447,13 @@ let main = async function (args) {
 			},
 			templateThread = setInterval(templateRefresher, 30000);
 			let rebuildPartitions = async () => {
-				await monalisa.partitionPixels();
+				//await monalisa.partitionPixels();
 				monalisa?.pp?.forEach((e, i) => {
 					console.info(`[Core]      Canvas #${i} has ${e.length} points.`);
 				});
-				monalisa.rebuildDamageCloud();
+				//monalisa.rebuildDamageCloud();
 			};
-			monalisa.addEventListener("canvasconfig", rebuildPartitions)
+			monalisa.addEventListener("canvasconfig", rebuildPartitions);
 			paintGuide.addEventListener("templateupdate", rebuildPartitions);
 			templateRefresher();
 			let authResult = await monalisa.login({session: acct, fallback: pass, refresh: otp});
@@ -469,6 +546,10 @@ let main = async function (args) {
 			maman.addEventListener("user", ({data}) => {
 				announceStream({"event": "user", data});
 			});
+			let sweeper = async () => {
+				await maman.sweep();
+			},
+			sweepThread = setInterval(sweeper, 5000);
 			let ipInfo = new IPInfo();
 			ipInfo.start();
 			WingBlade.serve(async function (request) {
@@ -520,6 +601,7 @@ let main = async function (args) {
 								break;
 							};
 							case "/info": {
+								let acctStat = maman.getCounts();
 								return new Response(JSON.stringify({
 									plat: {
 										var: `${WingBlade.variant} ${WingBlade.version}`,
@@ -534,9 +616,10 @@ let main = async function (args) {
 									},
 									acct: {
 										total: maman.length,
-										active: 0,
-										fresh: 0,
-										banned: 0
+										active: acctStat.active,
+										enabled: acctStat.enabled,
+										fresh: acctStat.fresh,
+										banned: acctStat.banned
 									},
 									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy",
 									mem: WingBlade.memUsed().rss,
@@ -546,11 +629,20 @@ let main = async function (args) {
 										sen: conf.sensitivity,
 										pow: maman.getPower(),
 										mag: conf.magazine,
-										px: botPlaced
+										px: maman.getPlaced()
 									},
 									art: {
 										px: paintGuide.pixels,
-										ok: 0
+										ok: (paintGuide.points?.length || 0) - (maman.cc.damaged || 0)
+									},
+									ct: {
+										w: maman.cc.width,
+										h: maman.cc.height
+									},
+									cu: {
+										w: maman.cc.uWidth,
+										h: maman.cc.uHeight,
+										s: maman.cc.cxy?.length || 0
 									}
 								}), {
 									"headers": {
@@ -636,6 +728,13 @@ let main = async function (args) {
 								} else {
 									return badRequest;
 								};
+								break;
+							};
+							case "/sensitivity": {
+								// Set power
+								let json = await request.json();
+								conf.sensitivity = json || 1;
+								return success;
 								break;
 							};
 							default: {

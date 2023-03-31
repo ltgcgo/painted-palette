@@ -122,6 +122,7 @@ let FetchContext = class extends EventTarget {
 		//opt.credentials = opt.credentials || "include";
 		//opt.redirect = opt.redirect || "follow";
 		//console.info(opt);
+		//console.info(`[BrowseCxt] Request: ${opt?.method?.toUpperCase() || "GET"} ${url}`);
 		let retry = 10, keepGoing = true;
 		let response;
 		while (retry && keepGoing) {

@@ -92,7 +92,7 @@ let Monalisa = class extends CustomEventSource {
 			};
 		});
 	};
-	getFocal() {
+	getFocus() {
 		return {x: this.#x, y: this.#y};
 	};
 	async refreshSession() {};
@@ -189,7 +189,7 @@ let Monalisa = class extends CustomEventSource {
 	};
 	async placePixel({x = this.#x, y = this.#y, ci = 0}) {
 		if (this.#isPlacing) {
-			console.info(`[Monalisa]  Another instance of pixel placing ongoing.`);
+			console.info(`[Monalisa]  Another instance of pixel placement ongoing.`);
 			return;
 		};
 		this.#isPlacing = true;
@@ -259,6 +259,11 @@ let Monalisa = class extends CustomEventSource {
 		console.info(`[Monalisa]  Painted (${this.#x}, ${this.#y}) as ${colour[3]}, P(${colour[0], colour[1], colour[2]}) D(${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
 	};
 	async startStream(actuallyResponds) {
+		if (this.wsActive) {
+			console.info(`[Monalisa]  Another WS stream is already active.`);
+			return;
+		};
+		console.info(`[Monalisa]  ${['Dud', 'Real'][+actuallyResponds]} canvas stream created.`);
 		this.disableStream = false;
 		console.info(`[Monalisa]  Connecting to canvas...`);
 		let upThis = this;
@@ -273,7 +278,12 @@ let Monalisa = class extends CustomEventSource {
 			console.info(`[Monalisa]  New PubSub demuxer created.`);
 		};
 		let ps = this.ps;
-		ps.attach(ws);
+		try {
+			ps.attach(ws);
+		} catch (err) {
+			console.info(`[Monalisa]  Demuxer attach error. ${err}`);
+			return;
+		};
 		/*ps.addEventListener("ack", (ev) => {
 			console.info(`Connection acknowledged.`);
 		});*/ // Acknowledgement packets
@@ -284,6 +294,7 @@ let Monalisa = class extends CustomEventSource {
 			upThis.wsActive = true;
 			console.info(`[Monalisa]  Canvas listener started.`);
 			ps.start(this.#sessionToken);
+			console.info(`[Monalisa]  Authentication information sent.`);
 			ps.subscribe({
 				input: {
 					channel: {
@@ -331,11 +342,13 @@ let Monalisa = class extends CustomEventSource {
 						cc.colours.add(new Uint16Array([r, g, b, e.index]));
 					});
 					console.info(`[Monalisa]  Palette contains ${data.colorPalette.colors.length} colours.`);
+					this.partitionPixels();
 					// Emit event
 					this.dispatchEvent("canvasconfig");
 					// Subscribe to canvas streams
 					canvasXy.forEach((e) => {
 						let canvasId = e[2];
+						//console.info(`[Monalisa]  Subscribing to canvas #${canvasId}...`);
 						ps.subscribe({
 							input: {
 								channel: {
@@ -347,9 +360,10 @@ let Monalisa = class extends CustomEventSource {
 							operationName: "replace",
 							query: "subscription replace($input: SubscribeInput!) {\\n subscribe(input: $input) {\\n id\\n ... on BasicMessage {\\n data {\\n __typename\\n ... on FullFrameMessageData {\\n __typename\\n name\\n timestamp\\n }\\n ... on DiffFrameMessageData {\\n __typename\\n name\\n currentTimestamp\\n previousTimestamp\\n }\\n }\\n __typename\\n }\\n __typename\\n }\\n}\\n",
 							callback: async (data) => {
-								if (!actuallyResponds) {
+								//console.info(`[Monalisa]  Canvas #${canvasId} received frame data.`);
+								/*if (!actuallyResponds) {
 									return;
-								};
+								};*/
 								let pngBuffer = await (await fetch(data.name)).arrayBuffer();
 								delete data.name;
 								let pngObject = UPNG.decode(pngBuffer);
@@ -359,12 +373,14 @@ let Monalisa = class extends CustomEventSource {
 								delete pngObject.frames;
 								delete pngObject.tabs;
 								pngObject = undefined;
+								//console.info(`[Monalisa]  Canvas #${canvasId} decoded frame data. Waiting for point partitioning...`);
 								let pngView = new DataView(pngData);
 								let offset = canvasXy[canvasId];
 								let iteratedPx = 0, validPixels = 0;
 								if (!this.cc.pp) {
 									await this.whenPpReady();
 								};
+								//console.info(`[Monalisa]  Canvas #${canvasId} is ready to parse pixels.`);
 								this.cc.pp[canvasId]?.forEach(([rx, ry]) => {
 									let x = rx % cc.uWidth, y = ry % cc.uHeight;
 									let ri = (y * cc.uWidth + x) << 2;
@@ -394,7 +410,7 @@ let Monalisa = class extends CustomEventSource {
 								if (validPixels) {
 									console.info(`[Monalisa]  Canvas #${canvasId} updated ${validPixels}/${iteratedPx} pixels.`);
 								};
-								this.rebuildDamageCloud();
+								await this.rebuildDamageCloud();
 								// Message finish
 								pngData = undefined;
 								pngView = undefined;
@@ -404,11 +420,11 @@ let Monalisa = class extends CustomEventSource {
 				}
 			}); // Listen on canvas config changes
 		});
-		/*ps.addEventListener("data", (ev) => {
-			if (!ev.data.id) {
-				return; // Drop all events silently if they do not have pubsub stream IDs
-			};
-			console.info(JSON.stringify(ev.data.data));
+		ws.addEventListener("error", async (data) => {
+			console.info(`[Monalisa]  WebSocket connection error: ${data.data}`);
+		});
+		/*ws.addEventListener("message", (ev) => {
+			console.info(JSON.stringify(ev.data));
 		});*/
 		ws.addEventListener("close", async () => {
 			// Reconnect if disconnections are detected
@@ -449,8 +465,8 @@ let Monalisa = class extends CustomEventSource {
 		let sessionInfo = await sessionRep.json();
 		this.setRefresh(sessionInfo.refreshToken);
 		this.session = sessionInfo.id;
-		this.loggedIn = true;
 		await this.refreshInfo();
+		this.loggedIn = true;
 	};
 	async logout() {};
 	constructor(browserContext) {
