@@ -44,6 +44,7 @@ document.addEventListener("alpine:init", () => {
 			maxOn: data.bot.mag,
 			pixels: data.bot.px,
 			power: humanizedPercentage(data.bot.pow),
+			manualPower: data.bot.mpw,
 			instance: data.instance,
 			memory: humanizedSize(data.mem),
 			acct: data.acct.total,
@@ -63,6 +64,25 @@ document.addEventListener("alpine:init", () => {
 	}, 5000);
 	subSecondTask = setInterval(async () => {
 		Alpine.store("sessionUptime", runSince ? humanizedTime((Date.now() - runSince) / 1000) : "Waiting for data...");
+		let userArr = Alpine.store("userdata");
+		let timeNow = Date.now();
+		userArr.forEach((e, i) => {
+			if (e.banned) {
+				userArr[i].stateText = `Banned`;
+			} else if (!e.enabled) {
+				userArr[i].stateText = `Disabled`;
+			} else if (!e.active) {
+				userArr[i].stateText = `Inactive`;
+			} else {
+				let timeDiff = (e.nextAt || 0) - timeNow;
+				if (timeDiff <= 0) {
+					userArr[i].stateText = [`Standby`, `Active`, `Focus`, `Placing`][e.pstate || 0] || `Unknown state`;
+				} else {
+					timeDiff = Math.ceil(timeDiff / 100) / 10;
+					userArr[i].stateText = `${Math.floor(timeDiff)}.${Math.floor(timeDiff * 10 % 10)} s`;
+				};
+			};
+		});
 	}, 100);
 	slowSubTask = setInterval(async () => {
 		//
@@ -139,21 +159,29 @@ document.addEventListener("alpine:init", () => {
 						userMan.push({
 							acct: data.data.slice(0, 32),
 							name: data.data,
+							enabled: userData.enabled,
 							active: userData.active,
+							banned: userData.banned,
 							focusX: userData.focusX,
 							focusY: userData.focusY,
 							lastColour: userData.lastColour,
-							placed: userData.placed
+							placed: userData.placed,
+							nextAt: userData.nextAt,
+							pstate: userData.pstate
 						});
 						rebuildAcctIndex();
 					} else {
 						let e = userMan[userIndex[data.data]];
 						//console.info(userData);
+						e.enabled = userData.enabled;
 						e.active = userData.active;
+						e.banned = userData.banned;
 						e.focusX = userData.focusX;
 						e.focusY = userData.focusY;
 						e.lastColour = userData.lastColour;
 						e.placed = userData.placed;
+						e.nextAt = userData.nextAt;
+						e.pstate = userData.pstate;
 					};
 					let manipulator = userMan[userIndex[data.data]];
 					break;

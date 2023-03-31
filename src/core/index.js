@@ -230,12 +230,39 @@ let MultiUserManager = class extends CustomEventSource {
 			e.monalisa.cc = this.cc;
 			e.monalisa.pg = this.pg;
 			confObj.placed = confObj.placed || 0;
-			e.monalisa.addEventListener("pixelsuccess", async function () {
+			let genericUpdate = async () => {
 				let focusXY = e.monalisa.getFocus();
 				confObj.focusX = focusXY.x;
 				confObj.focusY = focusXY.y;
+			};
+			e.monalisa.addEventListener("pixelsuccess", async () => {
+				confObj.pstate = 0;
+				await genericUpdate;
 				confObj.lastColour = e.monalisa.lastColour;
+				confObj.nextAt = e.monalisa.nextAt || 0;
 				confObj.placed ++;
+				this.dispatchEvent("userupdate", acct);
+			});
+			e.monalisa.addEventListener("pixelwait", async () => {
+				confObj.pstate = 3;
+				await genericUpdate();
+				this.dispatchEvent("userupdate", acct);
+			});
+			e.monalisa.addEventListener("pixelfocus", async () => {
+				confObj.pstate = 2;
+				await genericUpdate();
+				this.dispatchEvent("userupdate", acct);
+			});
+			e.monalisa.addEventListener("pixelstart", async () => {
+				confObj.pstate = 1;
+				await genericUpdate();
+				this.dispatchEvent("userupdate", acct);
+			});
+			e.monalisa.addEventListener("pixelfail", async () => {
+				confObj.pstate = 0;
+				confObj.nextAt = e.monalisa.nextAt || 0;
+				await genericUpdate();
+				this.dispatchEvent("userupdate", acct);
 			});
 			this.managed[acct] = e;
 		};
@@ -521,6 +548,7 @@ let main = async function (args) {
 				for (let user in conf.users) {
 					if (conf.users[user].active?.constructor) {
 						delete conf.users[user].active;
+						delete conf.users[user].pstate; // 1 for focus, 2 for waiting, 0 for others
 					};
 				};
 			} catch (err) {
@@ -541,9 +569,12 @@ let main = async function (args) {
 					announceStream({"event": "user", data});
 				};
 			},
-			mamanThread = setInterval(mamanSync, 5000);
+			mamanThread = setInterval(mamanSync, 30000);
 			await mamanSync();
 			maman.addEventListener("user", ({data}) => {
+				announceStream({"event": "user", data});
+			});
+			maman.addEventListener("userupdate", ({data}) => {
 				announceStream({"event": "user", data});
 			});
 			let sweeper = async () => {
@@ -629,7 +660,8 @@ let main = async function (args) {
 										sen: conf.sensitivity,
 										pow: maman.getPower(),
 										mag: conf.magazine,
-										px: maman.getPlaced()
+										px: maman.getPlaced(),
+										mpw: !!conf.power?.constructor
 									},
 									art: {
 										px: paintGuide.pixels,

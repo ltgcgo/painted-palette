@@ -19,7 +19,7 @@ let IPInfo = class {
 		let upThis = this;
 		this.#monitorThread = setInterval(() => {
 			upThis.grab();
-		}, 20000);
+		}, 30000);
 		upThis.grab();
 	};
 	stop() {

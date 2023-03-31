@@ -186,6 +186,7 @@ let Monalisa = class extends CustomEventSource {
 	async focusPixel(x = WingBlade.randomInt(this?.cc?.width || 0), y = WingBlade.randomInt(this?.cc?.height || 0)) {
 		this.#x = x;
 		this.#y = y;
+		this.dispatchEvent("pixelfocus");
 	};
 	async placePixel({x = this.#x, y = this.#y, ci = 0}) {
 		if (this.#isPlacing) {
@@ -194,6 +195,7 @@ let Monalisa = class extends CustomEventSource {
 		};
 		this.#isPlacing = true;
 		try {
+			this.dispatchEvent("pixelstart");
 			// ci means colour index
 			let canvasIndex = this.cc.canvas.nearest([x, y], 1)[0][0][2];
 			console.info(`[Monalisa]  Chose canvas ${canvasIndex} for ${x}, ${y}.`);
@@ -206,6 +208,7 @@ let Monalisa = class extends CustomEventSource {
 				"body": graphQlBody
 			});
 			//console.info(graphQlRep);
+			this.#isPlacing = false;
 			let graphQlRaw = await graphQlRep.json();
 			this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
 			this.dispatchEvent("pixelsuccess");
@@ -213,6 +216,7 @@ let Monalisa = class extends CustomEventSource {
 			return this.nextAt;
 		} catch (err) {
 			console.info(`[Monalisa]  Pixel placement failed. ${err}`);
+			this.dispatchEvent("pixelfail");
 		};
 		this.#isPlacing = false;
 	};
@@ -255,7 +259,10 @@ let Monalisa = class extends CustomEventSource {
 			return;
 		};
 		this.lastColour = `rgba(${colour[0]},${colour[1]},${colour[2]})`;
+		this.dispatchEvent("pixelwait");
 		await this.placePixel({ci: colour[3]});
+		this.cc.damage.remove(selectedPixel);
+		this.cc.damaged --;
 		console.info(`[Monalisa]  Painted (${this.#x}, ${this.#y}) as ${colour[3]}, P(${colour[0], colour[1], colour[2]}) D(${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
 	};
 	async startStream(actuallyResponds) {
