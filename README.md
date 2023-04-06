@@ -1,5 +1,7 @@
 # painted-palette
-🎨 Painting palettes, one at a time. No additional compilation required, everything already bundled nicely into a single command/package.
+🎨 Painting palettes, one at a time. One single brush, multiple easels to paint on.
+
+No additional compilation required, everything already bundled nicely into a single command/package.
 
 If you're running it on Android with Termux, install it from [F-Droid](https://f-droid.org/en/packages/com.termux/#versions), **not Google Play**!!!
 

@@ -259,7 +259,6 @@ let Monalisa = class extends CustomEventSource {
 			return;
 		};
 		this.lastColour = `rgba(${colour[0]},${colour[1]},${colour[2]})`;
-		this.dispatchEvent("pixelwait");
 		await this.placePixel({ci: colour[3]});
 		this.cc.damage.remove(selectedPixel);
 		this.cc.damaged --;

@@ -76,7 +76,7 @@ document.addEventListener("alpine:init", () => {
 			} else {
 				let timeDiff = (e.nextAt || 0) - timeNow;
 				if (timeDiff <= 0) {
-					userArr[i].stateText = [`Standby`, `Placing`, `Focus`, `Placing`][e.pstate || 0] || `Unknown state`;
+					userArr[i].stateText = [`Standby`, `Selected`, `Focus`, `Placing`][e.pstate || 0] || `Unknown state`;
 				} else {
 					timeDiff = Math.ceil(timeDiff / 100) / 10;
 					userArr[i].stateText = `${Math.floor(timeDiff)}.${Math.floor(timeDiff * 10 % 10)} s`;

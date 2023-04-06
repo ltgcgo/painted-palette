@@ -30,8 +30,8 @@ let ColourPaletteSpace = class {
 		};
 		return result[0];
 	};
-	constructor() {
-		this.restart();
+	constructor(points) {
+		this.restart(points);
 	};
 };
 

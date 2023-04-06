@@ -7,7 +7,9 @@ import {BuildInfo, humanizedTime} from "./common.js";
 import {IPInfo} from "./ipinfo.js";
 import {FetchContext} from "./fetchContext.js";
 import {RedditAuth} from "./redditAuth.js";
+import {VKontakteAuth} from "./vkAuth.js";
 import {Monalisa} from "./monalisa.js";
+import {PixelBattle} from "./pixelBattle.js";
 import {Analytics} from "./analytics.js";
 import {PaintGuide} from "./paintGuide.js";
 
@@ -244,17 +246,17 @@ let MultiUserManager = class extends CustomEventSource {
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelwait", async () => {
-				confObj.pstate = 3;
+				confObj.pstate = 4;
 				await genericUpdate();
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelfocus", async () => {
-				confObj.pstate = 2;
+				confObj.pstate = 3;
 				await genericUpdate();
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelstart", async () => {
-				confObj.pstate = 1;
+				confObj.pstate = 2;
 				await genericUpdate();
 				this.dispatchEvent("userupdate", acct);
 			});
@@ -358,7 +360,12 @@ let MultiUserManager = class extends CustomEventSource {
 				//console.info(`[MultiMan]  User ${uname} is not activated.`);
 			} else if (Math.random() < this.getPower()) {
 				//console.info(`[MultiMan]  User ${uname} is selected on sweep.`);
-				e.monalisa.place();
+				(async () => {
+					this.conf.users[uname].pstate = 1;
+					this.dispatchEvent("userupdate", uname);
+					await WingBlade.sleep(25, 4500);
+					e.monalisa.place();
+				})()
 			} else {
 				//console.info(`[MultiMan]  User ${uname} not selected.`);
 			};
@@ -399,7 +406,10 @@ let main = async function (args) {
 	} else {
 		updateThread = setInterval(updateChecker, 20000);
 	};
-	let paintAnalytics = new Analytics('https://analytics.place.equestria.dev');
+	let paintAnalytics;
+	if (["paint", "pixel", "test", "batch"].indexOf(args[0]) > -1) {
+		paintAnalytics = new Analytics('https://analytics.place.equestria.dev');
+	};
 	// If the painter starts
 	let conf = {
 		sensitivity: 2,
@@ -416,7 +426,7 @@ let main = async function (args) {
 					break;
 				};
 				default: {
-					console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken\nbatch      Start a server for managing. Reads and saves to a file. Port number is optional\n             Example: ./palette-bot batch 14514\nctl        Controls the painting server. Further help available\n`);
+					console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\npixel      Use the provided credentials to paint on VKontakte\n             Example: ./palette-bot pixel username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken\nbatch      Start a server for managing. Reads and saves to a file. Port number is optional\n             Example: ./palette-bot batch 14514\nctl        Controls the painting server. Further help available\n`);
 					if (WingBlade.os != "windows") {
 						console.info("./install.sh is provided to reinstall this program.");
 					} else {
@@ -456,6 +466,12 @@ let main = async function (args) {
 			} else {
 				console.info(`[Core]      Logout failed as ${acct}.`);
 			};
+			break;
+		};
+		case "pixel": {
+			console.info(`[PixelGun]  This software is open-source. Interface and information related to VK is intact. Feel free to configure a build with VK support yourself.`);
+			console.info(`[Пиксель]   Вы не заслуживаете, чтобы программист неустанно работал на вас.`);
+			WingBlade.exit(1);
 			break;
 		};
 		case "test": {

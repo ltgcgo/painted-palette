@@ -60,7 +60,7 @@ let PaintGuide = class extends CustomEventSource {
 				if (changed) {
 					// If yes, rebuild the point cloud!
 					console.info(`[PntGuide]  Template update received.`);
-					let maskData, botImageData;
+					let maskData, botImageData, muxed = pointer?.mux;
 					for (let i = 0; i < pointer?.mask?.length; i ++) {
 						let url = pointer?.mask[i];
 						if (!maskData) {
