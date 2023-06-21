@@ -13,7 +13,8 @@ let Analytics = class {
 			"method": "POST",
 			"body": JSON.stringify({
 				"event": fail ? "pixelfail" : "pixel",
-				"type": "bot-js",
+				"type": "autofocus",
+				"source": "painted-palette",
 				"id": this.uuid,
 				userHash,
 				"pos": {x, y},
@@ -28,7 +29,8 @@ let Analytics = class {
 			"method": "POST",
 			"body": JSON.stringify({
 				"event": "error",
-				"type": "bot-js",
+				"type": "autofocus",
+				"source": "painted-palette",
 				"id": this.uuid,
 				userHash,
 				message
@@ -40,7 +42,8 @@ let Analytics = class {
 			"method": "POST",
 			"body": JSON.stringify({
 				"event": "accfail",
-				"type": "bot-js",
+				"type": "autofocus",
+				"source": "painted-palette",
 				"id": this.uuid,
 				userHash,
 				nextPixelPlace
