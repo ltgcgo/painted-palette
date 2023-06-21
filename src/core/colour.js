@@ -30,7 +30,7 @@ let ColourPaletteSpace = class {
 		};
 		return result[0];
 	};
-	constructor(points) {
+	constructor(points = []) {
 		this.restart(points);
 	};
 };
