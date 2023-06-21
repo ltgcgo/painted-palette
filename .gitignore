@@ -1,6 +1,7 @@
 *.swp
 .pnp.*
 14514.json
+14515.json
 deno.lock
 package-lock.json
 yarn.lock

@@ -1,11 +1,11 @@
 {
 	"bot": [
-		"https://ponyplace.z19.web.core.windows.net/bot.png",
-		"https://media.githubusercontent.com/media/r-ainbowroad/2023-minimap/main/mlp/bot.png"
+		"https://ponyplace.z19.web.core.windows.net/mlp/autopick.png",
+		"https://media.githubusercontent.com/media/r-ainbowroad/2023-minimap/main/template/mlp/autopick.png"
 	],
 	"mask": [
-		"https://ponyplace.z19.web.core.windows.net/mask.png",
-		"https://media.githubusercontent.com/media/r-ainbowroad/2023-minimap/main/mlp/mask.png"
+		"https://ponyplace.z19.web.core.windows.net/mlp/mask.png",
+		"https://media.githubusercontent.com/media/r-ainbowroad/2023-minimap/main/template/mlp/mask.png"
 	],
 	"offX": 0,
 	"offY": 0,
