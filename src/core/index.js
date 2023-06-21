@@ -412,7 +412,7 @@ let main = async function (args) {
 	};
 	// If the painter starts
 	let conf = {
-		sensitivity: 2,
+		sensitivity: 4,
 		magazine: 8,
 		users: {}
 	};
