@@ -300,7 +300,7 @@ let MultiUserManager = class extends CustomEventSource {
 			let e = this.managed[uname];
 			if (!e.active) {
 				//console.info(`[MultiMan]  User ${uname} is not activated.`);
-			} else if (Math.random() < this.getPower()) {
+			} else if (manual || Math.random() < this.getPower()) {
 				//console.info(`[MultiMan]  User ${uname} is selected on sweep.`);
 				(async () => {
 					this.conf.users[uname].pstate = 1;
