@@ -194,6 +194,7 @@ let Monalisa = class extends CustomEventSource {
 			return;
 		};
 		this.#isPlacing = true;
+		let result = false;
 		try {
 			this.dispatchEvent("pixelstart");
 			// ci means colour index
@@ -205,13 +206,19 @@ let Monalisa = class extends CustomEventSource {
 			let graphQlRep = await await this.#context.fetch(`${this.appUrl}/query`, {
 				"headers": this.getGraphQlHeaders(graphQlBody.length),
 				"method": "POST",
-				"body": graphQlBody
+				"body": graphQlBody,
+				"signal": AbortSignal.timeout(8000)
 			});
 			//console.info(graphQlRep);
 			this.#isPlacing = false;
-			let graphQlRaw = await graphQlRep.json();
-			this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
-			this.dispatchEvent("pixelsuccess");
+			if (graphQlRep.status < 400) {
+				let graphQlRaw = await graphQlRep.json();
+				this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
+				result = true;
+				this.dispatchEvent("pixelsuccess");
+			} else {
+				this.dispatchEvent("pixelfail");
+			};
 			this.#isPlacing = false;
 			return this.nextAt;
 		} catch (err) {
@@ -219,6 +226,7 @@ let Monalisa = class extends CustomEventSource {
 			this.dispatchEvent("pixelfail");
 		};
 		this.#isPlacing = false;
+		return result;
 	};
 	async place() {
 		if (!this.cc?.damage) {
@@ -234,7 +242,7 @@ let Monalisa = class extends CustomEventSource {
 			console.info(`[Monalisa]  Safe cooldown not yet finished.`);
 			return;
 		};
-		let querySize = 81;
+		let querySize = 25;
 		let resultArr = this.cc.damage.nearest([this.#x, this.#y], querySize).sort(sortDist);
 		if (resultArr?.length < 1) {
 			console.info(`[Monalisa]  Not enough damage.`);
@@ -259,10 +267,13 @@ let Monalisa = class extends CustomEventSource {
 			return;
 		};
 		this.lastColour = `rgba(${colour[0]},${colour[1]},${colour[2]})`;
-		await this.placePixel({ci: colour[3]});
-		this.cc.damage.remove(selectedPixel);
-		this.cc.damaged --;
-		console.info(`[Monalisa]  Painted (${this.#x}, ${this.#y}) as ${colour[3]}, P(${colour[0], colour[1], colour[2]}) D(${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
+		if (await this.placePixel({ci: colour[3]})) {
+			this.cc.damage.remove(selectedPixel);
+			this.cc.damaged --;
+			console.info(`[Monalisa]  Painted (${this.#x}, ${this.#y}) as ${colour[3]}, P(${colour[0], colour[1], colour[2]}) D(${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
+		} else {
+			console.info(`[Monalisa]  Failed to paint (${this.#x}, ${this.#y}) as ${colour[3]}, P(${colour[0], colour[1], colour[2]}) D(${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
+		};
 	};
 	async startStream(actuallyResponds) {
 		if (this.wsActive) {

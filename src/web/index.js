@@ -59,7 +59,8 @@ document.addEventListener("alpine:init", () => {
 			pxOk: data.art.ok,
 			pxNo: data.art.px - data.art.ok,
 			pxAll: data.art.px,
-			pxRate: humanizedPercentage(data.art.ok / data.art.px)
+			pxRate: humanizedPercentage(data.art.ok / data.art.px),
+			snoozeMode: data.snooze
 		});
 	}, 5000);
 	subSecondTask = setInterval(async () => {
@@ -232,6 +233,11 @@ document.addEventListener("alpine:init", () => {
 	};
 	self.gAct = (action) => {
 		fetch(action ? "/allOn" : "/allOff");
+	};
+	self.gMaes = (maes) => {
+		if (maes > 4) {
+			fetch("/sleep");
+		};
 	};
 	self.uOn = (name) => {
 		fetch("/on", {
