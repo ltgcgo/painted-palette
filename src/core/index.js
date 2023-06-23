@@ -579,17 +579,17 @@ let main = async function (args) {
 			switch (acct) {
 				case "info":
 				case "stat": {
-					let jsonData = await(await fetch (`${prefix}info`)).json();
+					let jsonData = await(await fetch(`${prefix}info`)).json();
 					console.info(`IP Information\nProxy: ${jsonData.proxy}\nIP: ${jsonData.ip.ip}\nCountry: ${jsonData.ip.cc}\nASN: ${jsonData.ip.asn}\nAS: ${jsonData.ip.as}\n\nStatistics\nFinished: \nSensitivity: \nPower: \nAccounts: ${jsonData.acct?.sum}\nActive: \nMagazine: \nBanned: ${jsonData.acct?.banned}\nFresh: ${jsonData.acct?.fresh}\nPlaced Pixels: ${jsonData.placed}\nUptime: ${humanizedTime(jsonData.uptime / 1000)}`);
 					break;
 				};
 				case "list": {
-					let jsonData = await(await fetch (`${prefix}user`)).json();
+					let jsonData = await(await fetch(`${prefix}user`)).json();
 					console.info(jsonData);
 					break;
 				};
 				case "add": {
-					console.info(await(await fetch (`${prefix}user`, {
+					console.info(await(await fetch(`${prefix}user`, {
 						"method": "POST",
 						"body": JSON.stringify({
 							"acct": args[2],
@@ -600,64 +600,68 @@ let main = async function (args) {
 					break;
 				};
 				case "del": {
-					console.info(await(await fetch (`${prefix}user`, {
+					console.info(await(await fetch(`${prefix}user`, {
 						"method": "DELETE",
 						"body": args[2]
 					})).text());
 					break;
 				};
 				case "on": {
-					console.info(await(await fetch (`${prefix}on`, {
+					console.info(await(await fetch(`${prefix}on`, {
 						"method": "PUT",
 						"body": args[2]
 					})).text());
 					break;
 				};
 				case "off": {
-					console.info(await(await fetch (`${prefix}off`, {
+					console.info(await(await fetch(`${prefix}off`, {
 						"method": "PUT",
 						"body": args[2]
 					})).text());
 					break;
 				};
 				case "gon": {
-					console.info(await(await fetch (`${prefix}allOn`)).text());
+					console.info(await(await fetch(`${prefix}allOn`)).text());
 					break;
 				};
 				case "goff": {
-					console.info(await(await fetch (`${prefix}allOff`)).text());
+					console.info(await(await fetch(`${prefix}allOff`)).text());
 					break;
 				};
 				case "user": {
-					console.info(await(await fetch (`${prefix}user`, {
+					console.info(await(await fetch(`${prefix}user`, {
 						"method": "PUT",
 						"body": args[2]
 					})).json());
 					break;
 				};
 				case "reset": {
-					console.info(await(await fetch (`${prefix}redist`)).text());
+					console.info(await(await fetch(`${prefix}redist`)).text());
 					break;
 				};
 				case "power": {
 					let value = JSON.parse(pass || "-1");
 					if (value <= 1 && value >= 0) {
-						console.info(await(await fetch (`${prefix}power`, {
+						console.info(await(await fetch(`${prefix}power`, {
 							"method": "POST",
 							"body": `${value}`
 						})).text());
 					} else {
-						console.info(await(await fetch (`${prefix}power`, {
+						console.info(await(await fetch(`${prefix}power`, {
 							"method": "DELETE"
 						})).text());
 					};
 					break;
 				};
 				case "scale": {
-					console.info(await(await fetch (`${prefix}sensitivity`, {
+					console.info(await(await fetch(`${prefix}sensitivity`, {
 						"method": "POST",
 						"body": args[2] || "1"
 					})).text());
+					break;
+				};
+				case "sleep": {
+					console.info(await(await fetch(`${prefix}sleep`)).text());
 					break;
 				};
 				default: {

@@ -14,8 +14,10 @@ let Analytics = class {
 			"body": JSON.stringify({
 				"event": fail ? "pixelfail" : "pixel",
 				"type": "autofocus",
+				"template": "mlp",
 				"source": "painted-palette",
 				"id": this.uuid,
+				"timestamp": Date.now() / 1000,
 				userHash,
 				"pos": {x, y},
 				color,
@@ -32,6 +34,7 @@ let Analytics = class {
 				"type": "autofocus",
 				"source": "painted-palette",
 				"id": this.uuid,
+				"timestamp": Date.now() / 1000,
 				userHash,
 				message
 			})
@@ -45,6 +48,7 @@ let Analytics = class {
 				"type": "autofocus",
 				"source": "painted-palette",
 				"id": this.uuid,
+				"timestamp": Date.now() / 1000,
 				userHash,
 				nextPixelPlace
 			})
