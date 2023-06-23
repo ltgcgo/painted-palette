@@ -418,6 +418,11 @@ let main = async function (args) {
 								return success;
 								break;
 							};
+							case "/paint": {
+								maman.sweep(true);
+								return success;
+								break;
+							};
 							case "/allOn": {
 								// Force random redist
 								await maman.allOn();
@@ -662,6 +667,10 @@ let main = async function (args) {
 				};
 				case "sleep": {
 					console.info(await(await fetch(`${prefix}sleep`)).text());
+					break;
+				};
+				case "paint": {
+					console.info(await(await fetch(`${prefix}paint`)).text());
 					break;
 				};
 				default: {

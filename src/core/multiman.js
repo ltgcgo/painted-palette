@@ -288,7 +288,7 @@ let MultiUserManager = class extends CustomEventSource {
 	async sweep(manual = false) {
 		// Conduct a sweep cycle
 		if (!this.conf.snooze && !manual) {
-			console.info(`[MultiMan]  Automatic placement disabled.`);
+			//console.info(`[MultiMan]  Automatic placement disabled.`);
 			return;
 		};
 		if (this.#sweeping) {

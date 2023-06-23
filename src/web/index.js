@@ -239,6 +239,9 @@ document.addEventListener("alpine:init", () => {
 			fetch("/sleep");
 		};
 	};
+	self.gPaint = () => {
+		fetch("/paint");
+	};
 	self.uOn = (name) => {
 		fetch("/on", {
 			"method": "PUT",
