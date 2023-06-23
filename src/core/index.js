@@ -389,7 +389,7 @@ let main = async function (args) {
 								socket.addEventListener("open", () => {
 									console.info(`[Core]      Web UI subscribed to realtime events.`);
 									socket.send(JSON.stringify({"event": "init"}));
-									socket.send(JSON.stringify({"event": "error", "data": `This version ${BuildInfo.ver} is a build dedicated for testing. Provided credentials are testing tokens, not Reddit credentials.\nIf you have already generated testing tokens, paste them in the account field, and hit "login" to add them for management.`}));
+									//socket.send(JSON.stringify({"event": "error", "data": `This version ${BuildInfo.ver} is a build dedicated for testing. Provided credentials are testing tokens, not Reddit credentials.\nIf you have already generated testing tokens, paste them in the account field, and hit "login" to add them for management.`}));
 									socket.addEventListener("close", () => {
 										console.info(`[Core]      Web UI disconnected from realtime events.`);
 										socketStreams.splice(socketStreams.indexOf(socket), 1);
