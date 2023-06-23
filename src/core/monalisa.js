@@ -183,9 +183,22 @@ let Monalisa = class extends CustomEventSource {
 			console.info(`[Monalisa]  ${damageCloud.length}/${this.pg.points.length} pixels damaged.`);
 		};
 	};
-	async focusPixel(x = WingBlade.randomInt(this?.cc?.width || 0), y = WingBlade.randomInt(this?.cc?.height || 0)) {
-		this.#x = x;
-		this.#y = y;
+	async focusPixel(x = -1, y = -1) {
+		if (x < 0) {
+			if (this.pg) {
+				let point = this.pg.points[this.pg.weightedMap.point([WingBlade.randomInt(this.pg?.weightedSum || 0)], true)];
+				this.#x = point[0];
+				this.#y = point[1];
+				console.debug(`[Monalisa]  Conducted a weighted focus.`);
+			} else {
+				this.#x = WingBlade.randomInt(this?.cc?.width || 0);
+				this.#y = WingBlade.randomInt(this?.cc?.height || 0);
+				console.debug(`[Monalisa]  Conducted a random focus.`);
+			};
+		} else {
+			this.#x = x;
+			this.#y = y;
+		};
 		this.dispatchEvent("pixelfocus");
 	};
 	async placePixel({x = this.#x, y = this.#y, ci = 0}) {

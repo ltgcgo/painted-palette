@@ -3,6 +3,7 @@
 import {dim2Dist} from "./common.js";
 import {FetchContext} from "./fetchContext.js";
 import {CustomEventSource} from "../../libs/lightfelt/ext/customEvents.js";
+import {BinaryMatch} from "../../libs/lightfelt/ext/binMatch.js";
 import {UPNG} from "../../libs/upng/upng.min.js";
 
 import KdTreeSrc from "../../libs/kd-tree/kd-tree.js";
@@ -18,6 +19,8 @@ let PaintGuide = class extends CustomEventSource {
 	width = 0;
 	height = 0;
 	points; // Array of points
+	weightedMap; // Weighted binary search pool for points
+	weightedSum = 0;
 	data; // Point cloud created from point array
 	whenTemplateReady() {
 		let upThis = this;
@@ -87,6 +90,7 @@ let PaintGuide = class extends CustomEventSource {
 							delete this.points;
 						};
 						let pointArray = [];
+						let weightedMap = new BinaryMatch();
 						let maskArr = UPNG.toRGBA8(maskData)[0];
 						let botData = UPNG.toRGBA8(botImageData)[0];
 						let maskView = new DataView(maskArr);
@@ -94,6 +98,7 @@ let PaintGuide = class extends CustomEventSource {
 						let width = maskData.width;
 						let pixels = 0;
 						let prio = 0, r = 0, g = 0, b = 0;
+						let sumPrio = 0;
 						for (let ri = 0; ri < maskArr.byteLength; ri += 4) {
 							let i = ri >> 2;
 							prio = maskView.getUint8(ri);
@@ -101,12 +106,17 @@ let PaintGuide = class extends CustomEventSource {
 								r = botView.getUint8(ri);
 								g = botView.getUint8(ri + 1);
 								b = botView.getUint8(ri + 2);
-								pointArray.push(new Uint16Array([(i % width) + this.x, this.y + Math.floor(i / width), 0, prio, r, g, b]));
+								let point = new Uint16Array([(i % width) + this.x, this.y + Math.floor(i / width), 0, prio, r, g, b]);
+								pointArray.push(point);
+								sumPrio += prio;
+								weightedMap.add([sumPrio], point);
 								pixels ++;
 							};
 						};
 						this.pixels = pixels;
 						this.points = pointArray;
+						this.weightedMap = weightedMap;
+						this.weightedSum = sumPrio;
 						this.data = new kdTree(pointArray, dim2Dist, [0, 1]);
 						console.info(`[PntGuide]  Template build finished. Managing ${pointArray.length} pixels.`);
 						//console.info(pixels);
