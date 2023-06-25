@@ -1,4 +1,8 @@
 # painted-palette
+> **Warning**
+>
+> Development of Painted Palette is now halted.
+
 🎨 Painting palettes, one at a time. One single brush, multiple easels to paint on.
 
 No additional compilation required, everything already bundled nicely into a single command/package.
