@@ -307,7 +307,7 @@ let Monalisa = class extends CustomEventSource {
 		//console.info(this);
 		let targetEndpoint = `${this.appUrl.replace("http", "ws")}/query`;
 		if (!this.ws || this.ws.readyState > 1) {
-			let headers = {};
+			/* let headers = {};
 			for (let header in this.#context.globalHeaders) {
 				switch (header) {
 					case "Sec-Fetch-User": {
@@ -321,24 +321,23 @@ let Monalisa = class extends CustomEventSource {
 						headers["Pragma"] = "no-cache";
 						break;
 					};
-					case "Accept": {
-						headers[header] = "*/*";
-						break;
+					case "Accept": {*/
+						// headers[header] = "*/*";
+						/* break;
 					};
 					default: {
 						headers[header] = this.#context.globalHeaders[header];
 					};
 				};
-			};
+			}; */
 			let finishRequest = function (request, websocket) {
-				console.debug(request);
-				console.debug(websocket);
+				//console.info(request);
+				//console.info(websocket);
 			};
 			this.ws = new WebSocket(targetEndpoint, "graphql-ws", {
-				origin: "https://garlic-bread.reddit.com",
-				headers,
-				finishRequest
+				origin: "https://garlic-bread.reddit.com"
 			});
+			//console.info(this.ws);
 			console.info(`[Monalisa]  New WebSocket connection created.`);
 		};
 		let ws = this.ws;
@@ -401,6 +400,8 @@ let Monalisa = class extends CustomEventSource {
 					cc.cxy = canvasXy;
 					cc.uWidth = data.canvasWidth;
 					cc.uHeight = data.canvasHeight;
+					cc.offsetX = data.activeZone?.topLeft?.x || 0;
+					cc.offsetY = data.activeZone?.topLeft?.y || 0;
 					console.info(`[Monalisa]  The total canvas is ${cc.width}x${cc.height}.`);
 					// Build palette point cloud
 					cc.colours = new ColourPaletteSpace();
@@ -433,8 +434,10 @@ let Monalisa = class extends CustomEventSource {
 								/*if (!actuallyResponds) {
 									return;
 								};*/
-								let pngRequest = await fetch(data.name);
-								console.info(data["__typename"]);
+								let pngRequest = await /*upThis.#context.*/fetch(data.name);
+								if (data["__typename"] == "FullFrameMessageData") {
+									console.info(`${data["__typename"]} ${data.name}`);
+								};
 								if (pngRequest.status > 299) {
 									console.info(`Invalid type ${data["__typename"]} PNG buffer (${data.name}).`);
 									return;
@@ -459,6 +462,9 @@ let Monalisa = class extends CustomEventSource {
 								};
 								//console.info(`[Monalisa]  Canvas #${canvasId} is ready to parse pixels.`);
 								this.cc.pp[canvasId]?.forEach(([rx, ry]) => {
+									ox = rx - cc.offsetX;
+									oy = ry - cc.offsetY;
+									console.debug(ox, oy);
 									let x = rx % cc.uWidth, y = ry % cc.uHeight;
 									let ri = (y * cc.uWidth + x) << 2;
 									iteratedPx ++;
@@ -466,6 +472,7 @@ let Monalisa = class extends CustomEventSource {
 									if (alpha) {
 										validPixels ++;
 										let rwPixel;
+										let rx = ox, ry = oy;
 										// Fetch from canvas cloud if there are any
 										cc.data = cc.data || new kdTree([], dim2Dist, [0, 1]);
 										let retrieved = cc.data?.nearest([rx, ry], 1, 1);
@@ -499,7 +506,7 @@ let Monalisa = class extends CustomEventSource {
 		});
 		ws.addEventListener("error", async (data) => {
 			console.info(`[Monalisa]  WebSocket connection error: ${data.data}`);
-			//console.debug(data);
+			console.debug(data);
 			//console.debug(ws);
 		});
 		/*ws.addEventListener("message", (ev) => {
