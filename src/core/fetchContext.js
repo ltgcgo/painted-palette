@@ -142,7 +142,7 @@ let FetchContext = class extends EventTarget {
 				this.#fire("concurrency");
 				console.error(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} failed (${err}).${retry ? " Retrying..." : ""}`);
 				if (retry) {
-					await WingBlade.sleep(2000);
+					await WingBlade.util.sleep(2000);
 				};
 			};
 		};

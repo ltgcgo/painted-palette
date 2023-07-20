@@ -186,13 +186,13 @@ let Monalisa = class extends CustomEventSource {
 	async focusPixel(x = -1, y = -1) {
 		if (x < 0) {
 			if (this.pg) {
-				let point = this.pg.points[this.pg.weightedMap.point([WingBlade.randomInt(this.pg?.weightedSum || 0)], true)];
+				let point = this.pg.points[this.pg.weightedMap.point([WingBlade.util.randomInt(this.pg?.weightedSum || 0)], true)];
 				this.#x = point[0];
 				this.#y = point[1];
 				console.debug(`[Monalisa]  Conducted a weighted focus.`);
 			} else {
-				this.#x = WingBlade.randomInt(this?.cc?.width || 0);
-				this.#y = WingBlade.randomInt(this?.cc?.height || 0);
+				this.#x = WingBlade.util.randomInt(this?.cc?.width || 0);
+				this.#y = WingBlade.util.randomInt(this?.cc?.height || 0);
 				console.debug(`[Monalisa]  Conducted a random focus.`);
 			};
 		} else {
@@ -262,7 +262,7 @@ let Monalisa = class extends CustomEventSource {
 			return;
 		};
 		// Walk through all matched pixels
-		let walkingValue = WingBlade.randomInt(255 * querySize),
+		let walkingValue = WingBlade.util.randomInt(255 * querySize),
 		selectedIndex = 0, selectedPixel;
 		while (walkingValue > 0) {
 			selectedPixel = resultArr[selectedIndex][0];

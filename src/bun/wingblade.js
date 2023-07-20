@@ -10,7 +10,7 @@ import web from "./web.mjs";
 import util from "./util.mjs";
 
 let WingBlade = class {
-	static args = process.argv.slice(2);
+	static args = Bun.argv.slice(2);
 	static rt = rt;
 	static env = env;
 	static file = file;

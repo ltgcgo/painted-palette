@@ -44,20 +44,20 @@ let updateChecker = async function () {
 		if (remoteVersion != BuildInfo.ver) {
 			console.info(`[Updater]   Update available (v${remoteVersion})!`);
 			console.info(`[Updater]   Downloading the new update...`);
-			let downloadReq = await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js`);
+			let downloadReq = await fetch(`https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.rt.variant.toLowerCase()}.js`);
 			if (downloadReq.status != 200) {
 				console.info(`[Updater]   Download error: ${downloadReq.statusText}`);
 				return;
 			};
 			let downloadStream = downloadReq.body;
-			await WingBlade.writeFile("./patched.js", downloadStream);
+			await WingBlade.file.write("./patched.js", downloadStream);
 			await logoutEverywhere();
-			if (WingBlade.os.toLowerCase() == "windows") {
-				console.info(`[Updater]   Please update and restart ${BuildInfo.name} manually.\nIf you don't see a "patched.js" file appearing in your folder, you only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.variant.toLowerCase()}.js\nQuitting...`);
-				WingBlade.exit(1);
+			if (WingBlade.rt.os.toLowerCase() == "windows") {
+				console.info(`[Updater]   Please update and restart ${BuildInfo.name} manually.\nIf you don't see a "patched.js" file appearing in your folder, you only need to replace the current deno.js file with the newer file.\nDownload link: https://github.com/ltgcgo/painted-palette/releases/download/${remoteVersion}/${WingBlade.rt.variant.toLowerCase()}.js\nQuitting...`);
+				WingBlade.rt.exit(1);
 			} else {
 				console.info(`[Updater]   ${BuildInfo.name} will restart shortly to finish updating.`);
-				WingBlade.exit(0);
+				WingBlade.rt.exit(0);
 			};
 		};
 	} catch (err) {
@@ -65,23 +65,23 @@ let updateChecker = async function () {
 	};
 };
 let waitForProxy = async function () {
-	let proxyOn = WingBlade.getEnv("HTTPS_PROXY");
+	let proxyOn = WingBlade.env.get("HTTPS_PROXY");
 	if (proxyOn) {
-		if (WingBlade.getEnv("LONGER_START")) {
-			console.info(`[Core]      Waiting for ${WingBlade.getEnv("LONGER_START")} on ${proxyOn}, control port on ${WingBlade.getEnv("CTRL_PORT")}...`);
-			await WingBlade.sleep(10000);
+		if (WingBlade.env.get("LONGER_START")) {
+			console.info(`[Core]      Waiting for ${WingBlade.env.get("LONGER_START")} on ${proxyOn}, control port on ${WingBlade.env.get("CTRL_PORT")}...`);
+			await WingBlade.util.sleep(10000);
 		} else {
 			console.info(`[Core]      Waiting for the proxy client on ${proxyOn} ...`);
-			await WingBlade.sleep(1000);
+			await WingBlade.util.sleep(1000);
 		};
 	};
 };
 
 let main = async function (args) {
 	let acct = args[1], pass = args[2], otp = args[3];
-	console.info(`${BuildInfo.name}@${WingBlade.variant} ${WingBlade.os}_v${BuildInfo.ver}`);
+	console.info(`${BuildInfo.name}@${WingBlade.rt.variant} ${WingBlade.rt.os}_v${BuildInfo.ver}`);
 	let updateThread;
-	if (WingBlade.getEnv("NO_UPDATE") == "1") {
+	if (WingBlade.env.get("NO_UPDATE") == "1") {
 		console.info(`Updater is disabled.`);
 	} else {
 		updateThread = setInterval(updateChecker, 20000);
@@ -107,14 +107,14 @@ let main = async function (args) {
 				};
 				default: {
 					console.info(`help       Show this message\npaint      Use the provided credentials to paint on Reddit\n             Example: ./palette-bot paint username password\npixel      Use the provided credentials to paint on VKontakte\n             Example: ./palette-bot pixel username password\ntest       Use the provided credentials to paint on the test server\n             Example: ./palette-bot test sessionToken\nbatch      Start a server for managing. Reads and saves to a file. Port number is optional\n             Example: ./palette-bot batch 14514\nctl        Controls the painting server. Further help available\n`);
-					if (WingBlade.os != "windows") {
+					if (WingBlade.rt.os != "windows") {
 						console.info("./install.sh is provided to reinstall this program.");
 					} else {
 						console.info("Manual update is required, but only deno.js needs to be replaced.");
 					};
 				};
 			};
-			WingBlade.exit(1);
+			WingBlade.rt.exit(1);
 			break;
 		};
 		case "paint": {
@@ -125,7 +125,7 @@ let main = async function (args) {
 			await browserContext.fetch("https://www.reddit.com", {
 				"init": "browser"
 			});
-			await WingBlade.sleep(1200, 1800);
+			await WingBlade.util.sleep(1200, 1800);
 			// Begin the Reddit auth flow
 			console.info(`[Core]      Opening the login page...`);
 			let redditAuth = new RedditAuth(browserContext);
@@ -133,7 +133,7 @@ let main = async function (args) {
 			if (!redditAuth.loggedIn) {
 				// Error out
 				console.info(`[Core]      Reddit login failed. Reason: ${authResult}`);
-				WingBlade.exit(1);
+				WingBlade.rt.exit(1);
 			};
 			// Start the painter
 			//console.info(browserContext.cookies);
@@ -151,7 +151,7 @@ let main = async function (args) {
 		case "pixel": {
 			console.info(`[PixelGun]  This software is open-source. Interface and information related to VK is intact. Feel free to configure a build with VK support yourself.`);
 			console.info(`[Пиксель]   Вы не заслуживаете, чтобы программист неустанно работал на вас.`);
-			WingBlade.exit(1);
+			WingBlade.rt.exit(1);
 			break;
 		};
 		case "test": {
@@ -183,7 +183,7 @@ let main = async function (args) {
 			if (!monalisa.loggedIn) {
 				// Error out
 				console.info(`[Core]      Monalisa login failed. Reason: ${authResult}`);
-				WingBlade.exit(1);
+				WingBlade.rt.exit(1);
 			};
 			console.info(`[Core]      Logged in as ${monalisa.session}. Receiving canvas config...`);
 			await monalisa.refreshInfo();
@@ -208,15 +208,15 @@ let main = async function (args) {
 					await monalisa.getPixelHistory();
 					await monalisa.place();
 					//console.info(JSON.stringify());
-					//let colourDesired = [WingBlade.randomInt(256), WingBlade.randomInt(256), WingBlade.randomInt(256)];
+					//let colourDesired = [WingBlade.util.randomInt(256), WingBlade.util.randomInt(256), WingBlade.util.randomInt(256)];
 					//let colourPicked = monalisa.cc.colours.nearest(colourDesired);
 					//console.info(`[Core]      Chose ${colourPicked} for ${colourDesired}.`);
-					//let nextAt = await monalisa.placePixel(WingBlade.randomInt(10), 0, colourPicked[3]);
+					//let nextAt = await monalisa.placePixel(WingBlade.util.randomInt(10), 0, colourPicked[3]);
 					//console.info(`[Core]      Next pixel in ${(nextAt - Date.now()) / 1000} seconds.`);
 				} else {
 					console.info(`[Core]      Bot waiting for the next sweep.`);
 				};
-				await WingBlade.sleep(5000);
+				await WingBlade.util.sleep(5000);
 			};
 			break;
 		};
@@ -240,7 +240,7 @@ let main = async function (args) {
 			};
 			console.info(`[Core]      Reading configuration data from "${confFile}".`);
 			try {
-				conf = JSON.parse(utf8Decode.decode(await WingBlade.readFile(confFile)));
+				conf = JSON.parse(utf8Decode.decode(await WingBlade.file.read(confFile)));
 				for (let user in conf.users) {
 					if (conf.users[user].active?.constructor) {
 						delete conf.users[user].active;
@@ -253,7 +253,7 @@ let main = async function (args) {
 			};
 			let fileSaver = async function () {
 				console.info(`[Core]      Saving configuration file...`);
-				await WingBlade.writeFile(confFile, utf8Encode.encode(JSON.stringify(conf)));
+				await WingBlade.file.write(confFile, utf8Encode.encode(JSON.stringify(conf)));
 			},
 			fileSaveThread = setInterval(fileSaver, 30000);
 			fileSaver();
@@ -279,7 +279,7 @@ let main = async function (args) {
 			sweepThread = setInterval(sweeper, 5000);
 			let ipInfo = new IPInfo();
 			ipInfo.start();
-			WingBlade.serve(async function (request) {
+			WingBlade.web.serve(async function (request) {
 				let badRequest = new Response("Bad Request", {
 					status: 400
 				});
@@ -331,8 +331,8 @@ let main = async function (args) {
 								let acctStat = maman.getCounts();
 								return new Response(JSON.stringify({
 									plat: {
-										var: `${WingBlade.variant} ${WingBlade.version}`,
-										os: WingBlade.os
+										var: `${WingBlade.rt.variant} ${WingBlade.rt.version}`,
+										os: WingBlade.rt.os
 									},
 									ver: BuildInfo.ver,
 									ip: {
@@ -349,8 +349,8 @@ let main = async function (args) {
 										banned: acctStat.banned
 									},
 									snooze: conf.snooze,
-									proxy: WingBlade.getEnv("HTTPS_PROXY") ? (WingBlade.getEnv("PROXY_PORT") ? (WingBlade.getEnv("LONGER_START") || "Standalone") : "System") : "No Proxy",
-									mem: WingBlade.memUsed().rss,
+									proxy: WingBlade.env.get("HTTPS_PROXY") ? (WingBlade.env.get("PROXY_PORT") ? (WingBlade.env.get("LONGER_START") || "Standalone") : "System") : "No Proxy",
+									mem: WingBlade.rt.memUsed.rss,
 									uptime: Date.now() - runSince,
 									instance: paintAnalytics.uuid,
 									bot: {
@@ -385,7 +385,7 @@ let main = async function (args) {
 								if (!request.headers.has("upgrade")) {
 									return badRequest;
 								};
-								let {socket, response} = WingBlade.upgradeWebSocket(request);
+								let {socket, response} = WingBlade.web.acceptWs(request);
 								socket.addEventListener("open", () => {
 									console.info(`[Core]      Web UI subscribed to realtime events.`);
 									socket.send(JSON.stringify({"event": "init"}));
@@ -570,7 +570,7 @@ let main = async function (args) {
 				onListen: ({port}) => {
 					console.info(`[Core]      Now running in batch mode. To control and/or retrieve info from CLI, use the "ctl" subcommand.`);
 					console.info(`[Core]      Web UI and REST API available on http://127.0.0.1:${port}/`);
-					if (WingBlade.os.toLowerCase() == "windows") {
+					if (WingBlade.rt.os.toLowerCase() == "windows") {
 						console.info(`[Core]      Open the link above in your browser of choice, and start fighting, soldier!`);
 					};
 				}
@@ -578,7 +578,7 @@ let main = async function (args) {
 			break;
 		};
 		case "ctl": {
-			let port = WingBlade.getEnv("PORT") || "14514";
+			let port = WingBlade.env.get("PORT") || "14514";
 			let prefix = `http://127.0.0.1:${port}/`;
 			console.info(``);
 			switch (acct) {
@@ -677,12 +677,12 @@ let main = async function (args) {
 					console.info(`Unknown subcommand "${acct || ""}". Execute "help ctl" for help.`);
 				};
 			};
-			WingBlade.exit(1);
+			WingBlade.rt.exit(1);
 			break;
 		};
 		default: {
 			console.info(`Unknown subcommand "${args[0] || ""}". Execute "help" for help.`);
-			WingBlade.exit(1);
+			WingBlade.rt.exit(1);
 		};
 	};
 };

@@ -305,7 +305,7 @@ let MultiUserManager = class extends CustomEventSource {
 				(async () => {
 					this.conf.users[uname].pstate = 1;
 					this.dispatchEvent("userupdate", uname);
-					await WingBlade.sleep(25, 4500);
+					await WingBlade.util.sleep(25, 4500);
 					e.monalisa.place();
 				})()
 			} else {

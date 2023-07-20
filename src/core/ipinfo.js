@@ -31,7 +31,7 @@ let IPInfo = class {
 		// Fetch
 		let ipAddress = "127.0.0.1";
 		try {
-			let ipRep = await this.#fc.fetch(remotes[WingBlade.randomInt(remotes.length)]);
+			let ipRep = await this.#fc.fetch(remotes[WingBlade.util.randomInt(remotes.length)]);
 			if (ipRep.status > 299) {
 				throw(new Error(`${ipRep.status} ${ipRep.statusText}`));
 			};

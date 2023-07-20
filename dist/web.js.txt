@@ -3,7 +3,7 @@
   // src/core/common.js
   var BuildInfo = {
     name: "Painted Palette",
-    ver: "0.0.17"
+    ver: "0.0.18"
   };
   var humanizedTime = function(inSeconds = 0) {
     let ms = `${Math.floor(inSeconds % 1 * 100)}`.padStart(2, "0"), sec = `${Math.floor(inSeconds % 60)}`.padStart(2, "0"), min = `${Math.floor(inSeconds / 60) % 60}`.padStart(2, "0"), hr = `${Math.floor(inSeconds / 3600) % 24}`.padStart(2, "0");

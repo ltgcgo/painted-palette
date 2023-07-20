@@ -1,58 +1,22 @@
 // Copyright (c) Lightingale WingBlade Author(s) 2023.
-// Licensed under GNU LGPL 3.0.
+// Licensed under GNU LGPL 3.0 or later.
 
 "use strict";
 
-import {serve} from "../../libs/denoServe/server.js";
+import {rt, env} from "./system.mjs";
+import file from "./file.mjs";
+import net from "./net.mjs";
+import web from "./web.mjs";
+import util from "../shared/util.mjs";
 
-let WingBlade = {
-	args: Deno.args,
-	os: Deno.build.os,
-	variant: "Deno",
-	version: Deno.version.deno,
-	exit: (code = 0) => {
-		Deno.exit(code);
-	},
-	getEnv: (key, fallbackValue) => {
-		return Deno.env.get(key) || fallbackValue;
-	},
-	memUsed: () => {
-		return Deno.memoryUsage();
-	},
-	randomInt: (cap) => {
-		return Math.floor(Math.random() * cap);
-	},
-	readFile: async function (path, opt) {
-		return await Deno.readFile(path, opt);
-	},
-	serve: (handler, opt = {}) => {
-		if (!opt?.onListen) {
-			opt.onListen = function ({port, hostname}) {
-				console.error(`Serving at http://${hostname}:${port}`);
-			};
-		};
-		if (!opt?.hostname) {
-			opt.hostname = "127.0.0.1";
-		};
-		return serve(handler, opt);
-	},
-	setEnv: (key, value) => {
-		return Deno.env.set(key, value);
-	},
-	sleep: function (ms, maxAdd = 0) {
-		return new Promise((y, n) => {
-			let as = AbortSignal.timeout(ms + Math.floor(maxAdd * Math.random()));
-			as.addEventListener("abort", () => {
-				y();
-			});
-		});
-	},
-	upgradeWebSocket(req, opt) {
-		return Deno.upgradeWebSocket(req, opt);
-	},
-	writeFile: async function (path, data, opt) {
-		await Deno.writeFile(path, data, opt);
-	}
+let WingBlade = class {
+	static args = Deno.args;
+	static rt = rt;
+	static env = env;
+	static file = file;
+	static net = net;
+	static web = web;
+	static util = util;
 };
 
 export {
