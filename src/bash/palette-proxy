@@ -36,6 +36,9 @@ if [ -e "./deno.js" ] ; then
 	ADDITIONAL="run --allow-net --allow-env --allow-read --allow-write"
 elif [ -e "./node.js" ] ; then
 	RUNTIME=node
+elif [ -e "./bun.js" ] ; then
+	RUNTIME=bun
+	ADDITIONAL="run"
 else
 	echo "No available scripts. Quitting."
 	exit 1

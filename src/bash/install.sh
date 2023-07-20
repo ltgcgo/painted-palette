@@ -4,6 +4,9 @@ sysArch=x86_64
 if [ -e "$(which deno)" ] ; then
 	installVer=deno
 	echo "Deno is found."
+elif [ -e "$(which bun)" ] ; then
+	installVer=bun
+	echo "Bun is found."
 elif [ -e "$(which node)" ] ; then
 	installVer=node
 	echo "Node is found."
@@ -51,6 +54,9 @@ fi
 if [ "$installVer" == "deno" ] ; then
 	echo "Downloading the Deno bundle for the first run..."
 	curl -Lo release.zip "https://github.com/ltgcgo/painted-palette/releases/latest/download/deno_release.zip"
+elif [ "$installVer" == "bun" ] ; then
+	echo "Downloading the Bun bundle for the first run..."
+	curl -Lo release.zip "https://github.com/ltgcgo/painted-palette/releases/latest/download/bun_release.zip"
 elif [ "$installVer" == "node" ] ; then
 	echo "Downloading the Node bundle for the first run..."
 	curl -Lo release.zip "https://github.com/ltgcgo/painted-palette/releases/latest/download/node_release.zip"

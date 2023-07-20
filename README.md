@@ -70,6 +70,13 @@ Recommended for Linux and Mac.
 * cURL
 * Deno 1.30 or later (installed automatically when not available)
 
+#### Bun
+Usable on Linux and Mac.
+
+* Bash
+* cURL
+* Bun 0.6.14 or later
+
 #### Node.js
 Recommended for Android (Termux).
 
