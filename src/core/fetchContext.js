@@ -106,7 +106,8 @@ let FetchContext = class extends EventTarget {
 			//opt.verbose = true;
 		};
 		switch (opt.init) {
-			case "browser": {
+			case "browser":
+			case "browserHide": {
 				opt.headers["Sec-Fetch-Dest"] = "document";
 				opt.headers["Sec-Fetch-Mode"] = "navigate";
 				//opt.headers["Sec-Fetch-Site"] = "none";
@@ -139,7 +140,9 @@ let FetchContext = class extends EventTarget {
 			try {
 				this.#concurrency ++;
 				this.#fire("concurrency");
-				console.info(`[BrowseCxt] ${requestType}`);
+				if (opt.init != "browserHide") {
+					console.info(`[BrowseCxt] ${requestType}`);
+				};
 				response = await fetch(url, opt);
 				this.#concurrency --;
 				this.#fire("concurrency");

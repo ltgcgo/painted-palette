@@ -40,7 +40,7 @@ let ManagedUser = class extends CustomEventSource {
 			rplaceToken = await rplaceTokenReq.text();
 			rplaceToken = rplaceToken.slice(rplaceToken.indexOf("\"accessToken\":\"") + 15);
 			rplaceToken = rplaceToken.slice(0, rplaceToken.indexOf("\""));
-			//console.debug(rplaceToken);
+			console.debug(rplaceToken);
 		};
 		await this.monalisa.login({
 			session: rplaceToken

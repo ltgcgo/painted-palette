@@ -53,10 +53,11 @@ let Monalisa = class extends CustomEventSource {
 	};
 	getGraphQlHeaders(bodyLength) {
 		return {
-			"Authorization": this.#sessionToken,
+			"Authorization": `Bearer ${this.#sessionToken}`,
 			"Content-Type": "application/json",
 			"Content-Length": bodyLength.toString(),
-			"apollographql-client-name": "mona-lisa",
+			"Referer": "https://garlic-bread.reddit.com/",
+			"apollographql-client-name": "garlic-bread",
 			"apollographql-client-version": "0.0.1"
 		};
 	};
@@ -107,7 +108,7 @@ let Monalisa = class extends CustomEventSource {
 		// Get user data
 		let userRep = await this.#context.fetch(`${this.appUrl}/svc/mona-lisa/get-user-data`, {
 			"headers": {
-				"Authorization": this.#sessionToken
+				"Authorization": `Bearer ${this.#sessionToken}`
 			}
 		});
 		if (userRep.status == 200) {
@@ -223,6 +224,7 @@ let Monalisa = class extends CustomEventSource {
 			let canvasX = x % this.cc.uWidth, canvasY = y % this.cc.uHeight;
 			let graphQlBody = `{"operationName":"setPixel","variables":{"input":{"actionName":"r/replace:set_pixel","PixelMessageData":{"coordinate":{"x":${canvasX},"y":${canvasY}},"colorIndex":${ci},"canvasIndex":${canvasIndex}}}},"query":"mutation setPixel($input: ActInput!) {\\n  act(input: $input) {\\n    data {\\n      ... on BasicMessage {\\n        id\\n        data {\\n          ... on GetUserCooldownResponseMessageData {\\n            nextAvailablePixelTimestamp\\n            __typename\\n          }\\n          ... on SetPixelResponseMessageData {\\n            timestamp\\n            __typename\\n          }\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"}`;
 			//console.info(`${graphQlBody}`);
+			console.info(this.getGraphQlHeaders(graphQlBody.length));
 			let graphQlRep = await await this.#context.fetch(`${this.appUrl}/query`, {
 				"headers": this.getGraphQlHeaders(graphQlBody.length),
 				"method": "POST",
@@ -237,6 +239,8 @@ let Monalisa = class extends CustomEventSource {
 				result = true;
 				this.dispatchEvent("pixelsuccess");
 			} else {
+				console.debug(graphQlRep.status);
+				console.debug(await graphQlRep.text())
 				this.dispatchEvent("pixelfail");
 			};
 			this.#isPlacing = false;
@@ -434,12 +438,12 @@ let Monalisa = class extends CustomEventSource {
 								/*if (!actuallyResponds) {
 									return;
 								};*/
-								let pngRequest = await /*upThis.#context.*/fetch(data.name);
+								let pngRequest = await upThis.#context.fetch(data.name, {init: "browserHide"});
 								if (data["__typename"] == "FullFrameMessageData") {
-									console.info(`${data["__typename"]} ${data.name}`);
+									//console.info(`${data["__typename"]} ${data.name}`);
 								};
 								if (pngRequest.status > 299) {
-									console.info(`Invalid type ${data["__typename"]} PNG buffer (${data.name}).`);
+									console.info(`[Monalisa]  Invalid ${data["__typename"]} PNG buffer for canvas (#${canvasId}).`);
 									return;
 								};
 								let pngBuffer = await pngRequest.arrayBuffer();
@@ -461,35 +465,36 @@ let Monalisa = class extends CustomEventSource {
 									await this.whenPpReady();
 								};
 								//console.info(`[Monalisa]  Canvas #${canvasId} is ready to parse pixels.`);
-								this.cc.pp[canvasId]?.forEach(([rx, ry]) => {
-									ox = rx - cc.offsetX;
-									oy = ry - cc.offsetY;
-									console.debug(ox, oy);
-									let x = rx % cc.uWidth, y = ry % cc.uHeight;
-									let ri = (y * cc.uWidth + x) << 2;
-									iteratedPx ++;
-									let alpha = pngView.getUint8(ri + 3);
-									if (alpha) {
-										validPixels ++;
-										let rwPixel;
-										let rx = ox, ry = oy;
-										// Fetch from canvas cloud if there are any
-										cc.data = cc.data || new kdTree([], dim2Dist, [0, 1]);
-										let retrieved = cc.data?.nearest([rx, ry], 1, 1);
-										if (retrieved?.length && retrieved[0][0][0] == rx && retrieved[0][0][1] == ry) {
-											// Reuse if there are matche
-											rwPixel = retrieved[0][0];
-										} else {
-											// Insert if there are no match
-											rwPixel = new Uint16Array([rx, ry, 0, 0, 0]);
-											cc.data.insert(rwPixel);
+								this.cc.pp?.forEach((canvas, canvasIdx) => {
+									canvas?.forEach(([rx, ry]) => {
+										//let ox = rx - (cc.width >> 1), oy = ry - (cc.height >> 1);
+										//console.debug(canvasIdx, ox, oy);
+										let x = rx % cc.uWidth, y = ry % cc.uHeight;
+										let ri = (y * cc.uWidth + x) << 2;
+										iteratedPx ++;
+										let alpha = pngView.getUint8(ri + 3);
+										if (alpha) {
+											validPixels ++;
+											let rwPixel;
+											//let rx = ox, ry = oy;
+											// Fetch from canvas cloud if there are any
+											cc.data = cc.data || new kdTree([], dim2Dist, [0, 1]);
+											let retrieved = cc.data?.nearest([rx, ry], 1, 1);
+											if (retrieved?.length && retrieved[0][0][0] == rx && retrieved[0][0][1] == ry) {
+												// Reuse if there are matche
+												rwPixel = retrieved[0][0];
+											} else {
+												// Insert if there are no match
+												rwPixel = new Uint16Array([rx, ry, 0, 0, 0]);
+												cc.data.insert(rwPixel);
+											};
+											// Write RGB data to canvas
+											rwPixel[2] = pngView.getUint8(ri),
+											rwPixel[3] = pngView.getUint8(ri + 1),
+											rwPixel[4] = pngView.getUint8(ri + 2);
+											//console.info(rwPixel);
 										};
-										// Write RGB data to canvas
-										rwPixel[2] = pngView.getUint8(ri),
-										rwPixel[3] = pngView.getUint8(ri + 1),
-										rwPixel[4] = pngView.getUint8(ri + 2);
-										//console.info(rwPixel);
-									};
+									})
 								});
 								if (validPixels) {
 									console.info(`[Monalisa]  Canvas #${canvasId} updated ${validPixels}/${iteratedPx} pixels.`);
