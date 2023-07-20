@@ -348,7 +348,7 @@ let main = async function (args) {
 										fresh: acctStat.fresh,
 										banned: acctStat.banned
 									},
-									snooze: conf.snooze,
+									snooze: conf.snooze || WingBlade.env.get("SLEEP") == 1,
 									proxy: WingBlade.env.get("HTTPS_PROXY") ? (WingBlade.env.get("PROXY_PORT") ? (WingBlade.env.get("LONGER_START") || "Standalone") : "System") : "No Proxy",
 									mem: WingBlade.rt.memUsed.rss,
 									uptime: Date.now() - runSince,
