@@ -474,7 +474,7 @@ let Monalisa = class extends CustomEventSource {
 								//console.info(`[Monalisa]  Canvas #${canvasId} is ready to parse pixels.`);
 								this.cc.pp?.forEach((canvas, canvasIdx) => {
 									canvas?.forEach(([rx, ry]) => {
-										//let ox = rx - (cc.width >> 1), oy = ry - (cc.height >> 1);
+										//let ox = rx - 1000, oy = ry - 500;
 										//console.debug(canvasIdx, ox, oy);
 										let x = rx % cc.uWidth, y = ry % cc.uHeight;
 										let ri = (y * cc.uWidth + x) << 2;
