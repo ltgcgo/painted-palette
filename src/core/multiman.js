@@ -7,7 +7,7 @@ import {PaintGuide} from "./paintGuide.js";
 
 import {CustomEventSource} from "../../libs/lightfelt/ext/customEvents.js";
 
-const batchModeOrigin = 'https://place.equestria.dev';
+const batchModeOrigin = 'https://gql-realtime-2.reddit.com/query';
 
 let ManagedUser = class extends CustomEventSource {
 	username = "";

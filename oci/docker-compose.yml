@@ -1,6 +1,6 @@
 version: "2023.7.20"
 services:
-  stratus:
+  palette:
     build: .
     ports:
       - "127.0.0.1:14514:14514"

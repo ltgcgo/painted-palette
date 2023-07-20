@@ -133,11 +133,13 @@ let FetchContext = class extends EventTarget {
 		//console.info(`[BrowseCxt] Request: ${opt?.method?.toUpperCase() || "GET"} ${url}`);
 		let retry = 10, keepGoing = true;
 		let response;
+		let requestType = `${opt?.method?.toUpperCase() || "GET"} ${url}`;
 		while (retry && keepGoing) {
 			retry --;
 			try {
 				this.#concurrency ++;
 				this.#fire("concurrency");
+				console.info(requestType);
 				response = await fetch(url, opt);
 				this.#concurrency --;
 				this.#fire("concurrency");
@@ -148,7 +150,7 @@ let FetchContext = class extends EventTarget {
 			} catch (err) {
 				this.#concurrency --;
 				this.#fire("concurrency");
-				console.error(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} failed (${opt?.method?.toUpperCase() || "GET"} ${url}).${retry ? " Retrying..." : ""}\n${err}`);
+				console.error(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} failed (${requestType}).${retry ? " Retrying..." : ""}\n${err}`);
 				if (retry) {
 					await WingBlade.util.sleep(2000);
 				};

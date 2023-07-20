@@ -223,7 +223,7 @@ let main = async function (args) {
 		case "batch": {
 			await waitForProxy();
 			let runSince = Date.now();
-			let systemBrowser = new FetchContext('https://place.equestria.dev');
+			let systemBrowser = new FetchContext('https://www.reddit.com');
 			let paintGuide = new PaintGuide(svc.tpl);
 			let templateRefresher = async () => {
 				paintGuide.updateTemplate();

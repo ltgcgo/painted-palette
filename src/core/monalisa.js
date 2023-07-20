@@ -328,12 +328,12 @@ let Monalisa = class extends CustomEventSource {
 			ps.subscribe({
 				input: {
 					channel: {
-						teamOwner: "AFD2022",
+						teamOwner: "GARLICBREAD",
 						category: "CONFIG"
 					}
 				},
 				operationName: "configuration",
-				query: "subscription configuration($input: SubscribeInput!) {\\n subscribe(input: $input) {\\n id\\n ... on BasicMessage {\\n data {\\n __typename\\n ... on ConfigurationMessageData {\\n colorPalette {\\n colors {\\n hex\\n index\\n __typename\\n }\\n __typename\\n }\\n canvasConfigurations {\\n index\\n dx\\n dy\\n __typename\\n }\\n canvasWidth\\n canvasHeight\\n __typename\\n }\\n }\\n __typename\\n }\\n __typename\\n }\\n}\\n",
+				query: "subscription configuration($input: SubscribeInput!) {\\n  subscribe(input: $input) {\\n    id\\n    ... on BasicMessage {\\n      data {\\n        __typename\\n        ... on ConfigurationMessageData {\\n          colorPalette {\\n            colors {\\n              hex\\n              index\\n              __typename\\n            }\\n            __typename\\n          }\\n          canvasConfigurations {\\n            index\\n            dx\\n            dy\\n            __typename\\n          }\\n          activeZone {\\n            topLeft {\\n              x\\n              y\\n              __typename\\n            }\\n            bottomRight {\\n              x\\n              y\\n              __typename\\n            }\\n            __typename\\n          }\\n          canvasWidth\\n          canvasHeight\\n          adminConfiguration {\\n            maxAllowedCircles\\n            maxUsersPerAdminBan\\n            __typename\\n          }\\n          __typename\\n        }\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n",
 				callback: (data) => {
 					if (!actuallyResponds) {
 						return;
@@ -388,7 +388,7 @@ let Monalisa = class extends CustomEventSource {
 								}
 							},
 							operationName: "replace",
-							query: "subscription replace($input: SubscribeInput!) {\\n subscribe(input: $input) {\\n id\\n ... on BasicMessage {\\n data {\\n __typename\\n ... on FullFrameMessageData {\\n __typename\\n name\\n timestamp\\n }\\n ... on DiffFrameMessageData {\\n __typename\\n name\\n currentTimestamp\\n previousTimestamp\\n }\\n }\\n __typename\\n }\\n __typename\\n }\\n}\\n",
+							query: "subscription replace($input: SubscribeInput!) {\\n  subscribe(input: $input) {\\n    id\\n    ... on BasicMessage {\\n      data {\\n        __typename\\n        ... on FullFrameMessageData {\\n          __typename\\n          name\\n          timestamp\\n        }\\n        ... on DiffFrameMessageData {\\n          __typename\\n          name\\n          currentTimestamp\\n          previousTimestamp\\n        }\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n",
 							callback: async (data) => {
 								//console.info(`[Monalisa]  Canvas #${canvasId} received frame data.`);
 								/*if (!actuallyResponds) {
