@@ -11,7 +11,11 @@ let textToObj = function (str) {
 	str.split("\n").forEach((e) => {
 		if (e.trim().length) {
 			let fields = e.split("\t");
-			newObj[fields[0]] = fields[1];
+			if (self.Bun && fields[0] == "Accept-Encoding") {
+				console.debug(`Eliminated headers for Bun.`);
+			} else {
+				newObj[fields[0]] = fields[1];
+			};
 		};
 	});
 	return newObj;
@@ -97,6 +101,10 @@ let FetchContext = class extends EventTarget {
 		if (!opt.credentials) {
 			opt.credentials == "omit";
 		};
+		if (self.Bun) {
+			console.debug(`Enabled runtime fetch verbose logging for Bun.`);
+			//opt.verbose = true;
+		};
 		switch (opt.init) {
 			case "browser": {
 				opt.headers["Sec-Fetch-Dest"] = "document";
@@ -140,7 +148,7 @@ let FetchContext = class extends EventTarget {
 			} catch (err) {
 				this.#concurrency --;
 				this.#fire("concurrency");
-				console.error(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} failed (${err}).${retry ? " Retrying..." : ""}`);
+				console.error(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} failed (${opt?.method?.toUpperCase() || "GET"} ${url}).${retry ? " Retrying..." : ""}\n${err}`);
 				if (retry) {
 					await WingBlade.util.sleep(2000);
 				};

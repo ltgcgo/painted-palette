@@ -566,7 +566,7 @@ let main = async function (args) {
 					};
 				};
 			}, {
-				port: acct || 14514,
+				port: parseInt(acct) || 14514,
 				onListen: ({port}) => {
 					console.info(`[Core]      Now running in batch mode. To control and/or retrieve info from CLI, use the "ctl" subcommand.`);
 					console.info(`[Core]      Web UI and REST API available on http://127.0.0.1:${port}/`);
