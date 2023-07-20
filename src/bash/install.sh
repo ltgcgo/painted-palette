@@ -1,7 +1,10 @@
 #!/bin/bash
 installVer=
 sysArch=x86_64
-if [ -e "$(which deno)" ] ; then
+if [ -e "$(which ${VARIANT})" ] ; then
+	installVer=$VARIANT
+	echo "Defined a custom $VARIANT installation."
+elif [ -e "$(which deno)" ] ; then
 	installVer=deno
 	echo "Deno is found."
 elif [ -e "$(which bun)" ] ; then

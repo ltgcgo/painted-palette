@@ -145,9 +145,9 @@ let FetchContext = class extends EventTarget {
 				if (opt.init != "browserHide") {
 					console.info(`[BrowseCxt] ${requestType}`);
 				};
-				if (url.indexOf("query") > -1 && opt.method.toLowerCase() == "post") {
+				/*if (url.indexOf("query") > -1 && opt.method.toLowerCase() == "post") {
 					console.info(opt);
-				};
+				};*/
 				response = await fetch(url, opt);
 				this.#concurrency --;
 				this.#fire("concurrency");
