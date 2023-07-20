@@ -120,6 +120,8 @@ let PaintGuide = class extends CustomEventSource {
 								pixels ++;
 							};
 						};
+						this.width = maskData.width;
+						this.height = maskData.height;
 						this.pixels = pixels;
 						this.points = pointArray;
 						this.weightedMap = weightedMap;

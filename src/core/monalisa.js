@@ -488,7 +488,7 @@ let Monalisa = class extends CustomEventSource {
 											cc.data = cc.data || new kdTree([], dim2Dist, [0, 1]);
 											let retrieved = cc.data?.nearest([rx, ry], 1, 1);
 											if (retrieved?.length && retrieved[0][0][0] == rx && retrieved[0][0][1] == ry) {
-												// Reuse if there are matche
+												// Reuse if there are matches
 												rwPixel = retrieved[0][0];
 											} else {
 												// Insert if there are no match

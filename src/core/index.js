@@ -22,6 +22,7 @@ import webUiJs from "../../dist/web.js.txt";
 import {CustomEventSource} from "../../libs/lightfelt/ext/customEvents.js";
 import {pako} from "../../libs/pako/bridge.min.js";
 self.pako = pako;
+import {UPNG} from "../../libs/upng/upng.min.js";
 
 let utf8Decode = new TextDecoder(), utf8Encode = new TextEncoder();
 
@@ -433,6 +434,58 @@ let main = async function (args) {
 								// Force random redist
 								await maman.allOff();
 								return success;
+								break;
+							};
+							case "/mask.png": {
+								// Read image from CanvasConfiguration
+								let imageWidth = maman.cc.width || maman.pg.width || 1,
+								imageHeight = maman.cc.height || maman.pg.height || 1;
+								let useOriginal = !maman.cc?.width?.constructor;
+								let rgbaData = new Uint8Array((imageWidth * imageHeight) * 4);
+								maman.pg?.points.forEach((e) => {
+									let realY = e[1] - (useOriginal ? (maman.pg.y || 0) : 0);
+									let realX = e[0] - (useOriginal ? (maman.pg.x || 0) : 0);
+									//console.info(realX, realY);
+									let pointer = (realY * imageWidth + realX) << 2;
+									rgbaData[pointer] = e[4];
+									rgbaData[pointer + 1] = e[5];
+									rgbaData[pointer + 2] = e[6];
+									rgbaData[pointer + 3] = e[3];
+								});
+								let buffer = new Uint8Array(UPNG.encode([rgbaData], imageWidth, imageHeight, 0));
+								rgbaData = undefined;
+								return new Response(buffer, {
+									headers: {
+										"Content-Type": "image/png"
+									}
+								})
+								break;
+							};
+							case "/watch.png": {
+								// Read image from CanvasConfiguration
+								let imageWidth = maman.cc.width || maman.pg.width || 1,
+								imageHeight = maman.cc.height || maman.pg.height || 1;
+								let rgbaData = new Uint8Array((imageWidth * imageHeight) * 4);
+								maman.pg?.points.forEach((e) => {
+									let realY = e[1];
+									let realX = e[0];
+									//console.info(realX, realY);
+									let pointer = (realY * imageWidth + realX) << 2;
+									let retrieved = maman.cc.data.nearest([realX, realY], 1, 1);
+									if (retrieved.length && retrieved[0][0][0] == realX && retrieved[0][0][1] == realY) {
+										rgbaData[pointer] = retrieved[0][0][2];
+										rgbaData[pointer + 1] = retrieved[0][0][3];
+										rgbaData[pointer + 2] = retrieved[0][0][4];
+										rgbaData[pointer + 3] = e[3];
+									};
+								});
+								let buffer = new Uint8Array(UPNG.encode([rgbaData], imageWidth, imageHeight, 0));
+								rgbaData = undefined;
+								return new Response(buffer, {
+									headers: {
+										"Content-Type": "image/png"
+									}
+								})
 								break;
 							};
 							default: {
