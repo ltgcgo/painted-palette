@@ -1,7 +1,7 @@
 # painted-palette
-> **Warning**
+<!--> **Warning**
 >
-> Development of Painted Palette is now halted.
+> Development of Painted Palette is now halted.-->
 
 🎨 Painting palettes, one at a time. One single brush, multiple easels to paint on.
 
