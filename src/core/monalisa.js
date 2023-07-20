@@ -56,7 +56,9 @@ let Monalisa = class extends CustomEventSource {
 			"Authorization": `Bearer ${this.#sessionToken}`,
 			"Content-Type": "application/json",
 			"Content-Length": bodyLength.toString(),
+			"Origin": "https://garlic-bread.reddit.com",
 			"Referer": "https://garlic-bread.reddit.com/",
+			"Sec-Fetch-Site": "same-site",
 			"apollographql-client-name": "garlic-bread",
 			"apollographql-client-version": "0.0.1"
 		};
@@ -132,10 +134,12 @@ let Monalisa = class extends CustomEventSource {
 		let graphQlRep = await await this.#context.fetch(`${this.appUrl}/query`, {
 			"headers": this.getGraphQlHeaders(graphQlBody.length),
 			"method": "POST",
-			"body": graphQlBody
+			"body": graphQlBody,
+			"noCookies": true
 		});
 		//console.info(graphQlRep);
 		let graphQlRaw = await graphQlRep.json();
+		console.info(graphQlRaw);
 		return graphQlRaw.data.act.data[0].data;
 	};
 	async partitionPixels() {
@@ -224,26 +228,29 @@ let Monalisa = class extends CustomEventSource {
 			let canvasX = x % this.cc.uWidth, canvasY = y % this.cc.uHeight;
 			let graphQlBody = `{"operationName":"setPixel","variables":{"input":{"actionName":"r/replace:set_pixel","PixelMessageData":{"coordinate":{"x":${canvasX},"y":${canvasY}},"colorIndex":${ci},"canvasIndex":${canvasIndex}}}},"query":"mutation setPixel($input: ActInput!) {\\n  act(input: $input) {\\n    data {\\n      ... on BasicMessage {\\n        id\\n        data {\\n          ... on GetUserCooldownResponseMessageData {\\n            nextAvailablePixelTimestamp\\n            __typename\\n          }\\n          ... on SetPixelResponseMessageData {\\n            timestamp\\n            __typename\\n          }\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"}`;
 			//console.info(`${graphQlBody}`);
-			console.info(this.getGraphQlHeaders(graphQlBody.length));
+			//console.info(this.getGraphQlHeaders(graphQlBody.length));
 			let graphQlRep = await await this.#context.fetch(`${this.appUrl}/query`, {
 				"headers": this.getGraphQlHeaders(graphQlBody.length),
 				"method": "POST",
 				"body": graphQlBody,
-				"signal": AbortSignal.timeout(8000)
+				"signal": AbortSignal.timeout(8000),
+				"noCookies": true
 			});
 			//console.info(graphQlRep);
 			this.#isPlacing = false;
 			if (graphQlRep.status < 400) {
 				let graphQlRaw = await graphQlRep.json();
+				console.info(graphQlRaw);
 				this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
 				result = true;
 				this.dispatchEvent("pixelsuccess");
 			} else {
-				console.debug(graphQlRep.status);
-				console.debug(await graphQlRep.text())
+				console.debug(`Placement failed: ${graphQlRep.status} ${graphQlRep.statusText}`);
+				console.debug(await graphQlRep.text());
 				this.dispatchEvent("pixelfail");
 			};
 			this.#isPlacing = false;
+			//console.info(await this.getPixelHistory(x, y, ci));
 			return this.nextAt;
 		} catch (err) {
 			console.info(`[Monalisa]  Pixel placement failed. ${err}`);

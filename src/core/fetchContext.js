@@ -90,12 +90,12 @@ let FetchContext = class extends EventTarget {
 	async fetch(url, opt = {}) {
 		opt.headers = opt?.headers || {};
 		for (let header in this.globalHeaders) {
-			opt.headers[header] = this.globalHeaders[header];
+			opt.headers[header] = opt.headers[header] || this.globalHeaders[header];
 		};
-		if (this.origin) {
+		if (this.origin && !opt.headers["Origin"]) {
 			opt.headers["Origin"] = this.origin;
 		};
-		if (this.referer) {
+		if (this.referer && !opt.headers["Referer"]) {
 			opt.headers["Referer"] = this.referer;
 		};
 		if (!opt.credentials) {
@@ -119,14 +119,16 @@ let FetchContext = class extends EventTarget {
 				delete opt.headers["Sec-Fetch-User"];
 			};
 		};
-		let cookieArr = [];
-		for (let cookieKey in this.cookies) {
-			if (this.cookies[cookieKey]?.length) {
-				cookieArr.push(`${cookieKey}=${this.cookies[cookieKey]}`);
+		if (!opt.noCookies) {
+			let cookieArr = [];
+			for (let cookieKey in this.cookies) {
+				if (this.cookies[cookieKey]?.length) {
+					cookieArr.push(`${cookieKey}=${this.cookies[cookieKey]}`);
+				};
 			};
-		};
-		if (cookieArr.length) {
-			opt.headers["Cookie"] = cookieArr.join("; ");
+			if (cookieArr.length) {
+				opt.headers["Cookie"] = cookieArr.join("; ");
+			};
 		};
 		//opt.credentials = opt.credentials || "include";
 		//opt.redirect = opt.redirect || "follow";
@@ -142,6 +144,9 @@ let FetchContext = class extends EventTarget {
 				this.#fire("concurrency");
 				if (opt.init != "browserHide") {
 					console.info(`[BrowseCxt] ${requestType}`);
+				};
+				if (url.indexOf("query") > -1 && opt.method.toLowerCase() == "post") {
+					console.info(opt);
 				};
 				response = await fetch(url, opt);
 				this.#concurrency --;
