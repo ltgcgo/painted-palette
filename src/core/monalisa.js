@@ -89,6 +89,13 @@ let Monalisa = class extends CustomEventSource {
 					r();
 				};
 				upThis.addEventListener("pixelpartition", processor);
+				// Just freaking fire it
+				/* let invoker = setInterval(() => {
+					if (upThis.cc?.pp?.constructor) {
+						r();
+						clearInterval(invoker);
+					};
+				}, 200); */
 			};
 		});
 	};
@@ -132,11 +139,11 @@ let Monalisa = class extends CustomEventSource {
 	};
 	async partitionPixels() {
 		if (this.pg) {
-			//console.info("Waiting for CanvasConfiguration.");
+			console.info("Waiting for CanvasConfiguration.");
 			await this.whenCcReady();
-			//console.info("CanvasConfiguration OK. Waiting for template.");
+			console.info("CanvasConfiguration OK. Waiting for template.");
 			await this.pg.whenTemplateReady();
-			//console.info("Template OK. Partitioning...");
+			console.info("Template OK. Partitioning...");
 			delete this.cc.pp;
 			let partitionPixels = [];
 			// Add canvas ID information to each pixel
@@ -298,8 +305,40 @@ let Monalisa = class extends CustomEventSource {
 		console.info(`[Monalisa]  Connecting to canvas...`);
 		let upThis = this;
 		//console.info(this);
+		let targetEndpoint = `${this.appUrl.replace("http", "ws")}/query`;
 		if (!this.ws || this.ws.readyState > 1) {
-			this.ws = new WebSocket(`${this.appUrl.replace("http", "ws")}/query`, "graphql-ws");
+			let headers = {};
+			for (let header in this.#context.globalHeaders) {
+				switch (header) {
+					case "Sec-Fetch-User": {
+						break;
+					};
+					case "Accept-Encoding": {
+						headers["Cache-Control"] = "no-cache";
+						break;
+					};
+					case "Upgrade-Insecure-Requests": {
+						headers["Pragma"] = "no-cache";
+						break;
+					};
+					case "Accept": {
+						headers[header] = "*/*";
+						break;
+					};
+					default: {
+						headers[header] = this.#context.globalHeaders[header];
+					};
+				};
+			};
+			let finishRequest = function (request, websocket) {
+				console.debug(request);
+				console.debug(websocket);
+			};
+			this.ws = new WebSocket(targetEndpoint, "graphql-ws", {
+				origin: "https://garlic-bread.reddit.com",
+				headers,
+				finishRequest
+			});
 			console.info(`[Monalisa]  New WebSocket connection created.`);
 		};
 		let ws = this.ws;
@@ -333,7 +372,7 @@ let Monalisa = class extends CustomEventSource {
 					}
 				},
 				operationName: "configuration",
-				query: "subscription configuration($input: SubscribeInput!) {\\n  subscribe(input: $input) {\\n    id\\n    ... on BasicMessage {\\n      data {\\n        __typename\\n        ... on ConfigurationMessageData {\\n          colorPalette {\\n            colors {\\n              hex\\n              index\\n              __typename\\n            }\\n            __typename\\n          }\\n          canvasConfigurations {\\n            index\\n            dx\\n            dy\\n            __typename\\n          }\\n          activeZone {\\n            topLeft {\\n              x\\n              y\\n              __typename\\n            }\\n            bottomRight {\\n              x\\n              y\\n              __typename\\n            }\\n            __typename\\n          }\\n          canvasWidth\\n          canvasHeight\\n          adminConfiguration {\\n            maxAllowedCircles\\n            maxUsersPerAdminBan\\n            __typename\\n          }\\n          __typename\\n        }\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n",
+				query: "subscription configuration($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on ConfigurationMessageData {\n          colorPalette {\n            colors {\n              hex\n              index\n              __typename\n            }\n            __typename\n          }\n          canvasConfigurations {\n            index\n            dx\n            dy\n            __typename\n          }\n          activeZone {\n            topLeft {\n              x\n              y\n              __typename\n            }\n            bottomRight {\n              x\n              y\n              __typename\n            }\n            __typename\n          }\n          canvasWidth\n          canvasHeight\n          adminConfiguration {\n            maxAllowedCircles\n            maxUsersPerAdminBan\n            __typename\n          }\n          __typename\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
 				callback: (data) => {
 					if (!actuallyResponds) {
 						return;
@@ -382,21 +421,29 @@ let Monalisa = class extends CustomEventSource {
 						ps.subscribe({
 							input: {
 								channel: {
-									"teamOwner": "AFD2022",
+									"teamOwner": "GARLICBREAD",
 									"category": "CANVAS",
 									"tag": `${canvasId}`
 								}
 							},
 							operationName: "replace",
-							query: "subscription replace($input: SubscribeInput!) {\\n  subscribe(input: $input) {\\n    id\\n    ... on BasicMessage {\\n      data {\\n        __typename\\n        ... on FullFrameMessageData {\\n          __typename\\n          name\\n          timestamp\\n        }\\n        ... on DiffFrameMessageData {\\n          __typename\\n          name\\n          currentTimestamp\\n          previousTimestamp\\n        }\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n",
+							query: "subscription replace($input: SubscribeInput!) {\n  subscribe(input: $input) {\n    id\n    ... on BasicMessage {\n      data {\n        __typename\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n        ... on DiffFrameMessageData {\n          __typename\n          name\n          currentTimestamp\n          previousTimestamp\n        }\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
 							callback: async (data) => {
 								//console.info(`[Monalisa]  Canvas #${canvasId} received frame data.`);
 								/*if (!actuallyResponds) {
 									return;
 								};*/
-								let pngBuffer = await (await fetch(data.name)).arrayBuffer();
-								delete data.name;
+								let pngRequest = await fetch(data.name);
+								console.info(data["__typename"]);
+								if (pngRequest.status > 299) {
+									console.info(`Invalid type ${data["__typename"]} PNG buffer (${data.name}).`);
+									return;
+								};
+								let pngBuffer = await pngRequest.arrayBuffer();
+								//delete data.name;
+								//console.info(`PNG buffer fetched (${data.name}). Size: ${pngBuffer.byteLength}`);
 								let pngObject = UPNG.decode(pngBuffer);
+								//console.info(`[Monalisa]  PNG buffer decoded (${data.name}).`);
 								pngBuffer = undefined;
 								let pngData = UPNG.toRGBA8(pngObject)[0];
 								delete pngObject.data;
@@ -452,6 +499,8 @@ let Monalisa = class extends CustomEventSource {
 		});
 		ws.addEventListener("error", async (data) => {
 			console.info(`[Monalisa]  WebSocket connection error: ${data.data}`);
+			//console.debug(data);
+			//console.debug(ws);
 		});
 		/*ws.addEventListener("message", (ev) => {
 			console.info(JSON.stringify(ev.data));
@@ -462,7 +511,7 @@ let Monalisa = class extends CustomEventSource {
 				ps.detach(ws);
 				upThis.wsActive = false;
 				console.info(`[Monalisa]  Canvas stream closed. Restarting in seconds.`);
-				await WingBlade.sleep(4000);
+				await WingBlade.util.sleep(4000);
 				this.startStream(actuallyResponds);
 			};
 		});
@@ -477,6 +526,7 @@ let Monalisa = class extends CustomEventSource {
 		return this.ws?.close();
 	};
 	async login({session, fallback, refresh}) {
+		//console.debug({session, fallback, refresh});
 		if (!session) {
 			return "Blank session.";
 		};

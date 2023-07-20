@@ -18,7 +18,7 @@ let RedditPubSub = class extends CustomEventSource {
 		};
 		if (authToken) {
 			sendData.payload = {
-				"Authorization": authToken
+				"Authorization": `Bearer ${authToken}`
 			};
 		};
 		this.#ws?.send(JSON.stringify(sendData));
@@ -50,7 +50,9 @@ let RedditPubSub = class extends CustomEventSource {
 			}
 		};
 		this.#streamCalls[this.#idCounter] = callback;
-		this.#ws?.send(JSON.stringify(sendData));
+		let serializedData = JSON.stringify(sendData);
+		//console.info(serializedData);
+		this.#ws?.send(serializedData);
 		this.#idCounter ++;
 	};
 	free(id) {
@@ -83,6 +85,18 @@ let RedditPubSub = class extends CustomEventSource {
 			let msg = JSON.parse(ev.data);
 			if (msg.id?.constructor == String) {
 				msg.id = parseInt(msg.id);
+			};
+			if (msg.type == "error") {
+				console.error("[PubSub]    Demuxing error.");
+				msg.payload?.forEach((e, i) => {
+					console.error(`Error #${i + 1}: ${e.message}`);
+					console.error(`  Extensions: ${JSON.stringify(e.extensions)}`);
+					console.error(`  Locations:`);
+					e.locations?.forEach((e0, i0) => {
+						console.error(`    #${i0 + 1}: ${JSON.stringify(e0)}`);
+					});
+				});
+				return;
 			};
 			// PubSub ID stream callback
 			if (this.#streamCalls[msg.id]) {

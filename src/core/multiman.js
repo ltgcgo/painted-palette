@@ -4,10 +4,11 @@ import {FetchContext} from "./fetchContext.js";
 import {Monalisa} from "./monalisa.js";
 import {Analytics} from "./analytics.js";
 import {PaintGuide} from "./paintGuide.js";
+import {RedditAuth} from "./redditAuth.js";
 
 import {CustomEventSource} from "../../libs/lightfelt/ext/customEvents.js";
 
-const batchModeOrigin = 'https://gql-realtime-2.reddit.com/query';
+const batchModeOrigin = 'https://gql-realtime-2.reddit.com';
 
 let ManagedUser = class extends CustomEventSource {
 	username = "";
@@ -27,12 +28,24 @@ let ManagedUser = class extends CustomEventSource {
 		});
 	};
 	async enable() {
-		await this.redditAuth?.login(this.username, this.password, this.otp);
-		await this.monalisa?.login({
-			username: this.username,
-			password: this.password,
-			otp: this.otp});
-		this.monalisa.setSession(this.username);
+		"[MultiMan]  Opening Reddit..."
+		await this.fc.fetch("https://www.reddit.com/", {
+			"init": "browser"
+		});
+		"[MultiMan]  Logging in..."
+		await this.redditAuth.login(this.username, this.password, this.otp);
+		let rplaceTokenReq = await this.fc.fetch("https://www.reddit.com/r/place/?screenmode=fullscreen");
+		let rplaceToken;
+		if (rplaceTokenReq.status < 300) {
+			rplaceToken = await rplaceTokenReq.text();
+			rplaceToken = rplaceToken.slice(rplaceToken.indexOf("\"accessToken\":\"") + 15);
+			rplaceToken = rplaceToken.slice(0, rplaceToken.indexOf("\""));
+			//console.debug(rplaceToken);
+		};
+		await this.monalisa.login({
+			session: rplaceToken
+		});
+		//this.monalisa.setSession(this.username);
 		this.active = true;
 		return;
 	};
@@ -164,6 +177,7 @@ let MultiUserManager = class extends CustomEventSource {
 				otp: confObj.otp
 			});
 			e.monalisa = new Monalisa(e.fc);
+			e.redditAuth = new RedditAuth(e.fc);
 			e.monalisa.cc = this.cc;
 			e.monalisa.pg = this.pg;
 			confObj.placed = confObj.placed || 0;

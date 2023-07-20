@@ -139,7 +139,7 @@ let FetchContext = class extends EventTarget {
 			try {
 				this.#concurrency ++;
 				this.#fire("concurrency");
-				console.info(requestType);
+				console.info(`[BrowseCxt] ${requestType}`);
 				response = await fetch(url, opt);
 				this.#concurrency --;
 				this.#fire("concurrency");

@@ -26,6 +26,12 @@ let PaintGuide = class extends CustomEventSource {
 		let upThis = this;
 		return new Promise((r) => {
 			if (upThis.#updateOngoing || !upThis.points?.constructor) {
+				//console.info("TEMPLATE NOT READY");
+				if (upThis.points?.constructor) {
+					//console.info("MY HOOVES");
+					r();
+				};
+				//console.info(upThis);
 				let processor;
 				processor = function () {
 					//upThis.removeEventListener("templateupdate", processor);
@@ -33,6 +39,7 @@ let PaintGuide = class extends CustomEventSource {
 				};
 				upThis.addEventListener("templateupdate", processor);
 			} else {
+				//console.info("TEMPLATE READY");
 				r();
 			};
 		});
