@@ -26,8 +26,9 @@ zip -r9v deno_windows.zip winFix.cmd
 zip -r9v node_release.zip node.js
 zip -r9v node_release.zip palette-bot
 zip -r9v node_release.zip install.sh
-#zip -r9v node_release.zip palette-proxy
-#zip -r9v node_release.zip snatkitd.sh
+zip -r9v node_release.zip palette-proxy
+zip -r9v node_release.zip palette-tor
+zip -r9v node_release.zip snatkitd.sh
 zip -r9v node_release.zip package.json
 zip -r9v node_release.zip node_modules
 zip -r9v node_windows.zip node.js
