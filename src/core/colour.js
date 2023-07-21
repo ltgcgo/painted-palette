@@ -13,7 +13,7 @@ let ColourPaletteSpace = class {
 		return this.tree.insert(point);
 	};
 	del(point) {
-		return this.tree.remnove(point);
+		return this.tree.remove(point);
 	};
 	get balanceFactor() {
 		return this.tree.balanceFactor();
