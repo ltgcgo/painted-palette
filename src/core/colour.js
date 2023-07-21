@@ -8,7 +8,7 @@ const colourspace = [0, 1, 2];
 
 let ColourPaletteSpace = class {
 	tree;
-	gate = 110.851252; // Maximum allowed difference
+	gate = 221.702503; // Maximum allowed difference
 	add(point) {
 		return this.tree.insert(point);
 	};
