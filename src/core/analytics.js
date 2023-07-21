@@ -20,11 +20,14 @@ let Analytics = class {
 			"pos": {x, y},
 			color,
 			"nextPixelPlace": reddit,
-			"environment": "maneplace"
+			"environment": "reddit"
 		});
 		await this.#fc.fetch(this.#url, {
 			"method": "POST",
-			"body": serialized
+			"body": serialized,
+			"headers": {
+				"Content-Type": "application/json"
+			}
 		});
 		console.info(serialized);
 		console.info(`[Analytics] Sent successful placement as ${this.uuid}.`);
@@ -40,7 +43,10 @@ let Analytics = class {
 				"timestamp": Date.now() / 1000,
 				//userHash,
 				message
-			})
+			}),
+			"headers": {
+				"Content-Type": "application/json"
+			}
 		});
 	};
 	async accountFail(userHash, nextPixelPlace) {
@@ -54,7 +60,10 @@ let Analytics = class {
 				"timestamp": Date.now() / 1000,
 				//userHash,
 				nextPixelPlace
-			})
+			}),
+			"headers": {
+				"Content-Type": "application/json"
+			}
 		});
 	};
 	constructor(url) {

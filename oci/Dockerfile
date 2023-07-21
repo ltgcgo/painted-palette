@@ -1,4 +1,4 @@
-FROM docker.io/ltgc/stratus:deno
+FROM docker.io/ltgc/stratus:node
 
 WORKDIR /root
 

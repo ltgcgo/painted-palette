@@ -454,7 +454,7 @@ let Monalisa = class extends CustomEventSource {
 								/*if (!actuallyResponds) {
 									return;
 								};*/
-								let probability = ((Date.now() - lastCanvasUpdate) / 1000);
+								let probability = ((Date.now() - lastCanvasUpdate) / 1000) * 2;
 								lastCanvasUpdate = Date.now();
 								if (probability > 1) {
 									probability = 1;
