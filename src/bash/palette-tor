@@ -24,6 +24,18 @@ else
 	echo "No available scripts. Quitting."
 	exit 1
 fi
+# Use proxychains if on Node
+PCBIN=
+if [ "$RUNTIME" == "node" ] ; then
+	if [ -e "$(which proxychains4)" ] ; then
+		PCBIN=proxychains4
+	elif [ -e "$(which proxychains-ng)" ] ; then
+		PCBIN=proxychains-ng
+	else
+		echo "Proxied Node.js cannot be run without proxychains4."
+		exit 1
+	fi
+fi
 while [ "$QUIT" == "0" ] ; do
 	if [ -e "./patched.js" ] ; then
 		rm "./${RUNTIME}.js"
@@ -31,10 +43,23 @@ while [ "$QUIT" == "0" ] ; do
 		echo "[Helper]    Updated the script to the latest version. Restarting!"
 	fi
 	QUIT=1
+	rm -rf tmp 2>/dev/null
+	mkdir -p tmp
 	export PROXY_PORT=$(($RANDOM+16384))
 	export CTRL_PORT=$(($RANDOM+16384))
 	export LONGER_START=Tor
-	printf "HTTPTunnelPort ${PROXY_PORT}\nSOCKSPort 0\nControlPort ${CTRL_PORT}\n" | tor -f - | HTTP_PROXY="http://127.0.0.1:${PROXY_PORT}" HTTPS_PROXY="${HTTP_PROXY}" $RUNTIME $ADDITIONAL ${RUNTIME}.js "$@" && QUIT=0
+	PROXYCHAINS=
+	if [ "$PCBIN" != "" ] ; then
+		echo "strict_chain" > tmp/${PROXY_PORT}.conf
+		echo "proxy_dns" >> tmp/${PROXY_PORT}.conf
+		echo "remote_dns_subnet 224" >> tmp/${PROXY_PORT}.conf
+		echo "tcp_read_time_out 15000" >> tmp/${PROXY_PORT}.conf
+		echo "tcp_connect_time_out 8000" >> tmp/${PROXY_PORT}.conf
+		echo "[ProxyList]" >> tmp/${PROXY_PORT}.conf
+		echo "http 127.0.0.1 ${PROXY_PORT}" >> tmp/${PROXY_PORT}.conf
+		PROXYCHAINS="$PCBIN -f tmp/${PROXY_PORT}.conf -q"
+	fi
+	printf "HTTPTunnelPort ${PROXY_PORT}\nSOCKSPort 0\nControlPort ${CTRL_PORT}\n" | tor -f - | HTTP_PROXY="http://127.0.0.1:${PROXY_PORT}" HTTPS_PROXY="${HTTP_PROXY}" $PROXYCHAINS $RUNTIME $ADDITIONAL ${RUNTIME}.js "$@" && QUIT=0
 	if [ "$QUIT" == "0" ] ; then
 		sleep 1s
 	fi

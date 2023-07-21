@@ -1,3 +1,3 @@
 #!/bin/ash
-SLEEP=1 ./palette-bot batch
+SLEEP=1 ./palette-proxy batch
 exit
