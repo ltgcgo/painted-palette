@@ -89,7 +89,7 @@ let main = async function (args) {
 	};
 	let paintAnalytics;
 	if (["paint", "pixel", "test", "batch"].indexOf(args[0]) > -1) {
-		paintAnalytics = new Analytics('https://analytics.place.equestria.dev');
+		paintAnalytics = new Analytics('http://ponyplace-compute.ferrictorus.com/analytics/placepixel');
 	};
 	// If the painter starts
 	let conf = {
@@ -260,6 +260,7 @@ let main = async function (args) {
 			fileSaver();
 			let maman = new MultiUserManager(conf);
 			maman.pg = paintGuide;
+			maman.an = paintAnalytics;
 			let mamanSync = async () => {
 				await maman.rebuild();
 				for (let data in maman.managed) {

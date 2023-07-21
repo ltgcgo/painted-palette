@@ -5,7 +5,7 @@ const dim2Prop = [0, 1];
 
 let BuildInfo = {
 	name: "Painted Palette",
-	ver: "0.1"
+	ver: "0.1.1"
 };
 
 let dim3Dist = function (a, b) {

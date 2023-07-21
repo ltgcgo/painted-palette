@@ -106,8 +106,7 @@ let FetchContext = class extends EventTarget {
 			//opt.verbose = true;
 		};
 		switch (opt.init) {
-			case "browser":
-			case "browserHide": {
+			case "browser": {
 				opt.headers["Sec-Fetch-Dest"] = "document";
 				opt.headers["Sec-Fetch-Mode"] = "navigate";
 				//opt.headers["Sec-Fetch-Site"] = "none";
@@ -134,7 +133,7 @@ let FetchContext = class extends EventTarget {
 		//opt.redirect = opt.redirect || "follow";
 		//console.info(opt);
 		//console.info(`[BrowseCxt] Request: ${opt?.method?.toUpperCase() || "GET"} ${url}`);
-		let retry = 10, keepGoing = true;
+		let retryMax = 3, retry = retryMax, keepGoing = true;
 		let response;
 		let requestType = `${opt?.method?.toUpperCase() || "GET"} ${url}`;
 		while (retry && keepGoing) {
@@ -142,7 +141,7 @@ let FetchContext = class extends EventTarget {
 			try {
 				this.#concurrency ++;
 				this.#fire("concurrency");
-				if (opt.init != "browserHide") {
+				if (!opt.oneshot) {
 					console.info(`[BrowseCxt] ${requestType}`);
 				};
 				/*if (url.indexOf("query") > -1 && opt.method.toLowerCase() == "post") {
@@ -152,12 +151,18 @@ let FetchContext = class extends EventTarget {
 				this.#concurrency --;
 				this.#fire("concurrency");
 				keepGoing = false;
-				if (retry < 9) {
-					console.error(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} success.`);
+				if (!opt.oneshot) {
+					console.info(`[BrowseCxt] ${requestType}: ${response.status} ${response.statusText}`);
+				};
+				if (retry < retryMax - 1) {
+					console.info(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} success.`);
 				};
 			} catch (err) {
 				this.#concurrency --;
 				this.#fire("concurrency");
+				if (opt.oneshot) {
+					retry = 0;
+				};
 				console.error(`[BrowseCxt] ${contexts[opt.init] || "Fetch"} failed (${requestType}).${retry ? " Retrying..." : ""}\n${err}`);
 				if (retry) {
 					await WingBlade.util.sleep(2000);

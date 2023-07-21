@@ -68,6 +68,7 @@ let MultiUserManager = class extends CustomEventSource {
 	managed = {};
 	length = 0;
 	pg; // Attach a global paint guide
+	an; // Attach analytics
 	cc = {}; // Reused canvas config
 	conf; // Attach a config object
 	activeWs; // Attach a Monalisa object to listen to WS streams
@@ -186,12 +187,20 @@ let MultiUserManager = class extends CustomEventSource {
 				confObj.focusX = focusXY.x;
 				confObj.focusY = focusXY.y;
 			};
-			e.monalisa.addEventListener("pixelsuccess", async () => {
+			e.monalisa.addEventListener("pixelsuccess", async ({
+				color
+			}) => {
 				confObj.pstate = 0;
-				await genericUpdate;
+				await genericUpdate();
 				confObj.lastColour = e.monalisa.lastColour;
 				confObj.nextAt = e.monalisa.nextAt || 0;
 				confObj.placed ++;
+				this.an?.botPlacement({
+					x: confObj.focusX,
+					y: confObj.focusY,
+					color,
+					reddit: e.monalisa.nextAt
+				});
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelwait", async () => {

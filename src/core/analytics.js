@@ -9,22 +9,25 @@ let Analytics = class {
 	#url;
 	async botPlacement({userHash, x, y, color, reddit, safe, fail = false}) {
 		// UID must be a hash already derived with Scrypt
+		let serialized = JSON.stringify({
+			"event": fail ? "pixelfail" : "pixel",
+			"type": "autofocus",
+			"template": "mlp",
+			"source": "painted-palette",
+			"id": this.uuid,
+			"timestamp": Date.now() / 1000,
+			//userHash,
+			"pos": {x, y},
+			color,
+			"nextPixelPlace": reddit,
+			"environment": "maneplace"
+		});
 		await this.#fc.fetch(this.#url, {
 			"method": "POST",
-			"body": JSON.stringify({
-				"event": fail ? "pixelfail" : "pixel",
-				"type": "autofocus",
-				"template": "mlp",
-				"source": "painted-palette",
-				"id": this.uuid,
-				"timestamp": Date.now() / 1000,
-				userHash,
-				"pos": {x, y},
-				color,
-				"nextPixelPlace": fail ? reddit : {reddit, safe},
-				"environment": "maneplace"
-			})
+			"body": serialized
 		});
+		console.info(serialized);
+		console.info(`[Analytics] Sent successful placement as ${this.uuid}.`);
 	};
 	async sendError(userHash, message) {
 		await this.#fc.fetch(this.#url, {
@@ -35,7 +38,7 @@ let Analytics = class {
 				"source": "painted-palette",
 				"id": this.uuid,
 				"timestamp": Date.now() / 1000,
-				userHash,
+				//userHash,
 				message
 			})
 		});
@@ -49,7 +52,7 @@ let Analytics = class {
 				"source": "painted-palette",
 				"id": this.uuid,
 				"timestamp": Date.now() / 1000,
-				userHash,
+				//userHash,
 				nextPixelPlace
 			})
 		});

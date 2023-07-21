@@ -5,7 +5,7 @@ title Painted Palette Web UI
 		move /Y patched.js deno.js
 		echo Updated successfully.
 	)
-	.\deno.exe run --allow-net --allow-env --allow-read --allow-write deno.js batch
+	.\node.exe deno.js batch
 	timeout /t 2 /nobreak > NUL
 goto loop
 exit

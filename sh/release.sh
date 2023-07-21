@@ -21,6 +21,7 @@ zip -r9v deno_release.zip install.sh
 zip -r9v deno_release.zip snatkitd.sh
 zip -r9v deno_windows.zip deno.js
 zip -r9v deno_windows.zip gui.cmd
+zip -r9v deno_windows.zip winFix.cmd
 #zip -r9v deno_windows.zip deno.exe
 zip -r9v node_release.zip node.js
 zip -r9v node_release.zip palette-bot
@@ -29,6 +30,12 @@ zip -r9v node_release.zip install.sh
 #zip -r9v node_release.zip snatkitd.sh
 zip -r9v node_release.zip package.json
 zip -r9v node_release.zip node_modules
+zip -r9v node_windows.zip node.js
+zip -r9v node_windows.zip install.sh
+zip -r9v node_windows.zip package.json
+zip -r9v node_windows.zip node_modules
+zip -r9v node_windows.zip webui.cmd
+zip -r9v node_windows.zip winFix.cmd
 zip -r9v bun_release.zip bun.js
 zip -r9v bun_release.zip palette-bot
 zip -r9v bun_release.zip palette-proxy
