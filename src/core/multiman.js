@@ -342,6 +342,7 @@ let MultiUserManager = class extends CustomEventSource {
 		this.#sweeping = true;
 		for (let uname in this.managed) {
 			let e = this.managed[uname];
+			await WingBlade.util.sleep(4000, 6000);
 			if (!e.active) {
 				//console.info(`[MultiMan]  User ${uname} is not activated.`);
 			} else if (manual || Math.random() < this.getPower()) {
