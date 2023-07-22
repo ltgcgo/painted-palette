@@ -32,11 +32,16 @@ let ManagedUser = class extends CustomEventSource {
 		await this.fc.fetch("https://www.reddit.com/", {
 			"init": "browser"
 		});
-		console.info("[MultiMan]  Logging in...");
+		console.info("[MultiMan]  Logging in as ${this.username}...");
 		await this.redditAuth.login(this.username, this.password, this.otp);
 		if (!this.redditAuth.loggedIn) {
-			console.info("[MultiMan]  Login failed. Please try logging in again.");
+			console.info(`[MultiMan]  Login failed as ${this.username}. Retrying in 5 seconds.`);
 			this.active = false;
+			// Temporary fix for login issues
+			setTimeout(() => {
+				console.info(`[MultiMan]  Login attempt as ${this.username} reinitiated.`);
+				this.enable();
+			}, 5000);
 			return;
 		};
 		let rplaceTokenReq = await this.fc.fetch("https://www.reddit.com/r/place/?screenmode=fullscreen");
