@@ -47,14 +47,26 @@ let RedditAuth = class {
 		body.set("dest", returnDest);
 		body.set("username", username);
 		body = (new URLSearchParams(body)).toString();
-		let authReply = await fc.fetch("https://www.reddit.com/login", {
-			"method": "POST",
-			"headers": {
-				"Content-Type": "application/x-www-form-urlencoded",
-				"Content-Length": body.length.toString()
-			},
-			"body": body
-		});
+		let authReply, error;
+		try {
+			authReply = await fc.fetch("https://www.reddit.com/login", {
+				"method": "POST",
+				"headers": {
+					"Content-Type": "application/x-www-form-urlencoded",
+					"Content-Length": body.length.toString()
+				},
+				"body": body
+			})
+		} catch (err) {
+			console.info(`[RedditAuth]Reddit login failed. ${err.name || "CustomError"} ${err.message || "Request crashed"}\n${err.stack || "Request crashed."}`);
+			error = err;
+		};
+		if (!authReply) {
+			console.info(`[RedditAuth]Cancelling login attempt...`);
+			fc.referer = "https://www.reddit.com/";
+			this.loggedIn = false;
+			return `${error?.message || "Request crashed"}`;
+		};
 		if (authReply.status != 200) {
 			return await authReply.statusText;
 		};

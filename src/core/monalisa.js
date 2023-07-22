@@ -35,6 +35,7 @@ let Monalisa = class extends CustomEventSource {
 	userdata;
 	session;
 	appUrl;
+	colourIndex = -1;
 	nextAt = 0;
 	safeAt = 0;
 	setRefresh(token) {
@@ -246,12 +247,26 @@ let Monalisa = class extends CustomEventSource {
 			this.#isPlacing = false;
 			if (graphQlRep?.status < 400) {
 				let graphQlRaw = await graphQlRep.json();
-				console.info(graphQlRaw);
-				this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
-				result = true;
-				this.dispatchEvent("pixelsuccess", {
-					color: ci
-				});
+				console.info(JSON.stringify(graphQlRaw));
+				if (graphQlRaw.errors) {
+					// Parse nextAt
+					graphQlRaw.errors?.forEach((e) => {
+						if (e?.extensions?.nextAvailablePixelTs) {
+							this.nextAt = e.extensions.nextAvailablePixelTs;
+							if (this.nextAt - Date.now() > 1800000) {
+								// Possible bans
+								console.info(`[Monalisa]  Possible pixel placement ban detected. Next pixel placement taking place at "${new Date(this.nextAt)}".`);
+								this.dispatchEvent("pixelfail");
+								this.dispatchEvent("pixelban");
+							};
+						};
+					});
+				} else {
+					this.nextAt = graphQlRaw.data.act.data[0].data.nextAvailablePixelTimestamp;
+					this.colourIndex = ci;
+					result = true;
+					this.dispatchEvent("pixelsuccess");
+				};
 			} else {
 				console.info(`[Monalisa]  Placement failed: ${graphQlRep.status || err?.name || "CustomError"} ${graphQlRep.statusText || err?.message || "Request crashed"}`);
 				console.info(graphQlRep ? await graphQlRep.text() : err?.stack || "Request crashed for unknown reasons.");
@@ -259,7 +274,6 @@ let Monalisa = class extends CustomEventSource {
 			};
 			this.#isPlacing = false;
 			//console.info(await this.getPixelHistory(x, y, ci));
-			return this.nextAt;
 		} catch (err) {
 			console.info(`[Monalisa]  Pixel placement failed. ${err}`);
 			this.dispatchEvent("pixelfail");
@@ -454,7 +468,7 @@ let Monalisa = class extends CustomEventSource {
 								/*if (!actuallyResponds) {
 									return;
 								};*/
-								let probability = ((Date.now() - lastCanvasUpdate) / 1000) * 3;
+								let probability = ((Date.now() - lastCanvasUpdate) / 1000) * 1.5;
 								lastCanvasUpdate = Date.now();
 								if (probability > 1) {
 									probability = 1;

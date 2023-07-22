@@ -28,12 +28,17 @@ let ManagedUser = class extends CustomEventSource {
 		});
 	};
 	async enable() {
-		"[MultiMan]  Opening Reddit..."
+		console.info("[MultiMan]  Opening Reddit...");
 		await this.fc.fetch("https://www.reddit.com/", {
 			"init": "browser"
 		});
-		"[MultiMan]  Logging in..."
+		console.info("[MultiMan]  Logging in...");
 		await this.redditAuth.login(this.username, this.password, this.otp);
+		if (!this.redditAuth.loggedIn) {
+			console.info("[MultiMan]  Login failed. Please try logging in again.");
+			this.active = false;
+			return;
+		};
 		let rplaceTokenReq = await this.fc.fetch("https://www.reddit.com/r/place/?screenmode=fullscreen");
 		let rplaceToken;
 		if (rplaceTokenReq.status < 300) {
@@ -187,9 +192,7 @@ let MultiUserManager = class extends CustomEventSource {
 				confObj.focusX = focusXY.x;
 				confObj.focusY = focusXY.y;
 			};
-			e.monalisa.addEventListener("pixelsuccess", async ({
-				color
-			}) => {
+			e.monalisa.addEventListener("pixelsuccess", async () => {
 				confObj.pstate = 0;
 				await genericUpdate();
 				confObj.lastColour = e.monalisa.lastColour;
@@ -198,9 +201,15 @@ let MultiUserManager = class extends CustomEventSource {
 				this.an?.botPlacement({
 					x: confObj.focusX,
 					y: confObj.focusY,
-					color,
+					color: e.monalisa.colourIndex,
 					reddit: e.monalisa.nextAt
 				});
+				this.dispatchEvent("userupdate", acct);
+			});
+			e.monalisa.addEventListener("pixelban", async () => {
+				confObj.pstate = 0;
+				await genericUpdate();
+				confObj.nextAt = e.monalisa.nextAt || 0;
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelwait", async () => {
