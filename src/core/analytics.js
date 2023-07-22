@@ -32,7 +32,7 @@ let Analytics = class {
 		console.info(serialized);
 		console.info(`[Analytics] Sent successful placement as ${this.uuid}.`);
 	};
-	async sendError(userHash, message) {
+	async sendError(message) {
 		await this.#fc.fetch(this.#url, {
 			"method": "POST",
 			"body": JSON.stringify({

@@ -209,6 +209,7 @@ let MultiUserManager = class extends CustomEventSource {
 					color: e.monalisa.colourIndex,
 					reddit: e.monalisa.nextAt
 				});
+				this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE");
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelban", async () => {
