@@ -374,6 +374,7 @@ let MultiUserManager = class extends CustomEventSource {
 	constructor(conf) {
 		super();
 		this.conf = conf;
+		this.setSnooze();
 	};
 };
 
