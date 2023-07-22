@@ -268,7 +268,7 @@ let main = async function (args) {
 					announceStream({"event": "user", data});
 				};
 			},
-			mamanThread = setInterval(mamanSync, 30000);
+			mamanThread = setInterval(mamanSync, 10000);
 			await mamanSync();
 			maman.addEventListener("user", ({data}) => {
 				announceStream({"event": "user", data});
@@ -280,6 +280,10 @@ let main = async function (args) {
 				await maman.sweep();
 			},
 			sweepThread = setInterval(sweeper, 5000);
+			setTimeout(() => {
+				console.info(`[Core]      Enabling all managed accounts....`);
+				maman.allOn();
+			}, 10000);
 			let ipInfo = new IPInfo();
 			ipInfo.start();
 			WingBlade.web.serve(async function (request) {

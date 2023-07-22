@@ -11,6 +11,7 @@ import {CustomEventSource} from "../../libs/lightfelt/ext/customEvents.js";
 const batchModeOrigin = 'https://gql-realtime-2.reddit.com';
 
 let ManagedUser = class extends CustomEventSource {
+	#shouldActivate = false;
 	username = "";
 	password = "";
 	otp = "";
@@ -28,19 +29,23 @@ let ManagedUser = class extends CustomEventSource {
 		});
 	};
 	async enable() {
+		this.#shouldActivate = true;
 		console.info("[MultiMan]  Opening Reddit...");
 		await this.fc.fetch("https://www.reddit.com/", {
 			"init": "browser"
 		});
-		console.info("[MultiMan]  Logging in as ${this.username}...");
+		console.info(`[MultiMan]  Logging in as ${this.username}...`);
 		await this.redditAuth.login(this.username, this.password, this.otp);
 		if (!this.redditAuth.loggedIn) {
 			console.info(`[MultiMan]  Login failed as ${this.username}. Retrying in 5 seconds.`);
 			this.active = false;
+			let upThis = this;
 			// Temporary fix for login issues
 			setTimeout(() => {
-				console.info(`[MultiMan]  Login attempt as ${this.username} reinitiated.`);
-				this.enable();
+				if (upThis.#shouldActivate) {
+					console.info(`[MultiMan]  Login attempt as ${this.username} reinitiated.`);
+					this.enable();
+				};
 			}, 5000);
 			return;
 		};
@@ -60,6 +65,7 @@ let ManagedUser = class extends CustomEventSource {
 		return;
 	};
 	async disable() {
+		this.#shouldActivate = false;
 		await this.monalisa?.stopStream();
 		await this.monalisa?.logout();
 		await this.redditAuth?.logout();
