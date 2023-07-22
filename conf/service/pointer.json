@@ -7,7 +7,7 @@
 		"https://ponyplace.z19.web.core.windows.net/mlp/mask.png",
 		"https://media.githubusercontent.com/media/r-ainbowroad/2023-minimap/main/template/mlp/mask.png"
 	],
-	"offX": 1000,
+	"offX": 500,
 	"offY": 500,
 	"mux": false
 }
