@@ -95,7 +95,7 @@ let main = async function (args) {
 	// If the painter starts
 	let conf = {
 		sensitivity: 4,
-		magazine: 8,
+		magazine: 32767,
 		users: {}
 	};
 	let botPlaced = 0;
