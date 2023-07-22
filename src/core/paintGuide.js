@@ -112,7 +112,7 @@ let PaintGuide = class extends CustomEventSource {
 						for (let ri = 0; ri < maskArr.byteLength; ri += 4) {
 							let i = ri >> 2;
 							prio = maskView.getUint8(ri);
-							if (prio > 47) {
+							if (prio > 95) {
 								r = botView.getUint8(ri);
 								g = botView.getUint8(ri + 1);
 								b = botView.getUint8(ri + 2);
