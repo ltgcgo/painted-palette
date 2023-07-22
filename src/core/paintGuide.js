@@ -52,6 +52,9 @@ let PaintGuide = class extends CustomEventSource {
 			let changed = false;
 			try {
 				let pointer = await (await this.#fc.fetch(this.#ptr)).json();
+				if (pointer.offX != this.x || pointer.offY != this.y) {
+					changed = true;
+				};
 				for (let i = 0; i < pointer?.bot?.length; i ++) {
 					let url = pointer?.bot[i];
 					if (statusCode != 200) {
