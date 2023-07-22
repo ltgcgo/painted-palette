@@ -597,7 +597,7 @@ let Monalisa = class extends CustomEventSource {
 				"Authorization": session
 			}
 		});
-		if (sessionRep.status != 200) {
+		if (sessionRep?.status != 200) {
 			return sessionRep.statusText;
 		};
 		let sessionInfo = await sessionRep.json();
