@@ -14,6 +14,7 @@ let PaintGuide = class extends CustomEventSource {
 	#ptr;
 	#lastEtag;
 	#updateOngoing = false;
+	name;
 	x = 0;
 	y = 0;
 	width = 0;
@@ -54,6 +55,9 @@ let PaintGuide = class extends CustomEventSource {
 				let pointer = await (await this.#fc.fetch(this.#ptr)).json();
 				if (pointer.offX != this.x || pointer.offY != this.y) {
 					changed = true;
+				};
+				if (pointer.name) {
+					this.name = pointer.name;
 				};
 				for (let i = 0; i < pointer?.bot?.length; i ++) {
 					let url = pointer?.bot[i];

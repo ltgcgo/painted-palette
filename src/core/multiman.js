@@ -207,7 +207,11 @@ let MultiUserManager = class extends CustomEventSource {
 			if (!e.reporter?.constructor) {
 				e.reporter = setInterval(() => {
 					if (e.active) {
-						this.an?.sendError("PALETTE_PIXEL_ONLINE");
+						if (this.pg?.name == "my_little_pony") {
+							this.an?.sendError("PALETTE_PIXEL_ONLINE");
+						} else {
+							this.an?.sendError("PALETTE_PIXEL_ONLINE_OTHER");
+						};
 					};
 				}, 60000);
 			};
@@ -217,13 +221,17 @@ let MultiUserManager = class extends CustomEventSource {
 				confObj.lastColour = e.monalisa.lastColour;
 				confObj.nextAt = e.monalisa.nextAt || 0;
 				confObj.placed ++;
-				this.an?.botPlacement({
-					x: confObj.focusX,
-					y: confObj.focusY,
-					color: e.monalisa.colourIndex,
-					reddit: e.monalisa.nextAt
-				});
-				this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE");
+				if (this.pg.name == "my_little_pony") {
+					this.an?.botPlacement({
+						x: confObj.focusX,
+						y: confObj.focusY,
+						color: e.monalisa.colourIndex,
+						reddit: e.monalisa.nextAt
+					});
+					this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE");
+				} else {
+					this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE_OTHER");
+				};
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelban", async () => {
@@ -231,7 +239,11 @@ let MultiUserManager = class extends CustomEventSource {
 				await genericUpdate();
 				confObj.nextAt = e.monalisa.nextAt || 0;
 				confObj.banned = true;
-				this.an?.sendError("PALETTE_PIXEL_FAIL_BAN");
+				if (this.pg.name == "my_little_pony") {
+					this.an?.sendError("PALETTE_PIXEL_FAIL_BAN");
+				} else {
+					this.an?.sendError("PALETTE_PIXEL_FAIL_BAN_OTHER");
+				};
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelwait", async () => {
@@ -397,7 +409,11 @@ let MultiUserManager = class extends CustomEventSource {
 		this.conf = conf;
 		this.setSnooze();
 		setInterval(() => {
-			this.an?.sendError("PALETTE_INST_ONLINE");
+			if (this.pg?.name == "my_little_pony") {
+				this.an?.sendError("PALETTE_INST_ONLINE");
+			} else {
+				this.an?.sendError("PALETTE_INST_ONLINE_OTHER");
+			};
 		}, 60000);
 	};
 };

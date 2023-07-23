@@ -29,21 +29,23 @@ let Analytics = class {
 				"Content-Type": "application/json"
 			}
 		});
-		console.info(serialized);
+		//console.info(serialized);
 		console.info(`[Analytics] Sent successful placement as ${this.uuid}.`);
 	};
 	async sendError(message) {
+		let serialized = JSON.stringify({
+			"event": "error",
+			"type": "autofocus",
+			"source": "painted-palette",
+			"id": this.uuid,
+			"timestamp": Date.now() / 1000,
+			//userHash,
+			message
+		});
+		console.info(serialized);
 		await this.#fc.fetch(this.#url, {
 			"method": "POST",
-			"body": JSON.stringify({
-				"event": "error",
-				"type": "autofocus",
-				"source": "painted-palette",
-				"id": this.uuid,
-				"timestamp": Date.now() / 1000,
-				//userHash,
-				message
-			}),
+			"body": serialized,
 			"headers": {
 				"Content-Type": "application/json"
 			}
