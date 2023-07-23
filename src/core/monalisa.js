@@ -468,7 +468,7 @@ let Monalisa = class extends CustomEventSource {
 								/*if (!actuallyResponds) {
 									return;
 								};*/
-								let probability = ((Date.now() - lastCanvasUpdate) / 1000) * 1.5;
+								let probability = ((Date.now() - lastCanvasUpdate) / 1000) * (WingBlade.rt.os == "windows" ? 3 : 2);
 								lastCanvasUpdate = Date.now();
 								if (probability > 1) {
 									probability = 1;

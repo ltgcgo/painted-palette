@@ -18,6 +18,13 @@ let rt = class {
 	};
 };
 
+switch (rt.os) {
+	case "win32": {
+		rt.os = "windows";
+		break;
+	};
+};
+
 // Environment variables
 // Adheres to Deno API
 let envProtected = "delete,get,has,set,toObject".split(","),
