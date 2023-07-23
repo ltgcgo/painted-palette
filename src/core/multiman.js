@@ -17,6 +17,7 @@ let ManagedUser = class extends CustomEventSource {
 	otp = "";
 	active = false;
 	fc = new FetchContext(batchModeOrigin);
+	reporter;
 	redditAuth; // Attach a Reddit authenticator
 	monalisa; // Attach a painter
 	get authInfo() {
@@ -203,6 +204,13 @@ let MultiUserManager = class extends CustomEventSource {
 				confObj.focusX = focusXY.x;
 				confObj.focusY = focusXY.y;
 			};
+			if (!e.reporter?.constructor) {
+				e.reporter = setInterval(() => {
+					if (e.active) {
+						this.an?.sendError("PALETTE_PIXEL_ONLINE");
+					};
+				}, 60000);
+			};
 			e.monalisa.addEventListener("pixelsuccess", async () => {
 				confObj.pstate = 0;
 				await genericUpdate();
@@ -223,6 +231,7 @@ let MultiUserManager = class extends CustomEventSource {
 				await genericUpdate();
 				confObj.nextAt = e.monalisa.nextAt || 0;
 				confObj.banned = true;
+				this.an?.sendError("PALETTE_PIXEL_FAIL_BAN");
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelwait", async () => {
