@@ -371,7 +371,7 @@ let MultiUserManager = class extends CustomEventSource {
 				console.info(`[MultiMan]  User ${uname} is selected on sweep.`);
 				if (this.conf.users[uname].nextAt <= Date.now()) {
 					console.info(`[MultiMan]  Waiting out rate limits for ${uname}.`);
-					await WingBlade.util.sleep(10000, 2000);
+					await WingBlade.util.sleep(15000, 5000);
 				};
 				(async () => {
 					this.conf.users[uname].pstate = 1;
