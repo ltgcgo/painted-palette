@@ -592,7 +592,7 @@ let Monalisa = class extends CustomEventSource {
 		this.setSession(session);
 		this.setRefresh(refresh);
 		let fc = this.#context;
-		let sessionRep = await fc.fetch(`${this.appUrl}/api/session`, {
+		/*let sessionRep = await fc.fetch(`${this.appUrl}/api/session`, {
 			"headers": {
 				"Authorization": session
 			}
@@ -605,8 +605,8 @@ let Monalisa = class extends CustomEventSource {
 		};
 		let sessionInfo = await sessionRep.json();
 		this.setRefresh(sessionInfo.refreshToken);
-		this.session = sessionInfo.id;
-		await this.refreshInfo();
+		this.session = sessionInfo.id;*/
+		//await this.refreshInfo();
 		this.loggedIn = true;
 	};
 	async logout() {};

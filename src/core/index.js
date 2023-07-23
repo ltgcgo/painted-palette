@@ -279,7 +279,7 @@ let main = async function (args) {
 			let sweeper = async () => {
 				await maman.sweep();
 			},
-			sweepThread = setInterval(sweeper, 5000);
+			sweepThread = setInterval(sweeper, 10000);
 			setTimeout(() => {
 				console.info(`[Core]      Enabling all managed accounts....`);
 				maman.allOn();

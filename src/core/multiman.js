@@ -342,11 +342,14 @@ let MultiUserManager = class extends CustomEventSource {
 		this.#sweeping = true;
 		for (let uname in this.managed) {
 			let e = this.managed[uname];
-			await WingBlade.util.sleep(4000, 6000);
 			if (!e.active) {
 				//console.info(`[MultiMan]  User ${uname} is not activated.`);
 			} else if (manual || Math.random() < this.getPower()) {
-				//console.info(`[MultiMan]  User ${uname} is selected on sweep.`);
+				console.info(`[MultiMan]  User ${uname} is selected on sweep.`);
+				if (this.conf.users[uname].nextAt <= Date.now()) {
+					console.info(`[MultiMan]  Waiting out rate limits for ${uname}.`);
+					await WingBlade.util.sleep(10000, 2000);
+				};
 				(async () => {
 					this.conf.users[uname].pstate = 1;
 					this.dispatchEvent("userupdate", uname);
