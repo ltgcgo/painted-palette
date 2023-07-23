@@ -396,6 +396,9 @@ let MultiUserManager = class extends CustomEventSource {
 		super();
 		this.conf = conf;
 		this.setSnooze();
+		setInterval(() => {
+			this.an?.sendError("PALETTE_INST_ONLINE");
+		}, 60000);
 	};
 };
 
