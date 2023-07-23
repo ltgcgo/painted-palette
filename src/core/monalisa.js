@@ -60,6 +60,8 @@ let Monalisa = class extends CustomEventSource {
 			"Origin": "https://garlic-bread.reddit.com",
 			"Referer": "https://garlic-bread.reddit.com/",
 			"Sec-Fetch-Site": "same-site",
+			"Sec-Fetch-Mode": "cors",
+			"Sec-Fetch-Dest": "empty",
 			"apollographql-client-name": "garlic-bread",
 			"apollographql-client-version": "0.0.1"
 		};
