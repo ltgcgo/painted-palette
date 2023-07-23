@@ -234,6 +234,7 @@ let Monalisa = class extends CustomEventSource {
 			//console.info(this.getGraphQlHeaders(graphQlBody.length));
 			let graphQlRep, err;
 			try {
+				//console.info(graphQlBody);
 				graphQlRep = await this.#context.fetch(`${this.appUrl}/query`, {
 					"headers": this.getGraphQlHeaders(graphQlBody.length),
 					"method": "POST",
