@@ -7,12 +7,12 @@ let Analytics = class {
 	#fc = new FetchContext("https://equestria.dev");
 	uuid = uuid.v4();
 	#url;
-	async botPlacement({userHash, x, y, color, reddit, safe, fail = false}) {
+	async botPlacement({userHash, template = "mlp_alliance", x, y, color, reddit, safe, fail = false}) {
 		// UID must be a hash already derived with Scrypt
 		let serialized = JSON.stringify({
 			"event": fail ? "pixelfail" : "pixel",
 			"type": "autofocus",
-			"template": "mlp",
+			template,
 			"source": "painted-palette",
 			"id": this.uuid,
 			"timestamp": Date.now() / 1000,

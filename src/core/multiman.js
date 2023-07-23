@@ -207,7 +207,7 @@ let MultiUserManager = class extends CustomEventSource {
 			if (!e.reporter?.constructor) {
 				e.reporter = setInterval(() => {
 					if (e.active) {
-						if (this.pg?.name == "my_little_pony") {
+						if (this.pg?.name == "mlp") {
 							this.an?.sendError("PALETTE_PIXEL_ONLINE");
 						} else {
 							this.an?.sendError("PALETTE_PIXEL_ONLINE_OTHER");
@@ -221,16 +221,17 @@ let MultiUserManager = class extends CustomEventSource {
 				confObj.lastColour = e.monalisa.lastColour;
 				confObj.nextAt = e.monalisa.nextAt || 0;
 				confObj.placed ++;
-				if (this.pg.name == "my_little_pony") {
+				if (this.pg.name == "mlp") {
 					this.an?.botPlacement({
 						x: confObj.focusX,
 						y: confObj.focusY,
 						color: e.monalisa.colourIndex,
-						reddit: e.monalisa.nextAt
+						reddit: e.monalisa.nextAt,
+						template: this.pg.name || "mlp"
 					});
 					this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE");
 				} else {
-					this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE_OTHER");
+					//this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE_OTHER");
 				};
 				this.dispatchEvent("userupdate", acct);
 			});
@@ -239,7 +240,7 @@ let MultiUserManager = class extends CustomEventSource {
 				await genericUpdate();
 				confObj.nextAt = e.monalisa.nextAt || 0;
 				confObj.banned = true;
-				if (this.pg.name == "my_little_pony") {
+				if (this.pg.name == "mlp") {
 					this.an?.sendError("PALETTE_PIXEL_FAIL_BAN");
 				} else {
 					this.an?.sendError("PALETTE_PIXEL_FAIL_BAN_OTHER");
@@ -409,7 +410,7 @@ let MultiUserManager = class extends CustomEventSource {
 		this.conf = conf;
 		this.setSnooze();
 		setInterval(() => {
-			if (this.pg?.name == "my_little_pony") {
+			if (this.pg?.name == "mlp") {
 				this.an?.sendError("PALETTE_INST_ONLINE");
 			} else {
 				this.an?.sendError("PALETTE_INST_ONLINE_OTHER");
