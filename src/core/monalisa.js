@@ -236,7 +236,7 @@ let Monalisa = class extends CustomEventSource {
 					"headers": this.getGraphQlHeaders(graphQlBody.length),
 					"method": "POST",
 					"body": graphQlBody,
-					"signal": AbortSignal.timeout(8000),
+					"signal": AbortSignal.timeout(10000),
 					"noCookies": true,
 					"oneshot": true
 				});
