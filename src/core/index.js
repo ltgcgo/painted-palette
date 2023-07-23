@@ -79,7 +79,7 @@ let waitForProxy = async function () {
 };
 
 let main = async function (args) {
-	svc.tpl = WingBlade.env.get("TEMPLATE_URL", "https://gh.ltgc.cc/painted-palette/conf/service/pointer.json");
+	svc.tpl = WingBlade.env.get("TEMPLATE_URL", "https://raw.githubusercontent.com/uis246/template/master/pointer.json");
 	let acct = args[1], pass = args[2], otp = args[3];
 	console.info(`${BuildInfo.name}@${WingBlade.rt.variant} ${WingBlade.rt.os}_v${BuildInfo.ver}`);
 	let updateThread;
