@@ -8,6 +8,6 @@
 		"https://media.githubusercontent.com/media/r-ainbowroad/2023-minimap/main/template/mlp/mask.png"
 	],
 	"offX": 500,
-	"offY": 500,
+	"offY": 0,
 	"mux": false
 }
