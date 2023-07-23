@@ -394,7 +394,7 @@ let Monalisa = class extends CustomEventSource {
 		let lastCanvasUpdate = Date.now();
 		(async () => {
 			// Globally enforced canvas refreshes
-			await WingBlade.util.sleep(600000, 600000);
+			await WingBlade.util.sleep(1200000, 600000);
 			console.info(`[Monalisa]  Forced WebSocket close for canvas refresh.`);
 			ws.close();
 		})();
