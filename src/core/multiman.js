@@ -222,6 +222,7 @@ let MultiUserManager = class extends CustomEventSource {
 				confObj.pstate = 0;
 				await genericUpdate();
 				confObj.nextAt = e.monalisa.nextAt || 0;
+				confObj.banned = true;
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelwait", async () => {
