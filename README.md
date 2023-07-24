@@ -1,11 +1,13 @@
 # painted-palette
 🎨 Painting palettes, one at a time. One single brush, multiple easels to paint on.
 
+Delivered to you by the ponies. Magic is friendship, and friendship is magic!
+
 No additional compilation required, everything already bundled nicely into a single command/package.
 
 If you're running it on Android with Termux, install it from [F-Droid](https://f-droid.org/en/packages/com.termux/#versions), **not Google Play**!!!
 
-Powered by ESBuild and Deno. Developed by [Lightingale Community and all contributors](CREDITS.md).
+Powered by ESBuild and Deno. Developed by [Lightingale Community, Secret r/place Brownies and all contributors](CREDITS.md).
 
 <!--[Why is there a JavaScript headless bot now?](WHY.md)-->
 
