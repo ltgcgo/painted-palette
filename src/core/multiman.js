@@ -394,7 +394,7 @@ let MultiUserManager = class extends CustomEventSource {
 	async allOn() {
 		for (let uname in this.conf.users) {
 			await this.enable(uname);
-			await WingBlade.util.sleep(10000, 20000);
+			await WingBlade.util.sleep(20000, 20000);
 		};
 		await this.rebuild();
 	};

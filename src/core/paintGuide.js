@@ -72,6 +72,7 @@ let PaintGuide = class extends CustomEventSource {
 							// ETag patching
 							etag = `${etag}${pointer.etag || ""}`;
 						};
+						console.info(`[PntGuide]  Current template ETag on ${etag}`);
 						if (etag != this.#lastEtag) {
 							this.#lastEtag = etag;
 							changed = true;
