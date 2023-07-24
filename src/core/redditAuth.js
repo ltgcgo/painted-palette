@@ -35,25 +35,28 @@ let RedditAuth = class {
 				csrf = value;
 			};
 		});
-		await WingBlade.util.sleep(2000, 3000);
+		await WingBlade.util.sleep(2000, 2000);
 		// Authenticating
-		console.info(`[RedditAuth]CSRF token fetched (${csrf})! Logging in...`);
+		console.info(`[RedditAuth]CSRF token fetched (${csrf})!`);
+		await WingBlade.util.sleep(1000, 1000);
+		console.info(`[RedditAuth]Logging in...`);
 		fc.referer = "https://www.reddit.com/login/";
-		//body = `csrf_token=${csrf}&otp=${encodeURL(otp)}&password=${encodeURL(password)}&dest=${encodeURL(returnDest)}&username=${encodeURL(username)}`;
-		body = new FormData();
+		body = `csrf_token=${csrf}&otp=${encodeURL(otp)}&password=${encodeURL(password)}&dest=${encodeURL(returnDest)}&username=${encodeURL(username)}`;
+		/* body = new FormData();
 		body.set("csrf_token", csrf);
 		body.set("otp", otp);
 		body.set("password", password);
 		body.set("dest", returnDest);
 		body.set("username", username);
-		body = (new URLSearchParams(body)).toString();
+		body = (new URLSearchParams(body)).toString(); */
 		let authReply, error;
 		try {
 			authReply = await fc.fetch("https://www.reddit.com/login", {
 				"method": "POST",
 				"headers": {
 					"Content-Type": "application/x-www-form-urlencoded",
-					"Content-Length": body.length.toString()
+					"Content-Length": body.length.toString(),
+					"Referer": "https://www.reddit.com/login/"
 				},
 				"body": body
 			})
@@ -68,6 +71,7 @@ let RedditAuth = class {
 			return `${error?.message || "Request crashed"}`;
 		};
 		if (authReply.status != 200) {
+			console.info(await authReply.text());
 			return await authReply.statusText;
 		};
 		// Cleanup

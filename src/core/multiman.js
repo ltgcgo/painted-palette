@@ -35,10 +35,12 @@ let ManagedUser = class extends CustomEventSource {
 		await this.fc.fetch("https://www.reddit.com/", {
 			"init": "browser"
 		});
+		console.info("[MultiMan]  Waiting out all possible IP rate limits...");
+		await WingBlade.util.sleep(1000, 2000);
 		console.info(`[MultiMan]  Logging in as ${this.username}...`);
 		await this.redditAuth.login(this.username, this.password, this.otp);
 		if (!this.redditAuth.loggedIn) {
-			console.info(`[MultiMan]  Login failed as ${this.username}. Retrying in 5 seconds.`);
+			console.info(`[MultiMan]  Login failed as ${this.username}. Retrying in 15 seconds.`);
 			this.active = false;
 			let upThis = this;
 			// Temporary fix for login issues
@@ -47,7 +49,7 @@ let ManagedUser = class extends CustomEventSource {
 					console.info(`[MultiMan]  Login attempt as ${this.username} reinitiated.`);
 					this.enable();
 				};
-			}, 5000);
+			}, 15000);
 			return;
 		};
 		let rplaceTokenReq = await this.fc.fetch("https://www.reddit.com/r/place/?screenmode=fullscreen");
