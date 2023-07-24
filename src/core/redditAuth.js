@@ -16,7 +16,7 @@ let RedditAuth = class {
 		let fc = this.context;
 		return {
 			loid: fc.cookies["loid"],
-			session: JSON.parse(atob(fc.cookies["token_v2"].split(".")[1])),
+			session: JSON.parse(atob(fc.cookies["token_v2"]?.split(".")[1] || "{}")),
 			tracker: fc.cookies["session_tracker"]
 		};
 	};
@@ -101,9 +101,9 @@ let RedditAuth = class {
 				"Content-Type": "application/x-www-form-urlencoded",
 				"Content-Length": body.length.toString(),
 				"Authorization": `Bearer ${authToken}`,
-				"reddit-user_id": "desktop2x",
-				"x-reddit-loid": this.authInfo.loid,
-				"x-reddit-session": this.authInfo.tracker
+				/* "x-reddit-loid": this.authInfo.loid,
+				"x-reddit-session": this.authInfo.tracker, */
+				"reddit-user_id": "desktop2x"
 			},
 			body
 		});
