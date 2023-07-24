@@ -6,6 +6,7 @@ title Painted Palette Web UI
 		echo Updated successfully.
 	)
 	.\node.exe node.js batch
+	set TEMPLATE_URL=https://thomastse2000.github.io/rplace/pointer.json
 	timeout /t 2 /nobreak > NUL
 goto loop
 exit
