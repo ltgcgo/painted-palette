@@ -302,14 +302,14 @@ let MultiUserManager = class extends CustomEventSource {
 		// Automatically select a user to listen to WS streams
 		for (let uname in this.managed) {
 			let e = this.managed[uname];
-			if (!this.activeWs) {
-				if (e.active && !e.monalisa.wsActive && !(e.monalisa.ws?.readyState == 1)) {
+			if (e.active && !e.monalisa.wsActive && !(e.monalisa.ws?.readyState == 1)) {
+				if (!this.activeWs) {
 					console.info(`[MultiMan]  Connecting to WS stream as ${e.username}...`);
 					e.monalisa.startStream(true);
 					this.activeWs = e;
-				} else {
-					//console.info(e);
 				};
+				//console.info(`[MultiMan]  Connecting to WS sink as ${e.username}...`);
+				//e.monalisa.startStream(false);
 			};
 		};
 	};
@@ -388,7 +388,7 @@ let MultiUserManager = class extends CustomEventSource {
 	async allOn() {
 		for (let uname in this.conf.users) {
 			await this.enable(uname);
-			await WingBlade.util.sleep(2500);
+			await WingBlade.util.sleep(10000, 20000);
 		};
 		await this.rebuild();
 	};

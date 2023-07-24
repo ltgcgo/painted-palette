@@ -68,6 +68,10 @@ let PaintGuide = class extends CustomEventSource {
 						statusCode = options.status;
 						// Has it been updated yet?
 						let etag = options.headers.get("etag");
+						if (pointer.etag) {
+							// ETag patching
+							etag = `${etag}${pointer.etag || ""}`;
+						};
 						if (etag != this.#lastEtag) {
 							this.#lastEtag = etag;
 							changed = true;
