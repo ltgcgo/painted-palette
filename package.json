@@ -36,6 +36,7 @@
 		"sh/bunTest.sh"
 	],
 	"dependencies": {
+		"@adobe/fetch": "^4.0.13",
 		"undici": "^5.21.0",
 		"ws": "^8.13.0"
 	}
