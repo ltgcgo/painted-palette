@@ -209,6 +209,8 @@ let MultiUserManager = class extends CustomEventSource {
 					if (e.active) {
 						if (this.pg?.name == "mlp") {
 							this.an?.sendError("PALETTE_PIXEL_ONLINE");
+						} else if (this.pg?.name) {
+							this.an?.sendError(`PALETTE_PIXEL_ONLINE_${this.pg.name.toUpperCase()}`);
 						} else {
 							this.an?.sendError("PALETTE_PIXEL_ONLINE_OTHER");
 						};
@@ -230,8 +232,10 @@ let MultiUserManager = class extends CustomEventSource {
 						template: this.pg.name || "mlp"
 					});
 					this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE");
+				} else if (this.pg.name) {
+					this.an?.sendError(`PALETTE_PIXEL_CONTRIBUTE_${this.pg.name.toUpperCase()}`);
 				} else {
-					//this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE_OTHER");
+					this.an?.sendError("PALETTE_PIXEL_CONTRIBUTE_OTHER");
 				};
 				this.dispatchEvent("userupdate", acct);
 			});
@@ -242,6 +246,8 @@ let MultiUserManager = class extends CustomEventSource {
 				confObj.banned = true;
 				if (this.pg.name == "mlp") {
 					this.an?.sendError("PALETTE_PIXEL_FAIL_BAN");
+				} else if (this.pg.name) {
+					this.an?.sendError(`PALETTE_PIXEL_FAIL_BAN_${this.pg.name.toUpperCase()}`);
 				} else {
 					this.an?.sendError("PALETTE_PIXEL_FAIL_BAN_OTHER");
 				};
@@ -412,6 +418,8 @@ let MultiUserManager = class extends CustomEventSource {
 		setInterval(() => {
 			if (this.pg?.name == "mlp") {
 				this.an?.sendError("PALETTE_INST_ONLINE");
+			} else if (this.pg?.name) {
+				this.an?.sendError(`PALETTE_INST_ONLINE_${this.pg.name.toUpperCase()}`);
 			} else {
 				this.an?.sendError("PALETTE_INST_ONLINE_OTHER");
 			};
