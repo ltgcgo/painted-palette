@@ -47,7 +47,7 @@
 * Guar
 * interru
 * Jaezmien
-* JoeyDr
+* JoeyDR
 * Lumière Élevé
 * Marius851000
 * mel669
@@ -75,6 +75,7 @@
 * icegna
 * k1ra
 * laura
+* LionRock2014
 * Talbot
 * 渣男磁石火車頭
 #### r/korea_place
