@@ -184,10 +184,21 @@ let Monalisa = class extends CustomEventSource {
 					//console.info(`[Monalisa]  PG (${e[0]}, ${e[1]}) does not match canvas (${pixel[0]}, ${pixel[1]}).`);
 					return;
 				};
-				if (e[4] != pixel[2] || e[5] != pixel[3] || e[6] != pixel[4] ) {
-					//console.info(e);
-					//console.info(pixel);
-					damageCloud.push(e);
+				let snapped = this.cc.colours.nearest(pixel.slice(2, 5));
+				if (snapped) {
+					// Normal snapping
+					if (e[4] != snapped[0] || e[5] != snapped[1] || e[6] != snapped[2] ) {
+						//console.info(e);
+						//console.info(pixel);
+						damageCloud.push(e);
+					};
+				} else {
+					// White out
+					if (e[4] != pixel[2] || e[5] != pixel[3] || e[6] != pixel[4] ) {
+						//console.info(e);
+						//console.info(pixel);
+						damageCloud.push(e);
+					};
 				};
 			});
 			if (this.cc?.damage) {
