@@ -94,7 +94,7 @@ let main = async function (args) {
 	};
 	// If the painter starts
 	let conf = {
-		sensitivity: 4,
+		sensitivity: 5,
 		magazine: 32767,
 		users: {}
 	};
@@ -223,6 +223,7 @@ let main = async function (args) {
 			break;
 		};
 		case "batch": {
+			console.info(`[Core]      Current pointer: ${svc.tpl}`);
 			await waitForProxy();
 			let runSince = Date.now();
 			let systemBrowser = new FetchContext('https://www.reddit.com');

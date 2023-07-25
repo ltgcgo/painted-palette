@@ -20,6 +20,7 @@ let ManagedUser = class extends CustomEventSource {
 	reporter;
 	redditAuth; // Attach a Reddit authenticator
 	monalisa; // Attach a painter
+	conf; // Attach conf object
 	get authInfo() {
 		return this.redditAuth?.authInfo;
 	};
@@ -31,34 +32,43 @@ let ManagedUser = class extends CustomEventSource {
 	};
 	async enable() {
 		this.#shouldActivate = true;
-		console.info("[MultiMan]  Opening Reddit...");
-		await this.fc.fetch("https://www.reddit.com/", {
-			"init": "browser"
-		});
-		console.info("[MultiMan]  Waiting out all possible IP rate limits...");
-		await WingBlade.util.sleep(1000, 2000);
-		console.info(`[MultiMan]  Logging in as ${this.username}...`);
-		await this.redditAuth.login(this.username, this.password, this.otp);
-		if (!this.redditAuth.loggedIn) {
-			console.info(`[MultiMan]  Login failed as ${this.username}. Retrying in 15 seconds.`);
-			this.active = false;
-			let upThis = this;
-			// Temporary fix for login issues
-			setTimeout(() => {
-				if (upThis.#shouldActivate) {
-					console.info(`[MultiMan]  Login attempt as ${this.username} reinitiated.`);
-					this.enable();
-				};
-			}, 15000);
-			return;
-		};
-		let rplaceTokenReq = await this.fc.fetch("https://www.reddit.com/r/place/?screenmode=fullscreen");
 		let rplaceToken;
-		if (rplaceTokenReq.status < 300) {
-			rplaceToken = await rplaceTokenReq.text();
-			rplaceToken = rplaceToken.slice(rplaceToken.indexOf("\"accessToken\":\"") + 15);
-			rplaceToken = rplaceToken.slice(0, rplaceToken.indexOf("\""));
-			//console.debug(rplaceToken);
+		if (this.conf?.session) {
+			console.info(`[MultiMan]  Previous session token found for ${this.username}.`);
+			rplaceToken = this.conf.session;
+		} else {
+			console.info("[MultiMan]  Opening Reddit...");
+			await this.fc.fetch("https://www.reddit.com/", {
+				"init": "browser"
+			});
+			console.info("[MultiMan]  Waiting out all possible IP rate limits...");
+			await WingBlade.util.sleep(1000, 2000);
+			console.info(`[MultiMan]  Logging in as ${this.username}...`);
+			await this.redditAuth.login(this.username, this.password, this.otp);
+			if (!this.redditAuth.loggedIn) {
+				console.info(`[MultiMan]  Login failed as ${this.username}. Retrying in 15 seconds.`);
+				this.active = false;
+				let upThis = this;
+				// Temporary fix for login issues
+				setTimeout(() => {
+					if (upThis.#shouldActivate) {
+						console.info(`[MultiMan]  Login attempt as ${this.username} reinitiated.`);
+						this.enable();
+					};
+				}, 15000);
+				return;
+			};
+			let rplaceTokenReq = await this.fc.fetch("https://www.reddit.com/r/place/?screenmode=fullscreen");
+			if (rplaceTokenReq.status < 300) {
+				rplaceToken = await rplaceTokenReq.text();
+				rplaceToken = rplaceToken.slice(rplaceToken.indexOf("\"accessToken\":\"") + 15);
+				rplaceToken = rplaceToken.slice(0, rplaceToken.indexOf("\""));
+				//console.debug(rplaceToken);
+			};
+			if (rplaceToken) {
+				console.info(`[MultiMan]  Caching session token for ${this.username}...`);
+				this.conf.session = rplaceToken;
+			};
 		};
 		await this.monalisa.login({
 			session: rplaceToken
@@ -71,7 +81,13 @@ let ManagedUser = class extends CustomEventSource {
 		this.#shouldActivate = false;
 		await this.monalisa?.stopStream();
 		await this.monalisa?.logout();
-		await this.redditAuth?.logout();
+		//await this.redditAuth?.logout();
+		if (this.conf.session) {
+			console.info("[MultiMan]  Attempted session cache removal.");
+			delete this.conf.session;
+		};
+		console.info("[MultiMan]  Resetting browser context.")
+		this.fc = new FetchContext(batchModeOrigin);
 		this.active = false;
 		return;
 	};
@@ -200,6 +216,7 @@ let MultiUserManager = class extends CustomEventSource {
 			e.redditAuth = new RedditAuth(e.fc);
 			e.monalisa.cc = this.cc;
 			e.monalisa.pg = this.pg;
+			e.conf = confObj;
 			confObj.placed = confObj.placed || 0;
 			let genericUpdate = async () => {
 				let focusXY = e.monalisa.getFocus();
@@ -374,7 +391,7 @@ let MultiUserManager = class extends CustomEventSource {
 		for (let uname in this.managed) {
 			let e = this.managed[uname];
 			if (!e.active) {
-				//console.info(`[MultiMan]  User ${uname} is not activated.`);
+				console.info(`[MultiMan]  User ${uname} is not activated.`);
 			} else if (manual || Math.random() < this.getPower()) {
 				console.info(`[MultiMan]  User ${uname} is selected on sweep.`);
 				if (this.conf.users[uname].nextAt <= Date.now()) {
@@ -382,10 +399,15 @@ let MultiUserManager = class extends CustomEventSource {
 					await WingBlade.util.sleep(15000, 5000);
 				};
 				(async () => {
-					this.conf.users[uname].pstate = 1;
-					this.dispatchEvent("userupdate", uname);
-					await WingBlade.util.sleep(25, 4500);
-					e.monalisa.place();
+					if (e.active) {
+						console.info(`[MultiMan]  User ${uname} is now placing!`);
+						this.conf.users[uname].pstate = 1;
+						this.dispatchEvent("userupdate", uname);
+						await WingBlade.util.sleep(25, 4500);
+						e.monalisa.place();
+					} else {
+						console.info(`[MultiMan]  User ${uname} is deactivated. Cancelling placements.`);
+					};
 				})()
 			} else {
 				//console.info(`[MultiMan]  User ${uname} not selected.`);
