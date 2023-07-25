@@ -273,55 +273,22 @@ let MultiUserManager = class extends CustomEventSource {
 				};
 				this.dispatchEvent("userupdate", acct);
 			});
-			e.monalisa.addEventListener("pixelban", async () => {
-				confObj.pstate = 0;
-				await genericUpdate();
-				if (this.pg.name == "mlp") {
-					this.an?.sendError("PALETTE_PIXEL_");
-				} else if (this.pg.name) {
-					this.an?.sendError(`PALETTE_PIXEL__${this.pg.name.toUpperCase()}`);
-				} else {
-					this.an?.sendError("PALETTE_PIXEL__OTHER");
-				};
-				this.dispatchEvent("userupdate", acct);
-			});
 			e.monalisa.addEventListener("pixelconfirm", async () => {
 				confObj.pstate = 0;
 				await genericUpdate();
 				confObj.confirm = (confObj.confirm || 0) + 1;
-				if (this.pg.name == "mlp") {
-					this.an?.sendError("PALETTE_PIXEL_CONFIRM");
-				} else if (this.pg.name) {
-					this.an?.sendError(`PALETTE_PIXEL_CONFIRM_${this.pg.name.toUpperCase()}`);
-				} else {
-					this.an?.sendError("PALETTE_PIXEL_CONFIRM_OTHER");
-				};
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixeloverwrite", async () => {
 				confObj.pstate = 0;
 				await genericUpdate();
 				confObj.nfp = (confObj.nfp || 0) + 1;
-				if (this.pg.name == "mlp") {
-					this.an?.sendError("PALETTE_PIXEL_OVERWRITE");
-				} else if (this.pg.name) {
-					this.an?.sendError(`PALETTE_PIXEL_OVERWRITE_${this.pg.name.toUpperCase()}`);
-				} else {
-					this.an?.sendError("PALETTE_PIXEL_OVERWRITE_OTHER");
-				};
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelcontradict", async () => {
 				confObj.pstate = 0;
 				await genericUpdate();
 				confObj.nfn = (confObj.nfn || 0) + 1;
-				if (this.pg.name == "mlp") {
-					this.an?.sendError("PALETTE_PIXEL_CONTRADICT");
-				} else if (this.pg.name) {
-					this.an?.sendError(`PALETTE_PIXEL_CONTRADICT_${this.pg.name.toUpperCase()}`);
-				} else {
-					this.an?.sendError("PALETTE_PIXEL_CONTRADICT_OTHER");
-				};
 				this.dispatchEvent("userupdate", acct);
 			});
 			e.monalisa.addEventListener("pixelwait", async () => {

@@ -341,7 +341,7 @@ let Monalisa = class extends CustomEventSource {
 			this.cc.damage.remove(selectedPixel);
 			this.cc.damaged --;
 			console.info(`[Monalisa]  Painted (${this.#x}, ${this.#y}) as ${colour[3]}, P(${colour[0], colour[1], colour[2]}) D(${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
-			await WingBlade.util.sleep(600);
+			await WingBlade.util.sleep(1500);
 			let afterPlacement = await this.getPixelHistory(this.#x, this.#y, colour[3]);
 			//console.info(afterPlacement);
 			if (afterPlacement?.userInfo?.username == this.username) {
