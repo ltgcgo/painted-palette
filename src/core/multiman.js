@@ -216,6 +216,7 @@ let MultiUserManager = class extends CustomEventSource {
 			e.redditAuth = new RedditAuth(e.fc);
 			e.monalisa.cc = this.cc;
 			e.monalisa.pg = this.pg;
+			e.monalisa.username = confObj.acct;
 			e.conf = confObj;
 			confObj.placed = confObj.placed || 0;
 			let genericUpdate = async () => {
@@ -269,6 +270,57 @@ let MultiUserManager = class extends CustomEventSource {
 					this.an?.sendError(`PALETTE_PIXEL_FAIL_BAN_${this.pg.name.toUpperCase()}`);
 				} else {
 					this.an?.sendError("PALETTE_PIXEL_FAIL_BAN_OTHER");
+				};
+				this.dispatchEvent("userupdate", acct);
+			});
+			e.monalisa.addEventListener("pixelban", async () => {
+				confObj.pstate = 0;
+				await genericUpdate();
+				if (this.pg.name == "mlp") {
+					this.an?.sendError("PALETTE_PIXEL_");
+				} else if (this.pg.name) {
+					this.an?.sendError(`PALETTE_PIXEL__${this.pg.name.toUpperCase()}`);
+				} else {
+					this.an?.sendError("PALETTE_PIXEL__OTHER");
+				};
+				this.dispatchEvent("userupdate", acct);
+			});
+			e.monalisa.addEventListener("pixelconfirm", async () => {
+				confObj.pstate = 0;
+				await genericUpdate();
+				confObj.confirm = (confObj.confirm || 0) + 1;
+				if (this.pg.name == "mlp") {
+					this.an?.sendError("PALETTE_PIXEL_CONFIRM");
+				} else if (this.pg.name) {
+					this.an?.sendError(`PALETTE_PIXEL_CONFIRM_${this.pg.name.toUpperCase()}`);
+				} else {
+					this.an?.sendError("PALETTE_PIXEL_CONFIRM_OTHER");
+				};
+				this.dispatchEvent("userupdate", acct);
+			});
+			e.monalisa.addEventListener("pixeloverwrite", async () => {
+				confObj.pstate = 0;
+				await genericUpdate();
+				confObj.nfp = (confObj.nfp || 0) + 1;
+				if (this.pg.name == "mlp") {
+					this.an?.sendError("PALETTE_PIXEL_OVERWRITE");
+				} else if (this.pg.name) {
+					this.an?.sendError(`PALETTE_PIXEL_OVERWRITE_${this.pg.name.toUpperCase()}`);
+				} else {
+					this.an?.sendError("PALETTE_PIXEL_OVERWRITE_OTHER");
+				};
+				this.dispatchEvent("userupdate", acct);
+			});
+			e.monalisa.addEventListener("pixelcontradict", async () => {
+				confObj.pstate = 0;
+				await genericUpdate();
+				confObj.nfn = (confObj.nfn || 0) + 1;
+				if (this.pg.name == "mlp") {
+					this.an?.sendError("PALETTE_PIXEL_CONTRADICT");
+				} else if (this.pg.name) {
+					this.an?.sendError(`PALETTE_PIXEL_CONTRADICT_${this.pg.name.toUpperCase()}`);
+				} else {
+					this.an?.sendError("PALETTE_PIXEL_CONTRADICT_OTHER");
 				};
 				this.dispatchEvent("userupdate", acct);
 			});
@@ -396,7 +448,7 @@ let MultiUserManager = class extends CustomEventSource {
 				console.info(`[MultiMan]  User ${uname} is selected on sweep.`);
 				if (this.conf.users[uname].nextAt <= Date.now()) {
 					console.info(`[MultiMan]  Waiting out rate limits for ${uname}.`);
-					await WingBlade.util.sleep(15000, 5000);
+					await WingBlade.util.sleep(5000, 5000);
 				};
 				(async () => {
 					if (e.active) {

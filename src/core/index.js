@@ -79,7 +79,12 @@ let waitForProxy = async function () {
 };
 
 let main = async function (args) {
-	svc.tpl = WingBlade.env.get("TEMPLATE_URL", "https://uis246.github.io/template/pointer.json");
+	svc.tpl = WingBlade.env.get("TEMPLATE_URL");
+	if (!svc.tpl) {
+		console.info(`[Core]      No custom pointer defined. Using default template.`);
+		//console.info(WingBlade.env.toObject());
+		svc.tpl = "https://uis246.github.io/template/pointer.json";
+	};
 	let acct = args[1], pass = args[2], otp = args[3];
 	console.info(`${BuildInfo.name}@${WingBlade.rt.variant} ${WingBlade.rt.os}_v${BuildInfo.ver}`);
 	let updateThread;

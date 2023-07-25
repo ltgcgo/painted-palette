@@ -168,7 +168,10 @@ document.addEventListener("alpine:init", () => {
 							lastColour: userData.lastColour,
 							placed: userData.placed,
 							nextAt: userData.nextAt,
-							pstate: userData.pstate
+							pstate: userData.pstate,
+							confirm: userData.confirm,
+							nfp: userData.nfp,
+							nfn: userData.nfn
 						});
 						rebuildAcctIndex();
 					} else {
@@ -183,6 +186,9 @@ document.addEventListener("alpine:init", () => {
 						e.placed = userData.placed;
 						e.nextAt = userData.nextAt;
 						e.pstate = userData.pstate;
+						e.confirm = userData.confirm;
+						e.nfp = userData.nfp;
+						e.nfn = userData.nfn;
 					};
 					let manipulator = userMan[userIndex[data.data]];
 					break;

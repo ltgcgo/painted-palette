@@ -33,6 +33,7 @@ let Monalisa = class extends CustomEventSource {
 	loggedIn = false;
 	wsActive = false;
 	userdata;
+	username;
 	session;
 	appUrl;
 	colourIndex = -1;
@@ -143,15 +144,15 @@ let Monalisa = class extends CustomEventSource {
 		//console.info(graphQlRep);
 		let graphQlRaw = await graphQlRep.json();
 		console.info(graphQlRaw);
-		return graphQlRaw.data.act.data[0].data;
+		return graphQlRaw?.data?.act?.data[0]?.data;
 	};
 	async partitionPixels() {
 		if (this.pg) {
-			console.info("Waiting for CanvasConfiguration.");
+			console.info("[Monalisa]  Waiting for CanvasConfiguration.");
 			await this.whenCcReady();
-			console.info("CanvasConfiguration OK. Waiting for template.");
+			console.info("[Monalisa]  CanvasConfiguration OK. Waiting for template.");
 			await this.pg.whenTemplateReady();
-			console.info("Template OK. Partitioning...");
+			console.info("[Monalisa]  Template OK. Partitioning...");
 			delete this.cc.pp;
 			let partitionPixels = [];
 			// Add canvas ID information to each pixel
@@ -333,12 +334,35 @@ let Monalisa = class extends CustomEventSource {
 			console.info(`[Monalisa]  No palette colour available for (${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
 			return;
 		};
+		let beforePlacement = await this.getPixelHistory(this.#x, this.#y, colour[3]);
+		//console.info(beforePlacement);
 		this.lastColour = `rgba(${colour[0]},${colour[1]},${colour[2]})`;
 		if (await this.placePixel({ci: colour[3]})) {
 			this.cc.damage.remove(selectedPixel);
 			this.cc.damaged --;
 			console.info(`[Monalisa]  Painted (${this.#x}, ${this.#y}) as ${colour[3]}, P(${colour[0], colour[1], colour[2]}) D(${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
-		} else {
+			await WingBlade.util.sleep(600);
+			let afterPlacement = await this.getPixelHistory(this.#x, this.#y, colour[3]);
+			//console.info(afterPlacement);
+			if (afterPlacement?.userInfo?.username == this.username) {
+				// Confirmed placement
+				this.dispatchEvent("pixelconfirm");
+				console.info(`[Monalisa]  Pixel placement confirmed for user ${this.username}!`);
+			} else {
+				if (afterPlacement.lastModifiedTimestamp != beforePlacement.lastModifiedTimestamp) {
+					// The canvas was overwritten
+					this.dispatchEvent("pixeloverwrite");
+					console.info(`[Monalisa]  Weak pixel contradiction for user ${this.username}!`);
+					console.info(`[Monalisa]  Before: ${JSON.stringify(beforePlacement)}`);
+					console.info(`[Monalisa]  After: ${JSON.stringify(afterPlacement)}`);
+				} else {
+					// The canvas hasn't changed at all
+					this.dispatchEvent("pixelcontradict");
+					console.info(`[Monalisa]  Strong pixel contradiction for user ${this.username}!`);
+					console.info(`[Monalisa]  Before: ${JSON.stringify(beforePlacement)}`);
+					console.info(`[Monalisa]  After: ${JSON.stringify(afterPlacement)}`);
+				};
+			};
 			console.info(`[Monalisa]  Failed to paint (${this.#x}, ${this.#y}) as ${colour[3]}, P(${colour[0], colour[1], colour[2]}) D(${selectedPixel[4]}, ${selectedPixel[5]}, ${selectedPixel[6]}).`);
 		};
 	};
