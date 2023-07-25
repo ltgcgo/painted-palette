@@ -70,6 +70,7 @@
 #### r/HongKong
 * coffindancercat
 * DorianDaBunny
+* hason
 * hkb__
 * Hypicksell
 * icegna
