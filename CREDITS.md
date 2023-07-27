@@ -55,7 +55,7 @@
 * NightCandle
 * NotKirill
 * PadlockF
-* polak23 (they are cute)
+* polak23
 * PoxyBoxy
 * Pyroboss
 * SETTESIX
@@ -90,3 +90,6 @@
 * Midnight Ponywka
 * OlenianDeer
 * Starshine
+### Sidenote
+* Stand with Midnight Ponywka.
+* Polak is cute. Polak jest słodki.
