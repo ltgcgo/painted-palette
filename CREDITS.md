@@ -4,7 +4,7 @@
 ### OS support
 * Lumière Élevé (Linux, Android, Windows, macOS, iOS)
 ### Misc
-* aracat (assembled bot template format)
+* aracat (assembled bot template format, analytics and upstream template hosting)
 * Azure Star/Fauli1221 (iSH `env` dump, iSH `uname` dump)
 * Danatron1 (Sweetie Bot art)
 * Endless Night (MLP Pixel template)
@@ -55,7 +55,7 @@
 * NightCandle
 * NotKirill
 * PadlockF
-* polak23
+* polak23 (they are cute)
 * PoxyBoxy
 * Pyroboss
 * SETTESIX
@@ -85,3 +85,8 @@
 * m4ndeojyi
 #### r/place_Brff
 * anelfer
+### Honourable Mentions
+* interru
+* Midnight Ponywka
+* OlenianDeer
+* Starshine
