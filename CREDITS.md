@@ -12,7 +12,7 @@
 * Marius851000 (bot template)
 * Midnight Ponywka (VKontakte flow, the basis of browser overlay)
 * Steady Gaze (bot template)
-* Twi/Leah (r/place clone for bot prototyping)
+* Twi/Leah (ManePlace (an r/place 2022 clone/) for bot prototyping and analytics specifications)
 * uis246 (bot template)
 ### Pre-event testers
 #### Android
