@@ -11,9 +11,10 @@
 * JayB (macOS `env` dump)
 * Marius851000 (bot template)
 * Midnight Ponywka (VKontakte flow, the basis of browser overlay)
+* seer45 ([Pinkie Pie Rainbow Cannon](https://derpibooru.org/images/632906))
 * Steady Gaze (bot template)
 * Twi/Leah (ManePlace (an r/place 2022 clone/) for bot prototyping and analytics specifications)
-* uis246 (bot template)
+* uis246 (bot template, [pixelated Pinkie Cannon](https://derpibooru.org/images/3170846))
 ### Pre-event testers
 #### Android
 * Azure Star/Fauli1221
