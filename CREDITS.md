@@ -32,6 +32,12 @@
 * Starshine
 * Windy Gleam
 * Wolfdog122
+### Honourable Mentions
+* interru
+* Midnight Ponywka
+* OlenianDeer
+* Skyfire Lumia
+* Starshine
 ### On-event testers
 #### Secret r/place Brownies
 * azureenigma
@@ -85,11 +91,6 @@
 * m4ndeojyi
 #### r/place_Brff
 * anelfer
-### Honourable Mentions
-* interru
-* Midnight Ponywka
-* OlenianDeer
-* Starshine
 ### Sidenote
 * Stand with Midnight Ponywka.
 * Polak is cute. Polak jest słodki.
